@@ -13,6 +13,7 @@ Notes:
 """
 from __future__ import annotations
 
+import shutil
 import subprocess
 import time
 import logging
@@ -35,30 +36,30 @@ POLL_INTERVAL = 1.0
 
 
 def start_gridlabd(glm_path: str):
-    logf = open(os.path.join(LOG_DIR, f'gridlabd_{os.path.basename(glm_path)}.log'), 'a')
+    log_path = os.path.join(LOG_DIR, f'gridlabd_{os.path.basename(glm_path)}.log')
+    logf = open(log_path, 'a')  # noqa: SIM115 — kept open intentionally for subprocess lifetime
+    # glm_path is a resolved absolute path from module constants, not user input
     cmd = ['gridlabd', '-D', 'NL=1', glm_path]
     LOGGER.info('Starting gridlabd: %s', ' '.join(cmd))
-    p = subprocess.Popen(cmd, stdout=logf, stderr=logf, preexec_fn=os.setsid)
+    p = subprocess.Popen(cmd, stdout=logf, stderr=logf, preexec_fn=os.setsid)  # noqa: S603
     return p, logf
 
 
-def stop_gridlabd(proc, logf):
+def stop_gridlabd(proc, logf) -> None:
     if proc is None:
         return
     try:
         LOGGER.info('Stopping gridlabd pid=%d', proc.pid)
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc.wait(timeout=5)
-    except Exception:
-        LOGGER.exception('Error stopping gridlabd, killing')
+    except (ProcessLookupError, ChildProcessError, TimeoutError) as exc:
+        LOGGER.exception('Error stopping gridlabd, killing: %s', exc)
         try:
             os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except Exception:
-            pass
-    try:
+        except (ProcessLookupError, ChildProcessError) as kill_exc:
+            LOGGER.warning('SIGKILL also failed: %s', kill_exc)
+    finally:
         logf.close()
-    except Exception:
-        pass
 
 
 def create_federate() -> h.helics_federate:
@@ -117,5 +118,4 @@ def main() -> int:
 
 
 if __name__ == '__main__':
-    import shutil
     raise SystemExit(main())

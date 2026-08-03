@@ -19,7 +19,7 @@ helics==3.4.0
 # GridLAB-D se instala como binario del sistema (apt / compilado)
 
 # === ATAQUE / OFENSIVA ===
-scapy==2.5.0
+scapy==2.6.1
 
 # === UTILIDADES ===
-python-dotenv==1.0.1
+python-dotenv==1.1.0

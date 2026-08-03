@@ -170,32 +170,30 @@ def main() -> int:
     print('[*] Starting network... (requires root)')
     net.start()
 
-    # Ensure OVS switches operate standalone (no external controller) so L2 MAC/ARP learning works
+    # Force standalone mode so OVS switches learn MACs/ARP without an external controller.
+    # Default fail_mode=secure drops all frames until a controller connects — root cause of
+    # the ARP/L2 failure observed in testing.
     for sw in ('s1', 's2', 's3'):
-        try:
-            net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
-        except Exception:
-            # best-effort: if failing, continue
-            pass
+        net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
 
-    # Get fw and configure
     fw = net.get('fw')
     apply_fw_configuration(fw)
-
     configure_host_routes(net)
 
     if args.test:
-        results = run_connectivity_tests(net)
+        try:
+            results = run_connectivity_tests(net)
+        except KeyError as exc:
+            print(f'[ERROR] Test result key missing: {exc}')
+            net.stop()
+            return 1
         for k, v in results.items():
-            status = 'PASS' if v else 'FAIL'
-            print(f' - {k}: {status}')
+            print(f' - {k}: {"PASS" if v else "FAIL"}')
         net.stop()
-        return 0 if results['attacker_ping_plc'] is False else 2
+        return 0 if not results['attacker_ping_plc'] else 2
 
-    print('[*] Starting Mininet CLI. To run automated tests: python3 network/topology.py --test')
+    print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
     CLI(net)
-
-    print('[*] Stopping network')
     net.stop()
     return 0
 
