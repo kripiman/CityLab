@@ -78,6 +78,8 @@ MININET_DETACH=${MININET_DETACH:-0}
 # Acortar tiempo por defecto usado por 'pingall' en Mininet (segundos)
 # Se puede ajustar exportando MININET_PING_TIMEOUT antes de invocar este script.
 export MININET_PING_TIMEOUT=${MININET_PING_TIMEOUT:-0.5}
+# Auto-start PLC runtime inside Mininet host 'h_plc' (1 = yes, 0 = no)
+export AUTO_START_PLC=${AUTO_START_PLC:-1}
 
 # Mostrar información de procesos ya iniciados antes de lanzar la topología interactiva
 echo ""

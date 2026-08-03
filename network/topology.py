@@ -202,6 +202,32 @@ def main() -> int:
     apply_fw_configuration(fw)
     configure_host_routes(net)
 
+    # Optionally auto-start PLC runtime inside the Mininet host 'h_plc'. This
+    # starts start_openplc.sh (which launches OpenPLC or fallback emulator) so
+    # Modbus/TCP is available at 10.0.3.10:502 from other hosts.
+    try:
+        auto_plc = os.environ.get('AUTO_START_PLC', '1')
+    except Exception:
+        auto_plc = '1'
+    if auto_plc == '1':
+        try:
+            h_plc = net.get('h_plc')
+            # Resolve repo root and start script path relative to this file
+            repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            plc_dir = os.path.join(repo_root, 'plc')
+            start_script = os.path.join(plc_dir, 'start_openplc.sh')
+            # Ensure script exists and is executable
+            h_plc.cmd(f'chmod +x {start_script} || true')
+            # Run start script inside h_plc namespace; use setsid to background inside ns
+            cmd = f'cd {plc_dir} && setsid bash {start_script} > /tmp/openplc.log 2>&1 &'
+            h_plc.cmd(cmd)
+            print('[*] PLC runtime start requested inside h_plc (check /tmp/openplc.log in host namespace)')
+        except KeyError:
+            # h_plc missing; continue without starting PLC
+            print('[WARN] h_plc host not present; skipping auto-start of PLC runtime')
+        except Exception as exc:
+            print(f'[ERROR] Failed to auto-start PLC runtime inside h_plc: {exc}')
+
     if args.test:
         try:
             results = run_connectivity_tests(net)
