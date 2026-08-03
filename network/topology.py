@@ -27,6 +27,28 @@ from mininet.link import TCLink
 from mininet.net import Mininet
 from mininet.node import Node, OVSKernelSwitch, OVSController
 from mininet.topo import Topo
+import os
+
+# Custom CLI that shortens pingall duration using MININET_PING_TIMEOUT (seconds)
+class CustomCLI(CLI):
+    """CLI subclass that overrides pingall to use a shorter timeout driven by env var.
+
+    Use:
+      export MININET_PING_TIMEOUT=0.5
+    or set it from run_phase1.sh to reduce how long 'pingall' blocks.
+    """
+    def do_pingall(self, line: str) -> None:  # type: ignore[override]
+        try:
+            timeout = float(os.environ.get('MININET_PING_TIMEOUT', '1'))
+        except ValueError:
+            timeout = 1.0
+        print(f'*** Ping: testing ping reachability (timeout={timeout}s)')
+        # Mininet's pingAll accepts a timeout param (seconds) in most versions
+        try:
+            self.mn.pingAll(timeout=timeout)
+        except TypeError:
+            # Fallback: call the base implementation if signature differs
+            super().do_pingall(line)
 
 
 class Iec62443Topo(Topo):
@@ -193,7 +215,8 @@ def main() -> int:
         return 0 if not results['attacker_ping_plc'] else 2
 
     print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
-    CLI(net)
+    # Use CustomCLI to allow a shortened pingall via MININET_PING_TIMEOUT env var
+    CustomCLI(net)
     net.stop()
     return 0
 
