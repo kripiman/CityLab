@@ -1,0 +1,20 @@
+// Minimal GridLAB-D model: TRIPPED (load disconnected)
+clock {
+    timezone UTC;
+}
+module powerflow;
+
+object node {
+    name substation;
+    phases ABC;
+}
+
+object load {
+    name city_load;
+    parent substation;
+    nominal_voltage 120.0;
+    constant_power_A 0.0; // disconnected
+}
+
+// run 1 second to produce outputs
+schedule { name: null; }

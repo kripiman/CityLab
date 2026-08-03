@@ -1,0 +1,20 @@
+// Minimal GridLAB-D model: normal operation
+clock {
+    timezone UTC;
+}
+module powerflow;
+
+object node {
+    name substation;
+    phases ABC;
+}
+
+object load {
+    name city_load;
+    parent substation;
+    nominal_voltage 120.0;
+    constant_power_A 10000.0; // W (approx)
+}
+
+// run 1 second to produce outputs
+schedule { name: null; }

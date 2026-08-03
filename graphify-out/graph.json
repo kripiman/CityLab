@@ -1,0 +1,1637 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "attacker/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "attacker_init",
+      "community": 11,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "helics/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "helics_init",
+      "community": 12,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "fed_gridmock.py",
+      "file_type": "code",
+      "source_file": "helics/fed_gridmock.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "helics_fed_gridmock",
+      "community": 9,
+      "norm_label": "fed_gridmock.py"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "helics/fed_gridmock.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "helics_fed_gridmock_main",
+      "community": 9,
+      "norm_label": "main()"
+    },
+    {
+      "label": "fed_icssim.py",
+      "file_type": "code",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "helics_fed_icssim",
+      "community": 1,
+      "norm_label": "fed_icssim.py"
+    },
+    {
+      "label": "create_federate()",
+      "file_type": "code",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "helics_fed_icssim_create_federate",
+      "community": 1,
+      "norm_label": "create_federate()"
+    },
+    {
+      "label": "helics_federate",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "helics_fed_icssim_py_helics_federate",
+      "community": 1,
+      "norm_label": "helics_federate"
+    },
+    {
+      "label": "read_pump_running()",
+      "file_type": "code",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "helics_fed_icssim_read_pump_running",
+      "community": 1,
+      "norm_label": "read_pump_running()"
+    },
+    {
+      "label": "ModbusTcpClient",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "helics_fed_icssim_py_modbustcpclient",
+      "community": 1,
+      "norm_label": "modbustcpclient"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "helics_fed_icssim_main",
+      "community": 1,
+      "norm_label": "main()"
+    },
+    {
+      "label": "gridlabd_federate.py",
+      "file_type": "code",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate",
+      "community": 4,
+      "norm_label": "gridlabd_federate.py"
+    },
+    {
+      "label": "start_gridlabd()",
+      "file_type": "code",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate_start_gridlabd",
+      "community": 4,
+      "norm_label": "start_gridlabd()"
+    },
+    {
+      "label": "stop_gridlabd()",
+      "file_type": "code",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate_stop_gridlabd",
+      "community": 4,
+      "norm_label": "stop_gridlabd()"
+    },
+    {
+      "label": "create_federate()",
+      "file_type": "code",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate_create_federate",
+      "community": 4,
+      "norm_label": "create_federate()"
+    },
+    {
+      "label": "helics_federate",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate_py_helics_federate",
+      "community": 4,
+      "norm_label": "helics_federate"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L78",
+      "_origin": "ast",
+      "id": "helics_gridlabd_federate_main",
+      "community": 4,
+      "norm_label": "main()"
+    },
+    {
+      "label": "start_broker.sh",
+      "file_type": "code",
+      "source_file": "helics/start_broker.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "helics_start_broker",
+      "community": 6,
+      "norm_label": "start_broker.sh"
+    },
+    {
+      "label": "start_broker.sh script",
+      "file_type": "code",
+      "source_file": "helics/start_broker.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "helics_start_broker_sh__entry",
+      "community": 6,
+      "norm_label": "start_broker.sh script"
+    },
+    {
+      "label": "helics_broker_cmd()",
+      "file_type": "code",
+      "source_file": "helics/start_broker.sh",
+      "source_location": "L5",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "helics_start_broker_helics_broker_cmd",
+      "community": 6,
+      "norm_label": "helics_broker_cmd()"
+    },
+    {
+      "label": "install_deps.sh",
+      "file_type": "code",
+      "source_file": "install_deps.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "install_deps",
+      "community": 7,
+      "norm_label": "install_deps.sh"
+    },
+    {
+      "label": "install_deps.sh script",
+      "file_type": "code",
+      "source_file": "install_deps.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "install_deps_sh__entry",
+      "community": 7,
+      "norm_label": "install_deps.sh script"
+    },
+    {
+      "label": "install_pip_pkgs()",
+      "file_type": "code",
+      "source_file": "install_deps.sh",
+      "source_location": "L19",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "install_deps_install_pip_pkgs",
+      "community": 7,
+      "norm_label": "install_pip_pkgs()"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "network/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "network_init",
+      "community": 13,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "topology.py",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "network_topology",
+      "community": 0,
+      "norm_label": "topology.py"
+    },
+    {
+      "label": "Iec62443Topo",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "network_topology_iec62443topo",
+      "community": 0,
+      "norm_label": "iec62443topo"
+    },
+    {
+      "label": "Topo",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "topo",
+      "community": 0,
+      "norm_label": "topo"
+    },
+    {
+      "label": ".build()",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "network_topology_iec62443topo_build",
+      "community": 0,
+      "norm_label": ".build()"
+    },
+    {
+      "label": "apply_fw_configuration()",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "network_topology_apply_fw_configuration",
+      "community": 0,
+      "norm_label": "apply_fw_configuration()"
+    },
+    {
+      "label": "Node",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "node",
+      "community": 0,
+      "norm_label": "node"
+    },
+    {
+      "label": "configure_host_routes()",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "network_topology_configure_host_routes",
+      "community": 0,
+      "norm_label": "configure_host_routes()"
+    },
+    {
+      "label": "Mininet",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "mininet",
+      "community": 0,
+      "norm_label": "mininet"
+    },
+    {
+      "label": "run_connectivity_tests()",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L134",
+      "_origin": "ast",
+      "id": "network_topology_run_connectivity_tests",
+      "community": 0,
+      "norm_label": "run_connectivity_tests()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "network/topology.py",
+      "source_location": "L162",
+      "_origin": "ast",
+      "id": "network_topology_main",
+      "community": 0,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Custom Mininet topology implementing segmented zones and a routing FW host.",
+      "file_type": "rationale",
+      "source_file": "network/topology.py",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "network_topology_rationale_33",
+      "community": 0,
+      "norm_label": "custom mininet topology implementing segmented zones and a routing fw host."
+    },
+    {
+      "label": "Configure FW host interfaces, IP forwarding and iptables rules.      Assumes int",
+      "file_type": "rationale",
+      "source_file": "network/topology.py",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "network_topology_rationale_68",
+      "community": 0,
+      "norm_label": "configure fw host interfaces, ip forwarding and iptables rules.      assumes int"
+    },
+    {
+      "label": "Set default routes on hosts to point to the FW gateway in each zone.",
+      "file_type": "rationale",
+      "source_file": "network/topology.py",
+      "source_location": "L113",
+      "_origin": "ast",
+      "id": "network_topology_rationale_113",
+      "community": 0,
+      "norm_label": "set default routes on hosts to point to the fw gateway in each zone."
+    },
+    {
+      "label": "Run minimal connectivity checks and return statuses.      Tests:     - Attacker",
+      "file_type": "rationale",
+      "source_file": "network/topology.py",
+      "source_location": "L135",
+      "_origin": "ast",
+      "id": "network_topology_rationale_135",
+      "community": 0,
+      "norm_label": "run minimal connectivity checks and return statuses.      tests:     - attacker"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "physical/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "physical_init",
+      "community": 15,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "physical/icssim/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "physical_icssim_init",
+      "community": 14,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "plant.py",
+      "file_type": "code",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "physical_icssim_plant",
+      "community": 1,
+      "norm_label": "plant.py"
+    },
+    {
+      "label": "TankPlant",
+      "file_type": "code",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_tankplant",
+      "community": 1,
+      "norm_label": "tankplant"
+    },
+    {
+      "label": ".step()",
+      "file_type": "code",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_tankplant_step",
+      "community": 1,
+      "norm_label": ".step()"
+    },
+    {
+      "label": ".needs_trip()",
+      "file_type": "code",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_tankplant_needs_trip",
+      "community": 1,
+      "norm_label": ".needs_trip()"
+    },
+    {
+      "label": "ICSSIM-like plant model for PoC: simple tank and pump.  This module implements a",
+      "file_type": "rationale",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_rationale_1",
+      "community": 1,
+      "norm_label": "icssim-like plant model for poc: simple tank and pump.  this module implements a"
+    },
+    {
+      "label": "Advance plant state by dt seconds. Returns new level.",
+      "file_type": "rationale",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_rationale_18",
+      "community": 1,
+      "norm_label": "advance plant state by dt seconds. returns new level."
+    },
+    {
+      "label": "Simple rule: if level below 1 m^3 or above 95% capacity, trip.",
+      "file_type": "rationale",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "physical_icssim_plant_rationale_30",
+      "community": 1,
+      "norm_label": "simple rule: if level below 1 m^3 or above 95% capacity, trip."
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "plc/__init__.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plc_init",
+      "community": 16,
+      "norm_label": "__init__.py"
+    },
+    {
+      "label": "modbus_emulator.py",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator",
+      "community": 2,
+      "norm_label": "modbus_emulator.py"
+    },
+    {
+      "label": "PumpEmulator",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator",
+      "community": 2,
+      "norm_label": "pumpemulator"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator_init",
+      "community": 2,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "ModbusServerContext",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "modbusservercontext",
+      "community": 2,
+      "norm_label": "modbusservercontext"
+    },
+    {
+      "label": ".read_coils()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator_read_coils",
+      "community": 2,
+      "norm_label": ".read_coils()"
+    },
+    {
+      "label": ".write_coil()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator_write_coil",
+      "community": 2,
+      "norm_label": ".write_coil()"
+    },
+    {
+      "label": ".loop()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator_loop",
+      "community": 2,
+      "norm_label": ".loop()"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L91",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_pumpemulator_stop",
+      "community": 2,
+      "norm_label": ".stop()"
+    },
+    {
+      "label": "run_server()",
+      "file_type": "code",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L95",
+      "_origin": "ast",
+      "id": "plc_modbus_emulator_run_server",
+      "community": 2,
+      "norm_label": "run_server()"
+    },
+    {
+      "label": "start_openplc.sh",
+      "file_type": "code",
+      "source_file": "plc/start_openplc.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "plc_start_openplc",
+      "community": 10,
+      "norm_label": "start_openplc.sh"
+    },
+    {
+      "label": "start_openplc.sh script",
+      "file_type": "code",
+      "source_file": "plc/start_openplc.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "plc_start_openplc_sh__entry",
+      "community": 10,
+      "norm_label": "start_openplc.sh script"
+    },
+    {
+      "label": "poc_modbus_test.py",
+      "file_type": "code",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test",
+      "community": 3,
+      "norm_label": "poc_modbus_test.py"
+    },
+    {
+      "label": "read_coils()",
+      "file_type": "code",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_read_coils",
+      "community": 3,
+      "norm_label": "read_coils()"
+    },
+    {
+      "label": "ModbusTcpClient",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_py_modbustcpclient",
+      "community": 3,
+      "norm_label": "modbustcpclient"
+    },
+    {
+      "label": "write_coil()",
+      "file_type": "code",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_write_coil",
+      "community": 3,
+      "norm_label": "write_coil()"
+    },
+    {
+      "label": "wait_for_coil()",
+      "file_type": "code",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_wait_for_coil",
+      "community": 3,
+      "norm_label": "wait_for_coil()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_main",
+      "community": 3,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Automated integration test for the PoC PLC Modbus interface.  Usage (from within",
+      "file_type": "rationale",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plc_tests_poc_modbus_test_rationale_1",
+      "community": 3,
+      "norm_label": "automated integration test for the poc plc modbus interface.  usage (from within"
+    },
+    {
+      "label": "run_phase1.sh",
+      "file_type": "code",
+      "source_file": "run_phase1.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "run_phase1",
+      "community": 8,
+      "norm_label": "run_phase1.sh"
+    },
+    {
+      "label": "run_phase1.sh script",
+      "file_type": "code",
+      "source_file": "run_phase1.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "run_phase1_sh__entry",
+      "community": 8,
+      "norm_label": "run_phase1.sh script"
+    },
+    {
+      "label": "check_dep()",
+      "file_type": "code",
+      "source_file": "run_phase1.sh",
+      "source_location": "L9",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "run_phase1_check_dep",
+      "community": 8,
+      "norm_label": "check_dep()"
+    },
+    {
+      "type": "document",
+      "properties": {
+        "name": "README.md",
+        "summary": "Introduction to CityLab Cyber Range ICS/SCADA, showing the technology stack, directory structure, network segmentation (IEC 62443), and quick start guide.",
+        "path": "/home/kripi/Documentos/GitHub/CityLab/README.md"
+      },
+      "file_type": "concept",
+      "id": "README.md",
+      "community": 5,
+      "norm_label": ""
+    },
+    {
+      "type": "document",
+      "properties": {
+        "name": "docs/OPERATIONS.md",
+        "summary": "Quick operations instructions for installation of system dependencies, verifying OpenvSwitch, running Mininet, starting PLC, running testing scripts, and network checking commands.",
+        "path": "/home/kripi/Documentos/GitHub/CityLab/docs/OPERATIONS.md"
+      },
+      "file_type": "concept",
+      "id": "docs/OPERATIONS.md",
+      "community": 5,
+      "norm_label": ""
+    },
+    {
+      "type": "document",
+      "properties": {
+        "name": "requirements.txt",
+        "summary": "Python dependencies configuration specifying pymodbus, helics, scapy, and python-dotenv.",
+        "path": "/home/kripi/Documentos/GitHub/CityLab/requirements.txt"
+      },
+      "file_type": "concept",
+      "id": "requirements.txt",
+      "community": 5,
+      "norm_label": ""
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_gridmock.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "helics_fed_gridmock",
+      "target": "helics_fed_gridmock_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "helics_fed_icssim",
+      "target": "helics_fed_icssim_create_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "helics_fed_icssim",
+      "target": "helics_fed_icssim_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "helics_fed_icssim",
+      "target": "helics_fed_icssim_read_pump_running",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "helics_fed_icssim",
+      "target": "physical_icssim_plant",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "helics_fed_icssim",
+      "target": "physical_icssim_plant_tankplant",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_create_federate",
+      "target": "helics_fed_icssim_py_helics_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_main",
+      "target": "helics_fed_icssim_create_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_main",
+      "target": "helics_fed_icssim_read_pump_running",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_read_pump_running",
+      "target": "helics_fed_icssim_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_main",
+      "target": "helics_fed_icssim_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/fed_icssim.py",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "helics_fed_icssim_main",
+      "target": "physical_icssim_plant_tankplant",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate",
+      "target": "helics_gridlabd_federate_create_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate",
+      "target": "helics_gridlabd_federate_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate",
+      "target": "helics_gridlabd_federate_start_gridlabd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate",
+      "target": "helics_gridlabd_federate_stop_gridlabd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate_main",
+      "target": "helics_gridlabd_federate_start_gridlabd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate_main",
+      "target": "helics_gridlabd_federate_stop_gridlabd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate_create_federate",
+      "target": "helics_gridlabd_federate_py_helics_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/gridlabd_federate.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "helics_gridlabd_federate_main",
+      "target": "helics_gridlabd_federate_create_federate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/start_broker.sh",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "helics_start_broker",
+      "target": "helics_start_broker_helics_broker_cmd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "helics/start_broker.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "helics_start_broker",
+      "target": "helics_start_broker_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install_deps.sh",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "install_deps",
+      "target": "install_deps_install_pip_pkgs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "install_deps.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "install_deps",
+      "target": "install_deps_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install_deps.sh",
+      "source_location": "L34",
+      "weight": 1.0,
+      "context": "call",
+      "source": "install_deps_sh__entry",
+      "target": "install_deps_install_pip_pkgs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "network_topology",
+      "target": "network_topology_apply_fw_configuration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "network_topology",
+      "target": "network_topology_configure_host_routes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "network_topology",
+      "target": "network_topology_iec62443topo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "network_topology",
+      "target": "network_topology_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "network_topology",
+      "target": "network_topology_run_connectivity_tests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "network_topology_iec62443topo",
+      "target": "network_topology_iec62443topo_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "network_topology_iec62443topo",
+      "target": "topo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "network_topology_main",
+      "target": "network_topology_iec62443topo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "network_topology_rationale_33",
+      "target": "network_topology_iec62443topo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "network_topology_apply_fw_configuration",
+      "target": "node",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L183",
+      "weight": 1.0,
+      "source": "network_topology_main",
+      "target": "network_topology_apply_fw_configuration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "network_topology_rationale_68",
+      "target": "network_topology_apply_fw_configuration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "network_topology_configure_host_routes",
+      "target": "mininet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "network_topology_main",
+      "target": "network_topology_configure_host_routes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L113",
+      "weight": 1.0,
+      "source": "network_topology_rationale_113",
+      "target": "network_topology_configure_host_routes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "network_topology_main",
+      "target": "mininet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "network_topology_run_connectivity_tests",
+      "target": "mininet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "network_topology_main",
+      "target": "network_topology_run_connectivity_tests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "network/topology.py",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "network_topology_rationale_135",
+      "target": "network_topology_run_connectivity_tests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "physical_icssim_plant",
+      "target": "physical_icssim_plant_tankplant",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "physical_icssim_plant_rationale_1",
+      "target": "physical_icssim_plant",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "physical_icssim_plant_tankplant",
+      "target": "physical_icssim_plant_tankplant_needs_trip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "physical_icssim_plant_tankplant",
+      "target": "physical_icssim_plant_tankplant_step",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "physical_icssim_plant_rationale_18",
+      "target": "physical_icssim_plant_tankplant_step",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "physical/icssim/plant.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "physical_icssim_plant_rationale_30",
+      "target": "physical_icssim_plant_tankplant_needs_trip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator",
+      "target": "plc_modbus_emulator_pumpemulator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator",
+      "target": "plc_modbus_emulator_run_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator",
+      "target": "plc_modbus_emulator_pumpemulator_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator",
+      "target": "plc_modbus_emulator_pumpemulator_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator",
+      "target": "plc_modbus_emulator_pumpemulator_read_coils",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator",
+      "target": "plc_modbus_emulator_pumpemulator_stop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator",
+      "target": "plc_modbus_emulator_pumpemulator_write_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_run_server",
+      "target": "plc_modbus_emulator_pumpemulator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator_init",
+      "target": "modbusservercontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_run_server",
+      "target": "modbusservercontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator_loop",
+      "target": "plc_modbus_emulator_pumpemulator_read_coils",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_pumpemulator_loop",
+      "target": "plc_modbus_emulator_pumpemulator_write_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/modbus_emulator.py",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "plc_modbus_emulator_run_server",
+      "target": "plc_modbus_emulator_pumpemulator_stop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/start_openplc.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "plc_start_openplc",
+      "target": "plc_start_openplc_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test",
+      "target": "plc_tests_poc_modbus_test_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test",
+      "target": "plc_tests_poc_modbus_test_read_coils",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test",
+      "target": "plc_tests_poc_modbus_test_wait_for_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test",
+      "target": "plc_tests_poc_modbus_test_write_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_rationale_1",
+      "target": "plc_tests_poc_modbus_test",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_main",
+      "target": "plc_tests_poc_modbus_test_read_coils",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_read_coils",
+      "target": "plc_tests_poc_modbus_test_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_wait_for_coil",
+      "target": "plc_tests_poc_modbus_test_read_coils",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_main",
+      "target": "plc_tests_poc_modbus_test_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_wait_for_coil",
+      "target": "plc_tests_poc_modbus_test_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_write_coil",
+      "target": "plc_tests_poc_modbus_test_py_modbustcpclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_main",
+      "target": "plc_tests_poc_modbus_test_write_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "plc/tests/poc_modbus_test.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "plc_tests_poc_modbus_test_main",
+      "target": "plc_tests_poc_modbus_test_wait_for_coil",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "run_phase1.sh",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "run_phase1",
+      "target": "run_phase1_check_dep",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "run_phase1.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "run_phase1",
+      "target": "run_phase1_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "run_phase1.sh",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "call",
+      "source": "run_phase1_sh__entry",
+      "target": "run_phase1_check_dep",
+      "confidence_score": 1.0
+    },
+    {
+      "type": "references",
+      "properties": {
+        "description": "README mentions operating procedures and quick start guides detailed in OPERATIONS.md"
+      },
+      "source_file": "",
+      "source": "README.md",
+      "target": "docs/OPERATIONS.md",
+      "confidence_score": 1.0
+    },
+    {
+      "type": "specifies",
+      "properties": {
+        "description": "README specifies requirements.txt to install dependencies"
+      },
+      "source_file": "",
+      "source": "README.md",
+      "target": "requirements.txt",
+      "confidence_score": 1.0
+    },
+    {
+      "type": "installs",
+      "properties": {
+        "description": "OPERATIONS.md describes installing requirements.txt via pip"
+      },
+      "source_file": "",
+      "source": "docs/OPERATIONS.md",
+      "target": "requirements.txt",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "4d34937927a3e7f53f7714a9ee40412c9fe87440"
+}

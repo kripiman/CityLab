@@ -1,0 +1,25 @@
+# === RED / EMULACIÓN ===
+# Mininet NO se instala via pip — usar el gestor del sistema:
+#   Fedora/Nobara : sudo dnf install mininet openvswitch
+#   Arch          : yay -S mininet openvswitch
+#   Ubuntu/Mint   : sudo apt install mininet
+# Activar OVS antes de usar: sudo systemctl start openvswitch
+
+# === PLC / MODBUS ===
+pymodbus==2.5.3
+
+# === SIMULACIÓN FÍSICA ===
+# ICSSIM se instala desde fuente: https://github.com/sefcom/ICSSIM
+# MiniCPS alternativa: pip install minicps
+
+# === ORQUESTACIÓN ===
+helics==3.4.0
+
+# === ELÉCTRICO ===
+# GridLAB-D se instala como binario del sistema (apt / compilado)
+
+# === ATAQUE / OFENSIVA ===
+scapy==2.5.0
+
+# === UTILIDADES ===
+python-dotenv==1.0.1

@@ -1,0 +1,102 @@
+{
+  "attacker/__init__.py": {
+    "mtime": 1785777363.0563917,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "helics/__init__.py": {
+    "mtime": 1785777363.0563917,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "helics/fed_gridmock.py": {
+    "mtime": 1785778381.9808178,
+    "ast_hash": "2fd2687460ea7a371dc8b707a12be851",
+    "semantic_hash": "2fd2687460ea7a371dc8b707a12be851"
+  },
+  "helics/fed_icssim.py": {
+    "mtime": 1785778371.9338098,
+    "ast_hash": "4e5fc4dd85a2c96a9712c61c25b11ff3",
+    "semantic_hash": "4e5fc4dd85a2c96a9712c61c25b11ff3"
+  },
+  "helics/gridlabd_federate.py": {
+    "mtime": 1785778439.6888735,
+    "ast_hash": "102b9b702af3e67f74372155011a76cd",
+    "semantic_hash": "102b9b702af3e67f74372155011a76cd"
+  },
+  "helics/start_broker.sh": {
+    "mtime": 1785778349.484237,
+    "ast_hash": "490c367faf761c1806a42ce5f49cfe83",
+    "semantic_hash": "490c367faf761c1806a42ce5f49cfe83"
+  },
+  "install_deps.sh": {
+    "mtime": 1785778299.230752,
+    "ast_hash": "77fe2a530a63c575308f293a870aad29",
+    "semantic_hash": "77fe2a530a63c575308f293a870aad29"
+  },
+  "network/__init__.py": {
+    "mtime": 1785777363.0563917,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "network/topology.py": {
+    "mtime": 1785784935.2519264,
+    "ast_hash": "358764960aebef7dc2c84538b2d01ded",
+    "semantic_hash": "358764960aebef7dc2c84538b2d01ded"
+  },
+  "physical/__init__.py": {
+    "mtime": 1785777294.8274758,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "physical/icssim/__init__.py": {
+    "mtime": 1785777363.0563917,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "physical/icssim/plant.py": {
+    "mtime": 1785778359.3098,
+    "ast_hash": "141a557285d029c793260752e184ecac",
+    "semantic_hash": "141a557285d029c793260752e184ecac"
+  },
+  "plc/__init__.py": {
+    "mtime": 1785777363.057392,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "plc/modbus_emulator.py": {
+    "mtime": 1785778112.976154,
+    "ast_hash": "e8274d015d7fbb9186e7ecfc12ab1fb1",
+    "semantic_hash": "e8274d015d7fbb9186e7ecfc12ab1fb1"
+  },
+  "plc/start_openplc.sh": {
+    "mtime": 1785778101.2344546,
+    "ast_hash": "72f7d5108ee4f8c11bb1aa24ccf936c1",
+    "semantic_hash": "72f7d5108ee4f8c11bb1aa24ccf936c1"
+  },
+  "plc/tests/poc_modbus_test.py": {
+    "mtime": 1785778170.1565456,
+    "ast_hash": "38fdaa3fc6491c3c716b4123e9e8aae1",
+    "semantic_hash": "38fdaa3fc6491c3c716b4123e9e8aae1"
+  },
+  "run_phase1.sh": {
+    "mtime": 1785778400.8488357,
+    "ast_hash": "7d5fc2a477a78b812b589b4628e38628",
+    "semantic_hash": "7d5fc2a477a78b812b589b4628e38628"
+  },
+  "README.md": {
+    "mtime": 1785777380.6314707,
+    "ast_hash": "78098210763c40c245c8053e8bf478f6",
+    "semantic_hash": "78098210763c40c245c8053e8bf478f6"
+  },
+  "docs/OPERATIONS.md": {
+    "mtime": 1785778327.3133986,
+    "ast_hash": "b159a76e753265fa3ae4fbb15adec487",
+    "semantic_hash": "b159a76e753265fa3ae4fbb15adec487"
+  },
+  "requirements.txt": {
+    "mtime": 1785778143.9724927,
+    "ast_hash": "446d8e288d34cba4654389e5ccd7d21e",
+    "semantic_hash": "446d8e288d34cba4654389e5ccd7d21e"
+  }
+}
