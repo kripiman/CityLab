@@ -1,11 +1,10 @@
 # CityLab — Cyber Range ICS/SCADA
 
-Laboratorio de entrenamiento defensivo/ofensivo para infraestructura crítica.
-100% software, Linux nativo, 4-8 GB RAM.
+Entrenamiento defensivo/ofensivo OT. 100% software, Linux nativo, 4-8 GB RAM.
 
 ## Fase 1: Nodo Mínimo Viable
 
-**Cadena de ataque objetivo:**
+**Cadena ataque:**
 ```
 Ataque en Red (Python/Scapy)
   → Compromiso PLC (OpenPLC / Modbus TCP)
@@ -25,7 +24,7 @@ Ataque en Red (Python/Scapy)
 | Simulación Eléctrica | GridLAB-D (.glm) |
 | Ofensiva | pymodbus + scapy |
 
-## Árbol de Directorios
+## Árbol Directorios
 
 ```
 CityLab/
@@ -48,7 +47,7 @@ CityLab/
 └── run_phase1.sh       # Punto de entrada único
 ```
 
-## Segmentación de Red (IEC 62443)
+## Segmentación Red (IEC 62443)
 
 ```
 [Corporate 10.0.3.0/24] ── Firewall ── [DMZ 10.0.2.0/24] ── Firewall ── [OT Cell 10.0.1.0/24]
@@ -73,6 +72,6 @@ cp .env.example .env
 
 ## Estándares
 
-- Segmentación de red: **IEC 62443** (Corporate / DMZ / OT Cell Zone)
+- Segmentación red: **IEC 62443** (Corporate / DMZ / OT Cell Zone)
 - Programación PLC: **IEC 61131-3** (Structured Text)
 - Python: **PEP 8**, tipado estático (`typing`), POO

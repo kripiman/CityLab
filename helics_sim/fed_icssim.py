@@ -39,6 +39,8 @@ def create_federate() -> h.helics_federate:
 
 def read_pump_running(client: ModbusTcpClient) -> Optional[bool]:
     try:
+        if not client.is_socket_open():
+            client.connect()
         rr = client.read_coils(2, 1)  # coil index 2 is pump_running (status)
         if rr and not rr.isError():
             return bool(rr.bits[0])
@@ -49,10 +51,25 @@ def read_pump_running(client: ModbusTcpClient) -> Optional[bool]:
 
 def main() -> int:
     client = ModbusTcpClient(PLC_IP, port=PLC_PORT)
-    if not client.connect():
-        LOGGER.error('Cannot connect to PLC Modbus at %s:%d', PLC_IP, PLC_PORT)
+    LOGGER.info('Connecting to PLC Modbus at %s:%d...', PLC_IP, PLC_PORT)
+    
+    connected = False
+    # Intentar conexión durante 30 segundos (esperando a que Mininet/PLC inicien)
+    for attempt in range(30):
+        try:
+            if client.connect():
+                connected = True
+                break
+        except Exception:
+            pass
+        LOGGER.warning('Attempt %d: Connection to PLC failed, retrying in 1s...', attempt + 1)
+        time.sleep(1)
+
+    if not connected:
+        LOGGER.error('Cannot connect to PLC Modbus at %s:%d after 30 seconds', PLC_IP, PLC_PORT)
         return 2
 
+    LOGGER.info('Successfully connected to PLC Modbus.')
     fed = create_federate()
     plant = TankPlant()
 
@@ -68,14 +85,14 @@ def main() -> int:
             trip = 1 if plant.needs_trip() else 0
 
             # publish
-            h.helicsPublicationPublishDouble(h.helicsFederateGetPublication(fed, 0), float(level))
-            h.helicsPublicationPublishInteger(h.helicsFederateGetPublication(fed, 1), int(trip))
+            h.helicsPublicationPublishDouble(h.helicsFederateGetPublication(fed, "tank/level"), float(level))
+            h.helicsPublicationPublishInteger(h.helicsFederateGetPublication(fed, "breaker/trip"), int(trip))
             LOGGER.info('t=%.1f level=%.3f m3 pump=%s trip=%d', current_time, level, pump_running, trip)
 
             # advance time
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
-            time.sleep(0.01)
+            time.sleep(POLL_INTERVAL)
     except KeyboardInterrupt:
         LOGGER.info('Shutdown requested')
     finally:

@@ -2,20 +2,39 @@
 # run_phase1.sh — Punto de entrada para la Fase 1: Nodo Mínimo Viable
 set -euo pipefail
 
-if command -v mn >/dev/null 2>&1; then echo '[*] Cleaning previous Mininet state (mn -c)' sudo mn -c || true 
+# Asegurar privilegios de root/sudo
+if [ "$EUID" -ne 0 ]; then
+  echo "[ERROR] Este script requiere privilegios de root. Ejecutar con: sudo ./run_phase1.sh"
+  exit 1
 fi
 
-# 1. Definir BASE_DIR dinámicamente (Portable: funciona en Nobara, Ubuntu, Arch)
-# Obtiene la ruta absoluta del directorio donde reside este script
+# Limpiar estado previo de Mininet y procesos de simulación
+if command -v mn >/dev/null 2>&1; then
+  echo '[*] Cleaning previous Mininet state (mn -c)...'
+  mn -c || true
+fi
+
+echo '[*] Cleaning previous simulation processes...'
+pkill -9 -f "helics_broker" || true
+pkill -9 -f "fed_icssim.py" || true
+pkill -9 -f "fed_gridmock.py" || true
+pkill -9 -f "modbus_emulator.py" || true
+
+# Forzar salida de Python sin búfer para ver logs en tiempo real
+export PYTHONUNBUFFERED=1
+
+# 1. Definir BASE_DIR dinámicamente
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export BASE_DIR="$SCRIPT_DIR"
 
-# 2. Cargar GridLAB-D desde instalación local o sistema
-GLD_INSTALL="$HOME/gridlabd-install/bin"
+# 2. Cargar GridLAB-D desde instalación local del usuario que invoca sudo o sistema
+INVOKING_USER="${SUDO_USER:-$(whoami)}"
+USER_HOME=$(eval echo "~$INVOKING_USER")
+GLD_INSTALL="$USER_HOME/gridlabd-install/bin"
 if [ -d "$GLD_INSTALL" ]; then
     echo "[DEBUG] Agregando GridLAB-D desde: $GLD_INSTALL"
     export PATH="$GLD_INSTALL:$PATH"
-    export GLPATH="$HOME/gridlabd-install/lib/gridlabd:$HOME/gridlabd-install/share/gridlabd"
+    export GLPATH="$USER_HOME/gridlabd-install/lib/gridlabd:$USER_HOME/gridlabd-install/share/gridlabd"
 else
     echo "[DEBUG] No se encontró instalación local en $GLD_INSTALL, usando sistema."
 fi

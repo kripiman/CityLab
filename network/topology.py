@@ -198,6 +198,11 @@ def main() -> int:
     for sw in ('s1', 's2', 's3'):
         net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
 
+    # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
+    # to communicate with OT devices (like h_plc).
+    os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
+    os.system('ip link set s3 up')
+
     fw = net.get('fw')
     apply_fw_configuration(fw)
     configure_host_routes(net)

@@ -60,7 +60,7 @@ def main() -> int:
             if max_steps > 0 and steps >= max_steps:
                 LOGGER.info('Reached HELICS_MAX_STEPS=%d, exiting', max_steps)
                 break
-            time.sleep(0.01)
+            time.sleep(POLL_INTERVAL)
     except KeyboardInterrupt:
         LOGGER.info('Shutdown requested')
     finally:

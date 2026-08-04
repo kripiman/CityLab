@@ -11,7 +11,7 @@ from dataclasses import dataclass
 class TankPlant:
     level_m3: float = 10.0        # initial volume (m^3)
     capacity_m3: float = 20.0     # tank capacity
-    pump_flow_m3_s: float = 0.05  # pump flow when running (m^3/s)
+    pump_flow_m3_s: float = 1.0   # pump flow when running (m^3/s) for fast PoC trip
     leak_flow_m3_s: float = 0.001 # small leak outflow
 
     def step(self, pump_running: bool, dt: float = 1.0) -> float:
