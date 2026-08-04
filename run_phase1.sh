@@ -17,6 +17,7 @@ fi
 echo '[*] Cleaning previous simulation processes...'
 pkill -9 -f "helics_broker" || true
 pkill -9 -f "fed_icssim.py" || true
+pkill -9 -f "gridlabd_federate.py" || true
 pkill -9 -f "fed_gridmock.py" || true
 pkill -9 -f "modbus_emulator.py" || true
 
@@ -87,8 +88,8 @@ echo "[*] Iniciando simulación física (ICSSIM federado)..."
 python3 "$BASE_DIR/helics_sim/fed_icssim.py" > "$LOG_DIR/icssim.log" 2>&1 &
 ICSSIM_PID=$!
 
-echo "[*] Iniciando federado Grid mock..."
-python3 "$BASE_DIR/helics_sim/fed_gridmock.py" > "$LOG_DIR/gridlabd.log" 2>&1 &
+echo "[*] Iniciando federado GridLAB-D..."
+python3 "$BASE_DIR/helics_sim/gridlabd_federate.py" > "$LOG_DIR/gridlabd.log" 2>&1 &
 GRID_PID=$!
 
 echo "[*] Iniciando topología de red (Mininet)..."

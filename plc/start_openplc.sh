@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CFG_PATH="$SCRIPT_DIR/openplc_config/openplc.cfg"
 LOG_DIR="$SCRIPT_DIR/../../logs"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/openplc_runtime.log"
@@ -12,11 +13,11 @@ echo "[*] Starting PLC runtime (OpenPLC or fallback emulator) - $(date)" >> "$LO
 # Detect OpenPLC runtime binary names commonly used
 if command -v openplc >/dev/null 2>&1 || command -v openplc_runtime >/dev/null 2>&1 || command -v openplc_server >/dev/null 2>&1; then
     if command -v openplc_server >/dev/null 2>&1; then
-        CMD="openplc_server -c $SCRIPT_DIR/openplc.cfg"
+        CMD="openplc_server -c $CFG_PATH"
     elif command -v openplc_runtime >/dev/null 2>&1; then
-        CMD="openplc_runtime -c $SCRIPT_DIR/openplc.cfg"
+        CMD="openplc_runtime -c $CFG_PATH"
     else
-        CMD="openplc -c $SCRIPT_DIR/openplc.cfg"
+        CMD="openplc -c $CFG_PATH"
     fi
     setsid $CMD >> "$LOG" 2>&1 &
     echo $! > "$PIDFILE"

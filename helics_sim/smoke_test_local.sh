@@ -13,6 +13,18 @@ HELICS_MAX_STEPS="${HELICS_MAX_STEPS:-8}"
 
 PUB_NAME="MOCK_PUB_${RUN_ID}"
 GRID_NAME="GRID_MOCK_${RUN_ID}"
+GRID_LOG="$LOG_DIR/grid_mock.log"
+GRID_SCRIPT="$BASE_DIR/helics_sim/fed_gridmock.py"
+GRID_READY_PATTERN="ready"
+GRID_TRIP_PATTERN="Received breaker trip signal"
+
+if command -v gridlabd >/dev/null 2>&1; then
+    GRID_NAME="GRIDLABD_${RUN_ID}"
+    GRID_LOG="$LOG_DIR/gridlabd_federate.log"
+    GRID_SCRIPT="$BASE_DIR/helics_sim/gridlabd_federate.py"
+    GRID_READY_PATTERN="HELICS federate"
+    GRID_TRIP_PATTERN="Trip detected"
+fi
 
 cleanup() {
     local ec=$?
@@ -47,7 +59,7 @@ env \
   HELICS_BROKER_ADDRESS="$HELICS_BROKER_ADDRESS" \
   HELICS_BROKER_PORT="$HELICS_BROKER_PORT" \
   HELICS_MAX_STEPS="$HELICS_MAX_STEPS" \
-  python3 "$BASE_DIR/helics_sim/fed_gridmock.py" >"$LOG_DIR/grid_mock.log" 2>&1 &
+  python3 "$GRID_SCRIPT" >"$GRID_LOG" 2>&1 &
 GRID_PID=$!
 
 wait "$PUB_PID"
@@ -58,8 +70,8 @@ echo "--- broker.log ---"
 tail -n 120 "$LOG_DIR/broker.log" || true
 echo "--- mock_publisher.log ---"
 tail -n 120 "$LOG_DIR/mock_publisher.log" || true
-echo "--- grid_mock.log ---"
-tail -n 120 "$LOG_DIR/grid_mock.log" || true
+echo "--- grid.log ---"
+tail -n 120 "$GRID_LOG" || true
 
 if grep -q "Unable to bind zmq reply socket" "$LOG_DIR/broker.log"; then
     echo "[FAIL] Broker bind error"
@@ -69,12 +81,12 @@ if ! grep -q "ready" "$LOG_DIR/mock_publisher.log"; then
     echo "[FAIL] Publisher not ready"
     exit 1
 fi
-if ! grep -q "ready" "$LOG_DIR/grid_mock.log"; then
-    echo "[FAIL] Grid mock not ready"
+if ! grep -q "$GRID_READY_PATTERN" "$GRID_LOG"; then
+    echo "[FAIL] Grid federate not ready"
     exit 1
 fi
-if ! grep -q "Received breaker trip signal" "$LOG_DIR/grid_mock.log"; then
-    echo "[FAIL] Grid mock did not receive trip signal"
+if ! grep -q "$GRID_TRIP_PATTERN" "$GRID_LOG"; then
+    echo "[FAIL] Grid federate did not receive trip signal"
     exit 1
 fi
 

@@ -1,77 +1,53 @@
 # CityLab — Cyber Range ICS/SCADA
 
-Entrenamiento defensivo/ofensivo OT. 100% software, Linux nativo, 4-8 GB RAM.
+Laboratorio de simulación ofensiva/defensiva en entornos ciberfísicos e infraestructuras críticas.
+100% software, ejecución nativa en Linux, bajo consumo de RAM (<1 GB).
 
-## Fase 1: Nodo Mínimo Viable
+## Documentación
+- [Guía de Arquitectura](file:///home/kripi/Documentos/GitHub/CityLab/docs/ARCHITECTURE.md): Diagramas de red (IEC 62443), secuencia de simulación e integración de HELICS.
+- [Guía de Operaciones](file:///home/kripi/Documentos/GitHub/CityLab/docs/OPERATIONS.md): Pasos detallados para ejecutar ataques Modbus manuales y automatizados.
 
-**Cadena ataque:**
-```
-Ataque en Red (Python/Scapy)
-  → Compromiso PLC (OpenPLC / Modbus TCP)
-    → Alteración variable física (ICSSIM)
-      → Sincronización bus (HELICS)
-        → Caída disyuntor (GridLAB-D)
-```
+---
 
-## Stack Tecnológico
-
-| Capa | Tecnología |
-|---|---|
-| Red / Emulación | Mininet (Python) |
-| Lógica de Control | OpenPLC v3 + Structured Text (IEC 61131-3) |
-| Simulación Física | ICSSIM (Python nativo) |
-| Bus de Orquestación | HELICS 3.x |
-| Simulación Eléctrica | GridLAB-D (.glm) |
-| Ofensiva | pymodbus + scapy |
-
-## Árbol Directorios
+## Estructura del Proyecto
 
 ```
 CityLab/
-├── network/            # Topología Mininet, zonas IEC 62443
-│   └── topology.py
-├── plc/                # Configuración OpenPLC
-│   └── st_programs/    # Programas en Structured Text
-├── physical/           # Simulación del proceso físico
-│   └── icssim/
-│       └── plant.py    # Federado HELICS + modelo de bomba/tanque
-├── helics/             # Federados y configuración del broker
-│   └── gridlabd_federate.py
-├── gridlabd/           # Modelos eléctricos .glm
-│   └── substation_phase1.glm
-├── attacker/           # Scripts de ataque (uso ético/lab)
-├── config/             # Configuraciones adicionales
-├── logs/               # Salida de ejecución (generado en runtime)
-├── .env.example        # Variables de entorno (copiar a .env)
-├── requirements.txt    # Dependencias Python
-└── run_phase1.sh       # Punto de entrada único
+├── network/            # Emulación de red Mininet y reglas de firewall
+├── plc/                # Lógica de control en ST y emulador Modbus
+├── physical/           # Simulación física de tanques y bombas (ICSSIM)
+├── helics_sim/         # Federados HELICS (ICSSIM, GridLAB-D, mocks)
+├── gridlabd/           # Modelos de subestaciones eléctricas (.glm)
+├── attacker/           # Scripts de ataque Modbus
+├── docs/               # Documentación del proyecto
+└── run_phase1.sh       # Script de inicio e integración
 ```
 
-## Segmentación Red (IEC 62443)
+---
+
+## Segmentación de Red (IEC 62443)
 
 ```
-[Corporate 10.0.3.0/24] ── Firewall ── [DMZ 10.0.2.0/24] ── Firewall ── [OT Cell 10.0.1.0/24]
+[Corporate 10.0.1.0/24] ── Firewall ── [DMZ 10.0.2.0/24] ── Firewall ── [OT Cell 10.0.3.0/24]
        │                                                                          │
-  Nodo Atacante                                                            PLC (10.0.1.10)
-                                                                           ICSSIM / Bomba
+  h_attacker (10.0.1.10)                                                   h_plc (10.0.3.10)
+                                                                           h_icssim (10.0.3.11)
 ```
+
+---
 
 ## Inicio Rápido
 
-```bash
-# 1. Instalar dependencias Python
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+1. **Instalar dependencias del sistema**:
+   - Debian/Ubuntu: `sudo apt install mininet openvswitch-switch`
+   - Activar OVS: `sudo systemctl start openvswitch-switch`
 
-# 2. Configurar entorno
-cp .env.example .env
+2. **Instalar dependencias de Python**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# 3. Levantar Fase 1
-./run_phase1.sh
-```
-
-## Estándares
-
-- Segmentación red: **IEC 62443** (Corporate / DMZ / OT Cell Zone)
-- Programación PLC: **IEC 61131-3** (Structured Text)
-- Python: **PEP 8**, tipado estático (`typing`), POO
+3. **Iniciar co-simulación**:
+   ```bash
+   sudo ./run_phase1.sh
+   ```

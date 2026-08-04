@@ -33,6 +33,10 @@ LOG_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
 POLL_INTERVAL = 1.0
+FED_NAME = os.environ.get('HELICS_FED_NAME', 'GRIDLABD_fed')
+BROKER_ADDRESS = os.environ.get('HELICS_BROKER_ADDRESS', '127.0.0.1')
+BROKER_PORT = int(os.environ.get('HELICS_BROKER_PORT', '23404'))
+MAX_STEPS = int(os.environ.get('HELICS_MAX_STEPS', '0'))
 
 
 def start_gridlabd(glm_path: str):
@@ -62,18 +66,21 @@ def stop_gridlabd(proc, logf) -> None:
         logf.close()
 
 
-def create_federate() -> h.helics_federate:
+def create_federate() -> tuple[h.helics_federate, h.helics_input]:
     fi = h.helicsCreateFederateInfo()
     h.helicsFederateInfoSetCoreTypeFromString(fi, 'zmq')
-    h.helicsFederateInfoSetCoreInitString(fi, '--federates=1')
+    h.helicsFederateInfoSetCoreInitString(
+        fi,
+        f'--federates=1 --broker_address={BROKER_ADDRESS} --brokerport={BROKER_PORT}',
+    )
     h.helicsFederateInfoSetTimeProperty(fi, h.helics_property_time_delta, POLL_INTERVAL)
-    fed = h.helicsCreateValueFederate('GRIDLABD_fed', fi)
+    fed = h.helicsCreateValueFederate(FED_NAME, fi)
 
     sub_trip = h.helicsFederateRegisterSubscription(fed, 'breaker/trip', '')
 
     h.helicsFederateEnterExecutingMode(fed)
-    LOGGER.info('HELICS federate GRIDLAB-D ready')
-    return fed
+    LOGGER.info('HELICS federate %s ready (broker=%s:%d)', FED_NAME, BROKER_ADDRESS, BROKER_PORT)
+    return fed, sub_trip
 
 
 def main() -> int:
@@ -81,7 +88,7 @@ def main() -> int:
         LOGGER.error('gridlabd not found in PATH; install gridlabd to use this federate')
         return 2
 
-    fed = create_federate()
+    fed, sub_trip = create_federate()
 
     # start normal model
     proc, logf = start_gridlabd(NORMAL_GLM)
@@ -89,11 +96,12 @@ def main() -> int:
 
     try:
         current_time = 0.0
+        steps = 0
         while True:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            trip_val = h.helicsInputGetInteger(h.helicsFederateGetInput(fed, 0))
+            trip_val = h.helicsInputGetInteger(sub_trip)
             trip = int(trip_val)
 
             if trip and not current_tripped:
@@ -106,6 +114,11 @@ def main() -> int:
                 stop_gridlabd(proc, logf)
                 proc, logf = start_gridlabd(NORMAL_GLM)
                 current_tripped = False
+
+            steps += 1
+            if MAX_STEPS > 0 and steps >= MAX_STEPS:
+                LOGGER.info('Reached HELICS_MAX_STEPS=%d, exiting', MAX_STEPS)
+                break
 
             time.sleep(0.1)
     except KeyboardInterrupt:
