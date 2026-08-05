@@ -66,7 +66,7 @@ def stop_gridlabd(proc, logf) -> None:
         logf.close()
 
 
-def create_federate() -> tuple[h.helics_federate, h.helics_input]:
+def create_federate() -> tuple[h.helics_federate, list[h.helics_input], h.helics_publication]:
     fi = h.helicsCreateFederateInfo()
     h.helicsFederateInfoSetCoreTypeFromString(fi, 'zmq')
     h.helicsFederateInfoSetCoreInitString(
@@ -76,11 +76,18 @@ def create_federate() -> tuple[h.helics_federate, h.helics_input]:
     h.helicsFederateInfoSetTimeProperty(fi, h.helics_property_time_delta, POLL_INTERVAL)
     fed = h.helicsCreateValueFederate(FED_NAME, fi)
 
-    sub_trip = h.helicsFederateRegisterSubscription(fed, 'breaker/trip', '')
+    sub_water_trip    = h.helicsFederateRegisterSubscription(fed, 'breaker/trip', '')
+    sub_gas_trip      = h.helicsFederateRegisterSubscription(fed, 'gas/trip', '')
+    sub_grid_trip     = h.helicsFederateRegisterSubscription(fed, 'grid/trip', '')
+    sub_hospital_load = h.helicsFederateRegisterSubscription(fed, 'hospital/load_kw', '')
+
+    # Solo publica voltage_pu — grid/frequency lo publica fed_icssim(elec)
+    pub_voltage = h.helicsFederateRegisterGlobalPublication(
+        fed, 'grid/voltage_pu', h.HELICS_DATA_TYPE_DOUBLE, '')
 
     h.helicsFederateEnterExecutingMode(fed)
-    LOGGER.info('HELICS federate %s ready (broker=%s:%d)', FED_NAME, BROKER_ADDRESS, BROKER_PORT)
-    return fed, sub_trip
+    LOGGER.info('HELICS federate %s ready', FED_NAME)
+    return fed, [sub_water_trip, sub_gas_trip, sub_grid_trip, sub_hospital_load], pub_voltage
 
 
 def main() -> int:
@@ -88,7 +95,9 @@ def main() -> int:
         LOGGER.error('gridlabd not found in PATH; install gridlabd to use this federate')
         return 2
 
-    fed, sub_trip = create_federate()
+    fed, subs, pub_voltage = create_federate()
+    sub_trips = subs[:3]
+    sub_hospital_load = subs[3]
 
     # start normal model
     proc, logf = start_gridlabd(NORMAL_GLM)
@@ -101,11 +110,17 @@ def main() -> int:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            trip_val = h.helicsInputGetInteger(sub_trip)
-            trip = int(trip_val)
+            trips = [h.helicsInputGetInteger(sub) for sub in sub_trips]
+            trip = any(t != 0 for t in trips)
+
+            voltage_pu = 0.0 if current_tripped else 1.0
+            h.helicsPublicationPublishDouble(pub_voltage, voltage_pu)
+            hospital_load_kw = h.helicsInputGetDouble(sub_hospital_load)
+            LOGGER.info('t=%.1f trips=%s V=%.2fpu hospital_load=%.1fkW',
+                        current_time, trips, voltage_pu, hospital_load_kw)
 
             if trip and not current_tripped:
-                LOGGER.warning('Trip detected -> switching to TRIPPED GLM')
+                LOGGER.warning('Sector trip detected %s -> switching to TRIPPED GLM', trips)
                 stop_gridlabd(proc, logf)
                 proc, logf = start_gridlabd(TRIPPED_GLM)
                 current_tripped = True

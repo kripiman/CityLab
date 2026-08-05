@@ -68,13 +68,16 @@ class Iec62443Topo(Topo):
 
         # DMZ hosts
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
+        scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
 
-        # OT hosts (PLC + ICSSIM)
-        plc = self.addHost('h_plc', ip='10.0.3.10/24')
-        icssim = self.addHost('h_icssim', ip='10.0.3.11/24')
+        # OT hosts: water PLC (10.0.3.10) + gas (10.0.3.12) + elec (10.0.3.13) + trans (10.0.3.14)
+        plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
+        icssim    = self.addHost('h_icssim',     ip='10.0.3.11/24')
+        plc_gas   = self.addHost('h_plc_gas',    ip='10.0.3.12/24')
+        plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
+        plc_trans = self.addHost('h_plc_trans',  ip='10.0.3.14/24')
 
         # Links (order determines fw-eth names)
-        # Connect fw to corp, dmz, ot in that exact order so interface names are predictable
         self.addLink(fw, s_corp)
         self.addLink(fw, s_dmz)
         self.addLink(fw, s_ot)
@@ -82,8 +85,12 @@ class Iec62443Topo(Topo):
         # Connect switches to hosts
         self.addLink(s_corp, attacker)
         self.addLink(s_dmz, dmz_jump)
-        self.addLink(s_ot, plc)
+        self.addLink(s_dmz, scada_server)
+        self.addLink(s_ot, plc_water)
         self.addLink(s_ot, icssim)
+        self.addLink(s_ot, plc_gas)
+        self.addLink(s_ot, plc_elec)
+        self.addLink(s_ot, plc_trans)
 
 
 def apply_fw_configuration(fw: Node) -> None:
@@ -111,9 +118,10 @@ def apply_fw_configuration(fw: Node) -> None:
     # Allow established related
     fw.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
 
-    # Permit DMZ -> OT Modbus/TCP (port 502) to PLC
-    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth2 -p tcp --dport 502 -d 10.0.3.10 -j ACCEPT")
-    fw.cmd("iptables -A FORWARD -i fw-eth2 -o fw-eth1 -p tcp --sport 502 -s 10.0.3.10 -j ACCEPT")
+    # Permit DMZ -> OT Modbus/TCP (port 502) to all PLCs
+    for plc_ip in ('10.0.3.10', '10.0.3.12', '10.0.3.13', '10.0.3.14'):
+        fw.cmd(f"iptables -A FORWARD -i fw-eth1 -o fw-eth2 -p tcp --dport 502 -d {plc_ip} -j ACCEPT")
+        fw.cmd(f"iptables -A FORWARD -i fw-eth2 -o fw-eth1 -p tcp --sport 502 -s {plc_ip} -j ACCEPT")
 
     # Permit DMZ <-> Corporate (for management) on limited ports (SSH 22, icmp)
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p tcp --dport 22 -j ACCEPT")
@@ -134,21 +142,17 @@ def apply_fw_configuration(fw: Node) -> None:
 def configure_host_routes(net: Mininet) -> None:
     """Set default routes on hosts to point to the FW gateway in each zone."""
     h_attacker = net.get('h_attacker')
-    h_dmz = net.get('h_dmz')
-    h_plc = net.get('h_plc')
-    h_icssim = net.get('h_icssim')
-
     h_attacker.cmd('ip route flush default')
     h_attacker.cmd('ip route add default via 10.0.1.1')
 
+    h_dmz = net.get('h_dmz')
     h_dmz.cmd('ip route flush default')
     h_dmz.cmd('ip route add default via 10.0.2.1')
 
-    h_plc.cmd('ip route flush default')
-    h_plc.cmd('ip route add default via 10.0.3.1')
-
-    h_icssim.cmd('ip route flush default')
-    h_icssim.cmd('ip route add default via 10.0.3.1')
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec'):
+        h = net.get(ot_host)
+        h.cmd('ip route flush default')
+        h.cmd('ip route add default via 10.0.3.1')
 
     print('[*] Host default routes configured to use FW as gateway')
 
@@ -215,23 +219,34 @@ def main() -> int:
     except Exception:
         auto_plc = '1'
     if auto_plc == '1':
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
+        # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
+        plc_hosts = [
+            ('h_plc',        'water'),
+            ('h_plc_gas',    'gas'),
+            ('h_plc_elec',   'elec'),
+            ('h_plc_trans',  'transport'),
+        ]
+        for host_name, plant_type in plc_hosts:
+            try:
+                h = net.get(host_name)
+                cmd = f'python3 {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
+                h.cmd(cmd)
+                print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
+            except KeyError:
+                print(f'[WARN] {host_name} not present; skipping')
+            except Exception as exc:
+                print(f'[ERROR] {host_name}: {exc}')
+
+        # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080)
         try:
-            h_plc = net.get('h_plc')
-            # Resolve repo root and start script path relative to this file
-            repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            plc_dir = os.path.join(repo_root, 'plc')
-            start_script = os.path.join(plc_dir, 'start_openplc.sh')
-            # Ensure script exists and is executable
-            h_plc.cmd(f'chmod +x {start_script} || true')
-            # Run start script inside h_plc namespace; use setsid to background inside ns
-            cmd = f'cd {plc_dir} && setsid bash {start_script} > /tmp/openplc.log 2>&1 &'
-            h_plc.cmd(cmd)
-            print('[*] PLC runtime start requested inside h_plc (check /tmp/openplc.log in host namespace)')
-        except KeyError:
-            # h_plc missing; continue without starting PLC
-            print('[WARN] h_plc host not present; skipping auto-start of PLC runtime')
+            scada = net.get('h_scada')
+            scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
+            scada.cmd(f'python3 {scada_script} > /tmp/h_scada.log 2>&1 &')
+            print('[*] h_scada (10.0.2.20): scada_server spawned on :8080')
         except Exception as exc:
-            print(f'[ERROR] Failed to auto-start PLC runtime inside h_plc: {exc}')
+            print(f'[WARN] h_scada auto-start skipped: {exc}')
 
     if args.test:
         try:

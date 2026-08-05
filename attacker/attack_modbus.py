@@ -10,7 +10,7 @@ Modes:
 Usage:
   python3 attacker/attack_modbus.py --host 10.0.3.10 --mode fault
 
-Requirements: pymodbus==2.5.3
+Requirements: pymodbus>=3.6
 """
 from __future__ import annotations
 
@@ -19,16 +19,17 @@ import logging
 import time
 from typing import Tuple
 
-from pymodbus.client.sync import ModbusTcpClient
-
-
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+try:
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    from pymodbus.client.sync import ModbusTcpClient
 LOGGER = logging.getLogger('attacker')
 
 
 def connect(host: str, port: int = 502, timeout: float = 3.0) -> ModbusTcpClient:
     client = ModbusTcpClient(host, port=port, timeout=timeout)
-    if not client.connect():
+    connected = client.connect()
+    if not connected:
         raise ConnectionError(f'Cannot connect to Modbus server at {host}:{port}')
     return client
 

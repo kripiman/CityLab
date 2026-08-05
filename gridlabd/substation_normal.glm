@@ -1,20 +1,133 @@
-// Minimal GridLAB-D model: normal operation
+// substation_normal.glm — Operación normal
+// Topología: subestación (SWING) → línea 500m → nodo distribución → 2 feeders
+//   feeder_city    : carga urbana general   ~400 kW
+//   feeder_hospital: carga crítica hospital ~150 kW (UPS backup disponible)
+//
+// Tensión nominal: 13.8 kV (distribución primaria típica ciudad pequeña)
+// Fases: ABC trifásico
+
 clock {
     timezone UTC;
+    starttime '2000-01-01 00:00:00';
+    stoptime  '2000-01-01 00:00:10';
 }
-module powerflow;
+
+module powerflow {
+    solver_method NR;
+}
+
+// ── Nodo raíz: subestación de transmisión ────────────────────────────────────
+object node {
+    name        substation;
+    phases      ABCN;
+    bustype     SWING;
+    nominal_voltage 7967.43;  // 13.8 kV L-L → 7967.43 V L-N
+    voltage_A   7967.43+0j;
+    voltage_B   -3983.72-6899.99j;
+    voltage_C   -3983.72+6899.99j;
+}
+
+// ── Línea de distribución: subestación → nodo de distribución ────────────────
+object overhead_line_conductor {
+    name        cond_acsr_336;
+    geometric_mean_radius 0.0244 ft;
+    resistance  0.306 Ohm/mile;
+    diameter    0.721 in;
+}
+
+object line_spacing {
+    name        spacing_dist;
+    distance_AB 2.5 ft;
+    distance_BC 4.5 ft;
+    distance_AC 7.0 ft;
+    distance_AN 5.656854 ft;
+    distance_BN 4.272002 ft;
+    distance_CN 5.0 ft;
+}
+
+object line_configuration {
+    name            lc_dist;
+    conductor_A     cond_acsr_336;
+    conductor_B     cond_acsr_336;
+    conductor_C     cond_acsr_336;
+    conductor_N     cond_acsr_336;
+    spacing         spacing_dist;
+}
+
+object overhead_line {
+    name        line_sub_to_dist;
+    phases      ABCN;
+    from        substation;
+    to          node_dist;
+    length      500 ft;
+    configuration lc_dist;
+}
+
+// ── Nodo de distribución (punto de bifurcación) ───────────────────────────────
+object node {
+    name        node_dist;
+    phases      ABCN;
+    nominal_voltage 7967.43;
+}
+
+// ── Feeder ciudad: carga urbana general ──────────────────────────────────────
+object overhead_line {
+    name        line_dist_to_city;
+    phases      ABCN;
+    from        node_dist;
+    to          node_city;
+    length      300 ft;
+    configuration lc_dist;
+}
 
 object node {
-    name substation;
-    phases ABC;
+    name        node_city;
+    phases      ABCN;
+    nominal_voltage 7967.43;
 }
 
 object load {
-    name city_load;
-    parent substation;
-    nominal_voltage 120.0;
-    constant_power_A 10000.0; // W (approx)
+    name            load_city;
+    parent          node_city;
+    phases          ABCN;
+    nominal_voltage 7967.43;
+    // ~400 kW distribuidos en 3 fases
+    constant_power_A 133333.33+40000j;
+    constant_power_B 133333.33+40000j;
+    constant_power_C 133333.33+40000j;
 }
 
-// run 1 second to produce outputs
-schedule { name: null; }
+// ── Feeder hospital: carga crítica con switch de protección ──────────────────
+object switch {
+    name        sw_hospital;
+    phases      ABCN;
+    from        node_dist;
+    to          node_hospital;
+    status      CLOSED;
+}
+
+object node {
+    name        node_hospital;
+    phases      ABCN;
+    nominal_voltage 7967.43;
+}
+
+object load {
+    name            load_hospital;
+    parent          node_hospital;
+    phases          ABCN;
+    nominal_voltage 7967.43;
+    // ~150 kW carga crítica (quirófanos, UCI, refrigeración)
+    constant_power_A 50000+15000j;
+    constant_power_B 50000+15000j;
+    constant_power_C 50000+15000j;
+}
+
+// ── Recorder: captura voltaje en nodo hospital para HELICS ───────────────────
+object recorder {
+    name        rec_hospital_voltage;
+    parent      node_hospital;
+    property    voltage_A.real,voltage_A.imag;
+    interval    1;
+    file        /dev/null;
+}

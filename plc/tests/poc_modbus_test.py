@@ -9,7 +9,7 @@ Tests performed:
  - Issue STOP (coil 1) and expect coil 2 cleared within 10s
  - Issue START+STOP simultaneously and expect fault coil 3 set
 
-Requires pymodbus==2.5.3
+Requires pymodbus>=3.6
 """
 from __future__ import annotations
 
@@ -17,7 +17,6 @@ import argparse
 import time
 from typing import Tuple
 
-from pymodbus.client.sync import ModbusTcpClient
 
 
 def read_coils(client: ModbusTcpClient, count: int = 4) -> Tuple[int, ...]:
@@ -50,7 +49,8 @@ def main() -> int:
     args = parser.parse_args()
 
     client = ModbusTcpClient(args.host, port=args.port)
-    if not client.connect():
+    connected = client.connect()
+    if not connected:
         print('[ERROR] Cannot connect to PLC Modbus server')
         return 2
 

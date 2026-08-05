@@ -114,7 +114,7 @@ if [ "$MININET_DETACH" = "1" ]; then
     echo "    Logs en: $LOG_DIR/"
     echo "    Para detener: sudo kill $BROKER_PID $ICSSIM_PID $GRID_PID \$NET_PID"
     # Detached: usar setsid y desconectar stdin para evitar dejar el pty colgado
-    sudo setsid env PYTHONPATH="$BASE_DIR" python3 "$BASE_DIR/network/topology.py" </dev/null > "$LOG_DIR/network.log" 2>&1 &
+    setsid env PYTHONPATH="$BASE_DIR" python3 "$BASE_DIR/network/topology.py" </dev/null > "$LOG_DIR/network.log" 2>&1 &
     NET_PID=$!
     echo "    Mininet PID: $NET_PID"
 else
@@ -123,6 +123,6 @@ else
     echo "    Logs en: $LOG_DIR/"
     echo "    Para detener (procesos en background): sudo kill $BROKER_PID $ICSSIM_PID $GRID_PID"
     # Interactivo: ejecutar en primer plano (no background) para que Mininet use el tty
-    sudo env PYTHONPATH="$BASE_DIR" python3 "$BASE_DIR/network/topology.py" 2>&1 | tee "$LOG_DIR/network.log"
+    env PYTHONPATH="$BASE_DIR" python3 "$BASE_DIR/network/topology.py" 2>&1 | tee "$LOG_DIR/network.log"
     NET_PID=""
 fi   

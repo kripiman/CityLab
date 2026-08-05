@@ -1,114 +1,132 @@
 #!/usr/bin/env python3
-"""Simple Modbus/TCP emulator for PoC PLC (fallback when OpenPLC not present).
-Exposes coils:
- - coil 0 -> pump_start (command)
- - coil 1 -> pump_stop
- - coil 2 -> pump_running (state, output)
- - coil 3 -> pump_fault
+"""Modbus/TCP emulator — fallback PLC para PoC.
 
-Behaviour mimics the ST program: start has 5s on-delay, stop has 3s on-delay.
+Coils (idénticos para todos los tipos de planta):
+  0 -> actuator_start   (comando arranque)
+  1 -> actuator_stop    (comando parada)
+  2 -> actuator_running (estado, salida)
+  3 -> actuator_fault   (fallo, salida)
+
+Uso:
+  python3 plc/modbus_emulator.py --plant-type water --port 502
+  python3 plc/modbus_emulator.py --plant-type gas   --port 502
+  python3 plc/modbus_emulator.py --plant-type elec  --port 502
 """
 from __future__ import annotations
 
+import argparse
 import logging
 import threading
 import time
 from typing import List
 
-from pymodbus.server.sync import StartTcpServer
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.datastore import ModbusSequentialDataBlock
+try:
+    from pymodbus.server import StartTcpServer
+except ImportError:
+    from pymodbus.server.sync import StartTcpServer
 
-LOGGER = logging.getLogger('modbus_emulator')
-logging.basicConfig(level=logging.INFO)
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext, ModbusSlaveContext
 
-START_DELAY = 5.0
-STOP_DELAY = 3.0
+# Parámetros de temporización por tipo de planta (start_delay, stop_delay) en segundos
+_PLANT_TIMINGS = {
+    'water': (5.0, 3.0),
+    'gas':   (8.0, 5.0),  # válvulas de gas: delays más conservadores
+    'elec':  (2.0, 1.0),  # disyuntores: respuesta rápida
+    'transport': (1.0, 1.0), # semáforos: respuesta instantánea
+}
+
 POLL_INTERVAL = 0.5
 
 
-class PumpEmulator:
-    def __init__(self, context: ModbusServerContext):
+class ActuatorEmulator:
+    """Emula la lógica ST del PLC: TON arranque/parada y detección de fallo."""
+
+    def __init__(self, context: ModbusServerContext, start_delay: float, stop_delay: float, name: str) -> None:
         self.context = context
-        self._lock = threading.Lock()
+        self.start_delay = start_delay
+        self.stop_delay = stop_delay
+        self._logger = logging.getLogger(f'modbus_emulator.{name}')
         self._pending_start_ts = 0.0
         self._pending_stop_ts = 0.0
-        self._pump_running = False
-        self._pump_fault = False
+        self._running = False
         self._stopped = threading.Event()
 
-    def read_coils(self, count: int = 4) -> List[int]:
-        slave_id = 0x00
-        vals = self.context[slave_id].getValues(1, 0, count)
-        return vals
+    def _read_coils(self, count: int = 4) -> List[int]:
+        return self.context[0x00].getValues(1, 0, count)
 
-    def write_coil(self, addr: int, value: int) -> None:
-        slave_id = 0x00
-        self.context[slave_id].setValues(1, addr, [int(value)])
+    def _write_coil(self, addr: int, value: int) -> None:
+        self.context[0x00].setValues(1, addr, [int(value)])
 
     def loop(self) -> None:
-        LOGGER.info('Pump emulator loop starting')
+        self._logger.info('Actuator loop starting (start_delay=%.1fs stop_delay=%.1fs)',
+                          self.start_delay, self.stop_delay)
         while not self._stopped.is_set():
-            coils = self.read_coils(4)
-            start_cmd = bool(coils[0])
-            stop_cmd = bool(coils[1])
-
-            # Fault: start and stop simultaneously
-            self._pump_fault = start_cmd and stop_cmd
-
+            coils = self._read_coils(4)
+            start_cmd, stop_cmd = bool(coils[0]), bool(coils[1])
+            fault = start_cmd and stop_cmd
             now = time.time()
-            if start_cmd and not self._pump_running:
+
+            if start_cmd and not self._running:
                 if self._pending_start_ts == 0.0:
-                    self._pending_start_ts = now + START_DELAY
-                    LOGGER.info('Start command seen, will start at %s', self._pending_start_ts)
+                    self._pending_start_ts = now + self.start_delay
             else:
                 self._pending_start_ts = 0.0
 
-            if stop_cmd and self._pump_running:
+            if stop_cmd and self._running:
                 if self._pending_stop_ts == 0.0:
-                    self._pending_stop_ts = now + STOP_DELAY
-                    LOGGER.info('Stop command seen, will stop at %s', self._pending_stop_ts)
+                    self._pending_stop_ts = now + self.stop_delay
             else:
                 self._pending_stop_ts = 0.0
 
-            if self._pending_start_ts and now >= self._pending_start_ts and not self._pump_running:
-                self._pump_running = True
-                LOGGER.info('Pump transitioned to RUNNING')
-                self.write_coil(2, 1)
+            if self._pending_start_ts and now >= self._pending_start_ts and not self._running:
+                self._running = True
+                self._logger.info('Actuator → RUNNING')
+                self._write_coil(2, 1)
 
-            if self._pending_stop_ts and now >= self._pending_stop_ts and self._pump_running:
-                self._pump_running = False
-                LOGGER.info('Pump transitioned to STOPPED')
-                self.write_coil(2, 0)
+            if self._pending_stop_ts and now >= self._pending_stop_ts and self._running:
+                self._running = False
+                self._logger.info('Actuator → STOPPED')
+                self._write_coil(2, 0)
 
-            # Update fault coil
-            self.write_coil(3, 1 if self._pump_fault else 0)
-
+            self._write_coil(3, 1 if fault else 0)
             time.sleep(POLL_INTERVAL)
-
-        LOGGER.info('Pump emulator loop stopped')
 
     def stop(self) -> None:
         self._stopped.set()
 
 
-def run_server() -> None:
-    # 100 coils available
+def run_server(host: str, port: int, plant_type: str) -> None:
+    start_delay, stop_delay = _PLANT_TIMINGS[plant_type]
+    logger = logging.getLogger('modbus_emulator')
+
     store = ModbusSlaveContext(co=ModbusSequentialDataBlock(0, [0] * 100))
     context = ModbusServerContext(slaves=store, single=True)
 
-    pump = PumpEmulator(context)
-    t = threading.Thread(target=pump.loop, daemon=True)
+    actuator = ActuatorEmulator(context, start_delay, stop_delay, plant_type)
+    t = threading.Thread(target=actuator.loop, daemon=True)
     t.start()
 
-    LOGGER.info('Starting Modbus TCP server on 0.0.0.0:502')
+    logger.info('Starting Modbus TCP server [%s] on %s:%d', plant_type, host, port)
     try:
-        StartTcpServer(context, address=("0.0.0.0", 502))
+        StartTcpServer(context, address=(host, port))
     except Exception:
-        LOGGER.exception('Modbus server terminated')
+        logger.exception('Modbus server terminated')
     finally:
-        pump.stop()
+        actuator.stop()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Modbus/TCP PLC emulator')
+    parser.add_argument('--plant-type', choices=list(_PLANT_TIMINGS), default='water',
+                        help='Tipo de planta: water | gas | elec (default: water)')
+    parser.add_argument('--host', default='0.0.0.0', help='Bind address (default: 0.0.0.0)')
+    parser.add_argument('--port', type=int, default=502, help='Modbus TCP port (default: 502)')
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO,
+                        format=f'[%(levelname)s][{args.plant_type}] %(message)s')
+    run_server(args.host, args.port, args.plant_type)
 
 
 if __name__ == '__main__':
-    run_server()
+    main()
