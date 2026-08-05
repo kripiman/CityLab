@@ -19,7 +19,7 @@ echo "Detected distro: $NAME (ID=$id)"
 install_pip_pkgs() {
   echo "[+] Installing Python packages system-wide (pymodbus, python-dotenv, scapy, helics)"
   python3 -m pip install --upgrade pip || true
-  python3 -m pip install pymodbus==2.5.3 python-dotenv==1.0.1 scapy==2.5.0 helics==3.4.0 || true
+  python3 -m pip install pymodbus==3.6.4 python-dotenv==1.1.0 scapy==2.6.1 helics==3.4.0 || true
 }
 
 if [[ $id =~ (fedora|nobara|rhel) ]]; then
@@ -74,7 +74,7 @@ Next steps:
   3) Start Mininet interactively: sudo python3 network/topology.py
 
 If Python packages fail to be importable under sudo, run:
-  sudo python3 -m pip install pymodbus==2.5.3 python-dotenv==1.0.1 scapy==2.5.0 helics==3.4.0
+  sudo python3 -m pip install pymodbus==3.6.4 python-dotenv==1.1.0 scapy==2.6.1 helics==3.4.0
 or use the script again as root.
 
 EOF

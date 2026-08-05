@@ -26,8 +26,13 @@ import os
 import time
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Optional
 
 import helics as h
+try:
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    from pymodbus.client.sync import ModbusTcpClient
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger('fed_hospital')
@@ -47,6 +52,7 @@ class PowerState(Enum):
     GRID_NORMAL = 'GRID_NORMAL'
     UPS_ACTIVE = 'UPS_ACTIVE'
     GENERATOR_ONLINE = 'GENERATOR_ONLINE'
+    CRITICAL_BLACKOUT = 'CRITICAL_BLACKOUT'
 
 
 @dataclass
@@ -58,7 +64,7 @@ class HospitalPlant:
     state: PowerState = PowerState.GRID_NORMAL
     _gen_start_ts: float = field(default=float('inf'), repr=False)
 
-    def update(self, voltage_pu: float, freq_hz: float, dt: float) -> tuple[float, int]:
+    def update(self, voltage_pu: float, freq_hz: float, dt: float, suppress_generator: bool = False) -> tuple[float, int]:
         """Actualiza estado del hospital. Retorna (load_kw_on_grid, on_ups_flag)."""
         grid_ok = voltage_pu >= VOLTAGE_LOW_PU and freq_hz >= FREQ_LOW_HZ
 
@@ -73,12 +79,13 @@ class HospitalPlant:
             self.ups_energy_kwh -= (self.base_load_kw * dt) / 3600.0
             self.ups_energy_kwh = max(0.0, self.ups_energy_kwh)
 
-            if time.monotonic() >= self._gen_start_ts:
+            if not suppress_generator and time.monotonic() >= self._gen_start_ts:
                 LOGGER.warning('Generator online → hospital autonomous')
                 self.state = PowerState.GENERATOR_ONLINE
 
             if self.ups_energy_kwh <= 0.0:
-                LOGGER.error('UPS depleted before generator online — critical failure')
+                LOGGER.error('UPS depleted and generator blocked — CRITICAL HOSPITAL BLACKOUT')
+                self.state = PowerState.CRITICAL_BLACKOUT
 
             if grid_ok:
                 LOGGER.info('Grid restored → returning to GRID_NORMAL')

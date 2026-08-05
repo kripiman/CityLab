@@ -75,19 +75,25 @@ class ElecPlant:
     frequency_hz: float = 60.0
     p_gen_pu: float = 1.0       # generación activa en pu
     p_load_pu: float = 1.0      # carga activa en pu (actualizable desde hospital)
-    inertia_h: float = 4.0      # constante de inercia H (s)
+    inertia_h: float = 4.0      # constante de inercia H (s) — típico 3-6 s en distribución
     f0: float = 60.0            # frecuencia nominal
     f_min: float = 45.0         # límite inferior absoluto (protección)
     f_max: float = 65.0         # límite superior absoluto
+    gas_available: bool = True  # 30% de la generación depende del suministro de gas (gas-fired turbine)
 
     def step(self, generation_trip: bool, dt: float = 1.0) -> float:
         """Avanza la frecuencia un paso dt.
 
         generation_trip=True simula pérdida súbita de generación (P_gen → 0).
-        La carga p_load_pu puede actualizarse externamente antes de llamar step()
-        para modelar el efecto del hospital activando su UPS (reduce demanda de red).
+        gas_available=False reduce P_gen en un 30% (pérdida de turbinas a gas).
         """
-        p_gen = 0.0 if generation_trip else self.p_gen_pu
+        if generation_trip:
+            p_gen = 0.0
+        elif not self.gas_available:
+            p_gen = self.p_gen_pu * 0.70  # Pérdida del 30% de generación alimentada por gas
+        else:
+            p_gen = self.p_gen_pu
+
         df_dt = (p_gen - self.p_load_pu) / (2.0 * self.inertia_h)
         self.frequency_hz += df_dt * dt
         self.frequency_hz = max(self.f_min, min(self.f_max, self.frequency_hz))

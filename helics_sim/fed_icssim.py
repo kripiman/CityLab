@@ -43,11 +43,12 @@ def create_federate(fed_name: str, plant_type: str) -> tuple[h.helics_federate, 
     if plant_type == "gas":
         pub_val = h.helicsFederateRegisterGlobalPublication(fed, "gas/pressure", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_trip = h.helicsFederateRegisterGlobalPublication(fed, "gas/trip", h.HELICS_DATA_TYPE_INT, "")
-        sub_input = None
+        sub_input = h.helicsFederateRegisterSubscription(fed, "grid/voltage_pu", "")
     elif plant_type == "elec":
         pub_val = h.helicsFederateRegisterGlobalPublication(fed, "grid/frequency", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_trip = h.helicsFederateRegisterGlobalPublication(fed, "grid/trip", h.HELICS_DATA_TYPE_INT, "")
         sub_input = h.helicsFederateRegisterSubscription(fed, "hospital/load_kw", "")
+        pub_t1 = h.helicsFederateRegisterSubscription(fed, "gas/trip", "")  # reutilizado como sub_gas_trip para elec
     else:  # water
         pub_val  = h.helicsFederateRegisterGlobalPublication(fed, "water/t2_level", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_t1   = h.helicsFederateRegisterGlobalPublication(fed, "water/t1_level", h.HELICS_DATA_TYPE_DOUBLE, "")
@@ -147,13 +148,28 @@ def main() -> int:
                     h.helicsPublicationPublishDouble(pub_t1, float(t1))
                 LOGGER.info('[water] t=%.1f T1=%.2fm3 T2=%.2fm3 power=%s trip=%d',
                             current_time, t1, t2, power_available, 1 if plant.needs_trip() else 0)
+            elif args.plant_type == 'gas' and isinstance(plant, GasPlant):
+                power_available = True
+                if sub_input is not None:
+                    v_pu = h.helicsInputGetDouble(sub_input)
+                    if v_pu > 0.0:
+                        power_available = (v_pu >= 0.85)
+                # Gas: válvula solo abre si hay energía eléctrica para control/compresores
+                valve_open = actuator_state and power_available
+                val = plant.step(valve_open, dt=POLL_INTERVAL)
+                LOGGER.info('[gas] t=%.1f pressure=%.1fpsi valve=%s power=%s trip=%d',
+                            current_time, val, valve_open, power_available, 1 if plant.needs_trip() else 0)
             else:
-                # Interdependencia real: actualizar p_load_pu ANTES de step()
-                if args.plant_type == 'elec' and sub_input is not None and isinstance(plant, ElecPlant):
-                    hospital_kw = h.helicsInputGetDouble(sub_input)
-                    hospital_pu = hospital_kw / 550.0
-                    city_pu = 400.0 / 550.0
-                    plant.p_load_pu = city_pu + hospital_pu
+                # Interdependencia real: actualizar p_load_pu y gas_available ANTES de step()
+                if args.plant_type == 'elec' and isinstance(plant, ElecPlant):
+                    if sub_input is not None:
+                        hospital_kw = h.helicsInputGetDouble(sub_input)
+                        hospital_pu = hospital_kw / 550.0
+                        city_pu = 400.0 / 550.0
+                        plant.p_load_pu = city_pu + hospital_pu
+                    if pub_t1 is not None:
+                        g_trip = h.helicsInputGetInteger(pub_t1)
+                        plant.gas_available = (g_trip == 0)
 
                 val = plant.step(
                     not actuator_state if args.plant_type == 'elec' else actuator_state,

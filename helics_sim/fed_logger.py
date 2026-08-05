@@ -51,6 +51,7 @@ def main() -> int:
 
     sub_grid_val = h.helicsFederateRegisterSubscription(fed, 'grid/frequency', '')
     sub_grid_trip = h.helicsFederateRegisterSubscription(fed, 'grid/trip', '')
+    sub_grid_voltage = h.helicsFederateRegisterSubscription(fed, 'grid/voltage_pu', '')
 
     sub_hospital_load = h.helicsFederateRegisterSubscription(fed, 'hospital/load_kw', '')
     sub_hospital_ups  = h.helicsFederateRegisterSubscription(fed, 'hospital/on_ups', '')
@@ -66,7 +67,7 @@ def main() -> int:
         writer.writerow(['timestamp_s',
                           'water_t1_m3', 'water_t2_m3', 'water_trip',
                           'gas_pressure_psi', 'gas_trip',
-                          'grid_freq_hz', 'grid_trip',
+                          'grid_freq_hz', 'grid_trip', 'grid_voltage_pu',
                           'hospital_load_kw', 'hospital_on_ups',
                           'transport_congestion', 'transport_trip',
                           'cascade_alert'])
@@ -87,6 +88,7 @@ def main() -> int:
 
                 e_val = h.helicsInputGetDouble(sub_grid_val)
                 e_trip = h.helicsInputGetInteger(sub_grid_trip)
+                e_voltage = h.helicsInputGetDouble(sub_grid_voltage)
 
                 h_load = h.helicsInputGetDouble(sub_hospital_load)
                 h_ups  = h.helicsInputGetInteger(sub_hospital_ups)
@@ -102,14 +104,14 @@ def main() -> int:
                 writer.writerow([f"{current_time:.1f}",
                                   f"{w_t1:.2f}", f"{w_t2:.2f}", w_trip,
                                   f"{g_val:.2f}", g_trip,
-                                  f"{e_val:.2f}", e_trip,
+                                  f"{e_val:.2f}", e_trip, f"{e_voltage:.3f}",
                                   f"{h_load:.1f}", h_ups,
                                   f"{tr_cong:.2f}", tr_trip,
                                   alert])
                 f.flush()
 
-                LOGGER.info('t=%.1fs | W T1=%.2f T2=%.2f(t=%d) Gas=%.1fpsi(t=%d) Grid=%.1fHz(t=%d) Hosp=%.1fkW(ups=%d) Trans=%.2f(t=%d) [%s]',
-                            current_time, w_t1, w_t2, w_trip, g_val, g_trip, e_val, e_trip, h_load, h_ups, tr_cong, tr_trip, alert)
+                LOGGER.info('t=%.1fs | W T1=%.2f T2=%.2f(t=%d) Gas=%.1fpsi(t=%d) Grid=%.1fHz(t=%d V=%.3f) Hosp=%.1fkW(ups=%d) Trans=%.2f(t=%d) [%s]',
+                            current_time, w_t1, w_t2, w_trip, g_val, g_trip, e_val, e_trip, e_voltage, h_load, h_ups, tr_cong, tr_trip, alert)
 
                 steps += 1
                 if MAX_STEPS > 0 and steps >= MAX_STEPS:

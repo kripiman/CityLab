@@ -70,12 +70,13 @@ class Iec62443Topo(Topo):
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
         scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
 
-        # OT hosts: water PLC (10.0.3.10) + gas (10.0.3.12) + elec (10.0.3.13) + trans (10.0.3.14)
+        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15)
         plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
         icssim    = self.addHost('h_icssim',     ip='10.0.3.11/24')
         plc_gas   = self.addHost('h_plc_gas',    ip='10.0.3.12/24')
         plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
         plc_trans = self.addHost('h_plc_trans',  ip='10.0.3.14/24')
+        plc_hosp  = self.addHost('h_plc_hosp',   ip='10.0.3.15/24')
 
         # Links (order determines fw-eth names)
         self.addLink(fw, s_corp)
@@ -91,6 +92,7 @@ class Iec62443Topo(Topo):
         self.addLink(s_ot, plc_gas)
         self.addLink(s_ot, plc_elec)
         self.addLink(s_ot, plc_trans)
+        self.addLink(s_ot, plc_hosp)
 
 
 def apply_fw_configuration(fw: Node) -> None:
@@ -119,7 +121,7 @@ def apply_fw_configuration(fw: Node) -> None:
     fw.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
 
     # Permit DMZ -> OT Modbus/TCP (port 502) to all PLCs
-    for plc_ip in ('10.0.3.10', '10.0.3.12', '10.0.3.13', '10.0.3.14'):
+    for plc_ip in ('10.0.3.10', '10.0.3.12', '10.0.3.13', '10.0.3.14', '10.0.3.15'):
         fw.cmd(f"iptables -A FORWARD -i fw-eth1 -o fw-eth2 -p tcp --dport 502 -d {plc_ip} -j ACCEPT")
         fw.cmd(f"iptables -A FORWARD -i fw-eth2 -o fw-eth1 -p tcp --sport 502 -s {plc_ip} -j ACCEPT")
 
@@ -227,6 +229,7 @@ def main() -> int:
             ('h_plc_gas',    'gas'),
             ('h_plc_elec',   'elec'),
             ('h_plc_trans',  'transport'),
+            ('h_plc_hosp',   'elec'),
         ]
         for host_name, plant_type in plc_hosts:
             try:

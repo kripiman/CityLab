@@ -39,4 +39,4 @@ Para validar la federación de 7 procesos sin Mininet:
 
 ## 4. Escenarios CTF Disponibles
 
-- [Escenario 01: Apagón Urbano en Cascada](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios/scenario_01_cascading_blackout.md)
+- [Escenario 01: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)

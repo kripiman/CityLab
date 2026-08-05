@@ -21,6 +21,8 @@ TARGET_PLCS: Dict[str, str] = {
     'water': '10.0.3.10',
     'gas':   '10.0.3.12',
     'elec':  '10.0.3.13',
+    'transport': '10.0.3.14',
+    'hospital':  '10.0.3.15',
 }
 
 
@@ -89,7 +91,7 @@ def execute_cascading_attack(target_sector: str, mode: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="CityLab Phase 2 Multi-Sector Attack Utility")
-    parser.add_argument("--sector", choices=['water', 'gas', 'elec', 'all'], default='all', help="Target plant sector")
+    parser.add_argument("--sector", choices=['water', 'gas', 'elec', 'transport', 'hospital', 'all'], default='all', help="Target plant sector")
     parser.add_argument("--mode", choices=['start', 'stop', 'fault'], default='fault', help="Attack payload mode")
     args = parser.parse_args()
 

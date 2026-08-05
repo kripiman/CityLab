@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import time
 from typing import Tuple
+from pymodbus.client import ModbusTcpClient
 
 
 

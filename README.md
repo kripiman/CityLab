@@ -45,10 +45,10 @@
 
 ## 📚 Documentación Técnica Completa
 
-- 📋 **[Especificación de Requisitos ERS (IEEE-830)](file:///home/kripi/Documentos/GitHub/CityLab/docs/ERS.md)**: Requisitos funcionales y no funcionales del sistema.
-- 🏗️ **[Guía de Arquitectura Ciberfísica](file:///home/kripi/Documentos/GitHub/CityLab/docs/ARCHITECTURE.md)**: Diagramas Mermaid, ecuaciones de swing, topología HELICS y mapas Modbus.
-- 🛠️ **[Guía de Operaciones y Playbook](file:///home/kripi/Documentos/GitHub/CityLab/docs/OPERATIONS.md)**: Manual de despliegue, scripts de automatización y comandos de ataque.
-- 🚩 **[Escenario CTF 01: Apagón Urbano en Cascada](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios/scenario_01_cascading_blackout.md)**: Desafío estilo TryHackMe / HackTheBox.
+- 📋 **[Especificación de Requisitos ERS (IEEE-830)](docs/ERS.md)**: Requisitos funcionales y no funcionales del sistema.
+- 🏗️ **[Guía de Arquitectura Ciberfísica](docs/ARCHITECTURE.md)**: Diagramas Mermaid, ecuaciones de swing, topología HELICS y mapas Modbus.
+- 🛠️ **[Guía de Operaciones y Playbook](docs/OPERATIONS.md)**: Manual de despliegue, scripts de automatización y comandos de ataque.
+- 🚩 **[Escenario CTF 01: Apagón Urbano en Cascada](docs/scenarios/scenario_01_cascading_blackout.md)**: Desafío estilo TryHackMe / HackTheBox.
 
 ---
 
