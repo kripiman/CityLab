@@ -1,10 +1,11 @@
-# Arquitectura del Cyber Range (Fase 1)
+# Arquitectura del Cyber Range CityLab (Fase 3 Ciudad Completa)
 
 ## Contexto del Proyecto
 
-Cyber Range 100% software para simular incidentes cibernéticos en infraestructura crítica (ICS/SCADA).
-- **Entorno**: Ejecución nativa en Linux sin máquinas virtuales pesadas.
-- **Eficiencia**: Bajo consumo de memoria RAM (<1 GB en total).
+Cyber Range 100% software para simulación de ciberguerra y hacking ético en infraestructuras críticas urbanas (ICS/SCADA).
+- **Entorno**: Ejecución nativa sobre Linux (Debian/Athena OS) sin sobrecarga de máquinas virtuales.
+- **Presupuesto de Memoria**: <1.5 GB RAM para la federación completa de 7 procesos y red Mininet.
+- **Fase 3**: Co-Simulación Multisectorial de Ciudad Completa (Agua SWaT 2 Etapas, Gas, Red Eléctrica 13.8 kV, Hospital con Failover, Red de Transporte/Semáforos y Servidor SCADA Central).
 
 ---
 
@@ -14,94 +15,102 @@ Topología emulada por Mininet con tres zonas aisladas mediante un firewall (`ip
 
 ```mermaid
 graph TD
-    subgraph CorpZone ["1. Corporate (10.0.1.0/24)"]
+    subgraph CorpZone ["1. Corporate Zone (10.0.1.0/24)"]
         h_attacker["h_attacker (10.0.1.10)"]
     end
 
     subgraph DmzZone ["2. DMZ (10.0.2.0/24)"]
         h_dmz["h_dmz (10.0.2.10)"]
+        h_scada["h_scada SCADA Server (10.0.2.20:8080)"]
     end
 
     subgraph OtZone ["3. OT Cell (10.0.3.0/24)"]
-        h_plc["h_plc (10.0.3.10)"]
-        h_icssim["h_icssim (10.0.3.11)"]
+        h_plc_water["h_plc (Water 10.0.3.10)"]
+        h_plc_gas["h_plc_gas (Gas 10.0.3.12)"]
+        h_plc_elec["h_plc_elec (Elec 10.0.3.13)"]
+        h_plc_trans["h_plc_trans (Transport 10.0.3.14)"]
     end
 
     fw["Firewall (fw)"]
 
     h_attacker <--> fw-eth0
     h_dmz <--> fw-eth1
-    h_plc <--> fw-eth2
-    h_icssim <--> fw-eth2
+    h_scada <--> fw-eth1
+    h_plc_water <--> fw-eth2
+    h_plc_gas <--> fw-eth2
+    h_plc_elec <--> fw-eth2
+    h_plc_trans <--> fw-eth2
 
     classDef zone fill:#2a2a2a,stroke:#444,stroke-width:2px;
     class CorpZone,DmzZone,OtZone zone;
 ```
 
-### Reglas de Acceso (Firewall)
-- **Corporate -> OT**: DENEGADO (Bloqueo total).
-- **DMZ -> OT**: PERMITIDO tráfico Modbus/TCP (puerto `502`) hacia el PLC (`10.0.3.10`).
+---
+
+## Módulos Físicos e Interdependencias Ciberfísicas (Fase 3)
+
+### 1. Sector Eléctrico (`ElecPlant` + GridLAB-D)
+- **Física**: Ecuación de swing síncrona:
+  $$\frac{df}{dt} = \frac{P_{gen} - P_{load}}{2 \cdot H}$$
+  donde $H = 4.0\text{ s}$ es la constante de inercia y la base del alimentador es de $550\text{ kW}$ ($1.0\text{ pu}$).
+
+### 2. Sector Hospital (`fed_hospital.py`)
+- **Física**: Carga crítica de $150\text{ kW}$, sistema UPS de $75\text{ kWh}$ ($30\text{ min}$) y generador diésel de emergencia.
+- **Failover Automático**: Transición a `UPS_ACTIVE` si $V_{grid} < 0.85\text{ pu}$ o $f < 58.0\text{ Hz}$.
+
+### 3. Sector Agua SWaT Multi-Etapa (`TwoStageWaterPlant`)
+- **Física**: Reservorio Crudo $\xrightarrow{\text{Bomba P1}}$ Tanque Sedimentador T1 ($20\text{ m}^3$) $\xrightarrow{\text{Bomba P2}}$ Tanque Distribución T2 ($30\text{ m}^3$).
+- **Dependencia Eléctrica**: Bomba P1 se detiene si $V_{grid} < 0.85\text{ pu}$.
+
+### 4. Sector Transporte / Semáforos (`TrafficLightIntersection` / `fed_transport.py`)
+- **Física**: Intersección urbana de 4 fases.
+- **Dependencia Eléctrica**: Si $V_{grid} < 0.85\text{ pu}$, los semáforos entran en fallo `FLASHING_YELLOW_EMERGENCY`, incrementando el índice de congestión vehicular hacia $1.0$ (bloqueo total).
 
 ---
 
-## Cadena de Ataque y Co-Simulación (End-to-End)
-
-El flujo de control ciberfísico está orquestado por HELICS 3.x y sincronizado en tiempo real (1 paso de simulación = 1 segundo real):
+## Matriz de Co-Simulación HELICS (7 Federados)
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Atacante as h_dmz (Ataque)
-    participant PLC as h_plc (OpenPLC)
-    participant ICSSIM as fed_icssim (Física)
-    participant Broker as HELICS Broker
-    participant Grid as gridlabd_federate (Eléctrica)
-
-    Note over Atacante, Grid: Estado Normal: Bomba OFF, Nivel Tanque baja (fuga)
-    Atacante->>PLC: Modbus Write Coil 0 = True (Forzar arranque bomba)
-    Note over PLC: safety delay (TON 5s)
-    PLC->>PLC: Transición a RUNNING (Coil 2 = True)
-    
-    loop Co-Simulación (1s / paso)
-        ICSSIM->>PLC: Leer Coil 2 (Estado Bomba)
-        PLC-->>ICSSIM: Retorna pump_running = True
-        Note over ICSSIM: Avanzar nivel tanque (inflow +1.0 m3/s)
-        ICSSIM->>Broker: Publicar tank/level (nivel actual)
-        ICSSIM->>Broker: Publicar breaker/trip (0 = normal, 1 = trip)
-        Broker->>Grid: Propagar datos publicados
-        Note over ICSSIM: Si nivel > 19.0 m3, cambiar trip = 1
+graph LR
+    subgraph GridFed ["gridlabd_federate / fed_gridmock"]
+        pub_v["grid/voltage_pu"]
     end
 
-    Note over Grid: Nivel supera 95% capacidad (trip = 1)
-    Grid->>Grid: Parar Normal GLM
-    Grid->>Grid: Iniciar Tripped GLM (Disparar disyuntor subestación)
+    subgraph ElecFed ["fed_icssim (elec)"]
+        pub_freq["grid/frequency"]
+        pub_etrip["grid/trip"]
+    end
+
+    subgraph HospFed ["fed_hospital.py"]
+        pub_hload["hospital/load_kw"]
+        pub_hups["hospital/on_ups"]
+    end
+
+    subgraph WaterFed ["fed_icssim (water)"]
+        pub_t1["water/t1_level"]
+        pub_t2["water/t2_level"]
+        pub_wtrip["breaker/trip"]
+    end
+
+    subgraph TransFed ["fed_transport.py"]
+        pub_tcong["transport/congestion"]
+        pub_ttrip["transport/trip"]
+    end
+
+    subgraph LoggerFed ["fed_logger.py"]
+        csv["cascading_events.csv"]
+    end
+
+    pub_v --> HospFed
+    pub_v --> WaterFed
+    pub_v --> TransFed
+    pub_freq --> HospFed
+    pub_hload --> ElecFed
+
+    pub_freq --> LoggerFed
+    pub_etrip --> LoggerFed
+    pub_hups --> LoggerFed
+    pub_wtrip --> LoggerFed
+    pub_tcong --> LoggerFed
+    pub_ttrip --> LoggerFed
 ```
-
----
-
-## Lógica Física y de Control
-
-### 1. Lógica del PLC
-- **IEC 61131-3 (Structured Text)**:
-  - Entrada: `pump_start` (Coil 0), `pump_stop` (Coil 1).
-  - Salida: `pump_running` (Coil 2), `pump_fault` (Coil 3).
-  - Control de seguridad: Si `pump_start` y `pump_stop` activos a la vez, activa `pump_fault` y detiene bomba.
-
-### 2. Modelo Físico (Bomba y Tanque)
-- **Capacidad Tanque**: 20.0 m³
-- **Nivel Inicial**: 10.0 m³
-- **Tasa de Llenado**: 1.0 m³/s (bomba encendida)
-- **Tasa de Fuga**: 0.001 m³/s (bomba apagada)
-- **Criterio de Disparo (Trip)**:
-  - Nivel crítico superior: > 19.0 m³ (95% capacidad).
-  - Nivel crítico inferior: < 1.0 m³.
-
----
-
-## Simplificaciones de Diseño (Ponytail Notes)
-
-- **OpenPLC Fallback**:
-  <!-- ponytail: OpenPLC Fallback (Ceiling: No corre Structured Text nativo. Upgrade: Compilar e integrar OpenPLC completo en h_plc) -->
-  Si OpenPLC no está en el host, se levanta el emulador Python (`modbus_emulator.py`) emulando bobinas y retardos en el puerto `502`.
-- **Uso de pymodbus en lugar de scapy**:
-  `pymodbus` ofrece una abstracción limpia del protocolo sin necesidad de generar y calcular checksums IP/TCP de forma manual.
