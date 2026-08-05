@@ -33,6 +33,13 @@ def main() -> int:
     fed = h.helicsCreateValueFederate(fed_name, fi)
 
     sub_trip = h.helicsFederateRegisterSubscription(fed, "breaker/trip", "")
+    sub_gas_trip   = h.helicsFederateRegisterSubscription(fed, "gas/trip", "")
+    sub_grid_trip  = h.helicsFederateRegisterSubscription(fed, "grid/trip", "")
+    sub_trans_trip = h.helicsFederateRegisterSubscription(fed, "transport/trip", "")
+    sub_hospital_load = h.helicsFederateRegisterSubscription(fed, "hospital/load_kw", "")
+
+    pub_voltage = h.helicsFederateRegisterGlobalPublication(
+        fed, "grid/voltage_pu", h.HELICS_DATA_TYPE_DOUBLE, "")
 
     h.helicsFederateEnterExecutingMode(fed)
     LOGGER.info(
@@ -50,12 +57,18 @@ def main() -> int:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            # read subscription
-            val = h.helicsInputGetInteger(sub_trip)
-            if val != 0:
-                LOGGER.warning('Received breaker trip signal at t=%.1f: %d', current_time, val)
-            else:
-                LOGGER.info('No trip at t=%.1f', current_time)
+            water_trip = h.helicsInputGetInteger(sub_trip)
+            gas_trip   = h.helicsInputGetInteger(sub_gas_trip)
+            grid_trip  = h.helicsInputGetInteger(sub_grid_trip)
+            trans_trip = h.helicsInputGetInteger(sub_trans_trip)
+            hospital_kw = h.helicsInputGetDouble(sub_hospital_load)
+
+            any_trip = any([water_trip, gas_trip, grid_trip, trans_trip])
+            voltage_pu = 0.0 if any_trip else 1.0
+            h.helicsPublicationPublishDouble(pub_voltage, voltage_pu)
+
+            LOGGER.info('t=%.1f trips=[w=%d g=%d e=%d] V=%.1fpu hosp=%.1fkW',
+                        current_time, water_trip, gas_trip, grid_trip, voltage_pu, hospital_kw)
             steps += 1
             if max_steps > 0 and steps >= max_steps:
                 LOGGER.info('Reached HELICS_MAX_STEPS=%d, exiting', max_steps)
