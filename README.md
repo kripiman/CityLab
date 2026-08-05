@@ -1,53 +1,70 @@
-# CityLab — Cyber Range ICS/SCADA
+# CityLab — Cyber Range Ciberfísico Multisectorial (Fase 3 Ciudad Completa)
 
-Laboratorio de simulación ofensiva/defensiva en entornos ciberfísicos e infraestructuras críticas.
-100% software, ejecución nativa en Linux, bajo consumo de RAM (<1 GB).
+**CityLab** es un entorno de entrenamiento ciberfísico (*Cyber Range*) 100% basado en software, diseñado para simular ataques ofensivos (Red Team / Hacking Ético) y monitoreo defensivo (Blue Team) sobre infraestructuras críticas urbanas e interdependencias ciberfísicas en cascada.
 
-## Documentación
-- [Guía de Arquitectura](file:///home/kripi/Documentos/GitHub/CityLab/docs/ARCHITECTURE.md): Diagramas de red (IEC 62443), secuencia de simulación e integración de HELICS.
-- [Guía de Operaciones](file:///home/kripi/Documentos/GitHub/CityLab/docs/OPERATIONS.md): Pasos detallados para ejecutar ataques Modbus manuales y automatizados.
-
----
-
-## Estructura del Proyecto
-
-```
-CityLab/
-├── network/            # Emulación de red Mininet y reglas de firewall
-├── plc/                # Lógica de control en ST y emulador Modbus
-├── physical/           # Simulación física de tanques y bombas (ICSSIM)
-├── helics_sim/         # Federados HELICS (ICSSIM, GridLAB-D, mocks)
-├── gridlabd/           # Modelos de subestaciones eléctricas (.glm)
-├── attacker/           # Scripts de ataque Modbus
-├── docs/               # Documentación del proyecto
-└── run_phase1.sh       # Script de inicio e integración
-```
+- **0% Sobrecarga de Máquinas Virtuales**: Ejecución nativa en Linux mediante Mininet y procesos distribuidos.
+- **Eficiencia de Recursos**: Consumo de memoria RAM total $<1.5\text{ GB}$ para la ciudad completa.
+- **Co-Simulación Multisectorial**: Coordinación temporal a tiempo real vía **HELICS 3.x** (7 federados).
+- **Estándar Industrial**: Segmentación de red alineada con **IEC 62443** (Zonas Corporate, DMZ y Celda OT).
 
 ---
 
-## Segmentación de Red (IEC 62443)
+## 🏛️ Estructura de Infraestructura y Sectores Emulados
+
+| Sector | Componente Físico | Dirección IP OT | Control PLC / Protocolo |
+|---|---|---|---|
+| 💧 **Agua** | Planta SWaT 2-Etapas (Tanque T1 Sedimentación + T2 Distribución) | `10.0.3.10:502` (`h_plc`) | Modbus/TCP (Coil 0: Bombas P1/P2) |
+| 🔥 **Gas** | Red de Gasoducto y Válvula de Presión ($100\text{ PSI}$) | `10.0.3.12:502` (`h_plc_gas`) | Modbus/TCP (Coil 0: Válvula Control) |
+| ⚡ **Energía** | Ecuación de Swing Síncrona + Subestación GridLAB-D $13.8\text{ kV}$ | `10.0.3.13:502` (`h_plc_elec`) | Modbus/TCP (Coil 1: Disyuntor Gen) |
+| 🚥 **Transporte** | Intersección Semafórica 4-Fases + Modo Emergencia | `10.0.3.14:502` (`h_plc_trans`) | Modbus/TCP (Coil 1: Corredor Emergencia)|
+| 🏥 **Salud** | Hospital Crítico ($150\text{ kW}$) + Failover UPS ($75\text{ kWh}$) / Generador | Suscriptor HELICS | Transición Automática por Subtensión |
+| 🖥️ **SCADA** | Servidor Historian REST / Dashboard Central | `10.0.2.20:8080` (`h_scada`) | Polling Modbus en DMZ / JSON API |
+
+---
+
+## 📐 Arquitectura de Red (IEC 62443)
 
 ```
-[Corporate 10.0.1.0/24] ── Firewall ── [DMZ 10.0.2.0/24] ── Firewall ── [OT Cell 10.0.3.0/24]
-       │                                                                          │
-  h_attacker (10.0.1.10)                                                   h_plc (10.0.3.10)
-                                                                           h_icssim (10.0.3.11)
+[Corporate Zone 10.0.1.0/24]
+        │
+     (fw-eth0)
+┌──────────────┐
+│ Firewall fw  │ ── (fw-eth1) ── [DMZ Zone 10.0.2.0/24]
+└──────────────┘                 ├── h_dmz (10.0.2.10) Jump host
+        │                        └── h_scada (10.0.2.20:8080) SCADA Server
+     (fw-eth2)
+        │
+[OT Cell Zone 10.0.3.0/24]
+        ├── h_plc (10.0.3.10)       Water PLC
+        ├── h_plc_gas (10.0.3.12)   Gas PLC
+        ├── h_plc_elec (10.0.3.13)  Electric PLC
+        └── h_plc_trans (10.0.3.14) Transport PLC
 ```
 
 ---
 
-## Inicio Rápido
+## 📚 Documentación Técnica Completa
 
-1. **Instalar dependencias del sistema**:
-   - Debian/Ubuntu: `sudo apt install mininet openvswitch-switch`
-   - Activar OVS: `sudo systemctl start openvswitch-switch`
+- 📋 **[Especificación de Requisitos ERS (IEEE-830)](file:///home/kripi/Documentos/GitHub/CityLab/docs/ERS.md)**: Requisitos funcionales y no funcionales del sistema.
+- 🏗️ **[Guía de Arquitectura Ciberfísica](file:///home/kripi/Documentos/GitHub/CityLab/docs/ARCHITECTURE.md)**: Diagramas Mermaid, ecuaciones de swing, topología HELICS y mapas Modbus.
+- 🛠️ **[Guía de Operaciones y Playbook](file:///home/kripi/Documentos/GitHub/CityLab/docs/OPERATIONS.md)**: Manual de despliegue, scripts de automatización y comandos de ataque.
+- 🚩 **[Escenario CTF 01: Apagón Urbano en Cascada](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios/scenario_01_cascading_blackout.md)**: Desafío estilo TryHackMe / HackTheBox.
 
-2. **Instalar dependencias de Python**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-3. **Iniciar co-simulación**:
-   ```bash
-   sudo ./run_phase1.sh
-   ```
+## ⚡ Inicio Rápido
+
+### 1. Iniciar la Co-Simulación Completa (Fase 3)
+```bash
+sudo ./run_phase3.sh
+```
+
+### 2. Ejecutar Pruebas Automatizadas Locales (Smoke Test 7 Federados)
+```bash
+./helics_sim/smoke_test_phase3.sh
+```
+
+### 3. Inspeccionar el Log CSV de Eventos en Tiempo Real
+```bash
+tail -f logs/cascading_events.csv
+```
