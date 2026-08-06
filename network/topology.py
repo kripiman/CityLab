@@ -69,6 +69,7 @@ class Iec62443Topo(Topo):
         # DMZ hosts
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
         scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
+        ews_station = self.addHost('h_ews', ip='10.0.2.30/24')
 
         # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15)
         plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
@@ -87,6 +88,7 @@ class Iec62443Topo(Topo):
         self.addLink(s_corp, attacker)
         self.addLink(s_dmz, dmz_jump)
         self.addLink(s_dmz, scada_server)
+        self.addLink(s_dmz, ews_station)
         self.addLink(s_ot, plc_water)
         self.addLink(s_ot, icssim)
         self.addLink(s_ot, plc_gas)
@@ -147,14 +149,21 @@ def configure_host_routes(net: Mininet) -> None:
     h_attacker.cmd('ip route flush default')
     h_attacker.cmd('ip route add default via 10.0.1.1')
 
-    h_dmz = net.get('h_dmz')
-    h_dmz.cmd('ip route flush default')
-    h_dmz.cmd('ip route add default via 10.0.2.1')
+    for dmz_host in ('h_dmz', 'h_scada', 'h_ews'):
+        try:
+            h = net.get(dmz_host)
+            h.cmd('ip route flush default')
+            h.cmd('ip route add default via 10.0.2.1')
+        except KeyError:
+            pass
 
-    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec'):
-        h = net.get(ot_host)
-        h.cmd('ip route flush default')
-        h.cmd('ip route add default via 10.0.3.1')
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_trans', 'h_plc_hosp'):
+        try:
+            h = net.get(ot_host)
+            h.cmd('ip route flush default')
+            h.cmd('ip route add default via 10.0.3.1')
+        except KeyError:
+            pass
 
     print('[*] Host default routes configured to use FW as gateway')
 

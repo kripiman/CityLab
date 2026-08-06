@@ -146,7 +146,20 @@ def main() -> int:
             if freq_hz == 0.0:
                 freq_hz = 60.0
 
-            load_kw, on_ups = plant.update(voltage_pu, freq_hz, POLL_INTERVAL)
+            # Read Hospital PLC Modbus state (10.0.3.15:502) — Coil 1 controls suppress_generator
+            suppress_gen = False
+            plc_host = os.environ.get('HOSPITAL_PLC_HOST', '10.0.3.15')
+            try:
+                client = ModbusTcpClient(plc_host, port=502, timeout=0.5)
+                if client.connect():
+                    rr = client.read_coils(0, 4)
+                    if rr and not rr.isError():
+                        suppress_gen = bool(rr.bits[1])
+                    client.close()
+            except Exception:
+                suppress_gen = False
+
+            load_kw, on_ups = plant.update(voltage_pu, freq_hz, POLL_INTERVAL, suppress_generator=suppress_gen)
 
             h.helicsPublicationPublishDouble(pub_load, float(load_kw))
             h.helicsPublicationPublishInteger(pub_ups, int(on_ups))
