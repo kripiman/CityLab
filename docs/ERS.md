@@ -99,6 +99,16 @@ graph TD
 ### 3.8 Módulo de Emulación Adversaria y Playbooks CTF (RF-08)
 - **RF-08.1 (Escenarios THM/HTB)**: Documentación de playbooks paso a paso con banderas de validación (`FLAG_1` a `FLAG_3`) en `docs/scenarios/`.
 
+### 3.9 Módulo de Protocolos de Sector Especializados - Subestación Eléctrica DNP3 (RF-09)
+- **RF-09.1 (Protocolo DNP3 IEEE 1815)**: `h_plc_elec` (`10.0.3.13`) debe ejecutar un Outstation DNP3 en puerto `TCP/20000`, exponiendo Binary Inputs (disyuntor, estado de red), Analog Inputs (voltaje, frecuencia, potencia kW) y Binary Outputs / CROB (disparo/cierre de disyuntor).
+- **RF-09.2 (Reglas de Conduit DNP3)**: El firewall `fw` debe permitir tráfico DNP3 (`TCP/20000`) desde DMZ (`fw-eth1`) hacia la celda OT eléctrica (`10.0.3.13`).
+
+### 3.10 Módulo IT/OT Corporate Active Directory Domain Controller (RF-10)
+- **RF-10.1 (Servidor `h_dc` Samba AD DC)**: La zona Corporate (`10.0.1.0/24`) debe incorporar el Domain Controller `h_dc` (`10.0.1.20`), escuchando en LDAP (`389`), Kerberos (`88`) y SMB (`445`).
+- **RF-10.2 (Emulación de Vectores de Compromiso IT)**: Permite simulaciones de movimiento lateral IT/OT mediante enumeración LDAP, Kerberoasting (ticket TGS para SPN `HTTP/h_ews.citylab.local`) y AS-REP Roasting contra la cuenta de ingeniero `jdoe_eng`.
+- **RF-10.3 (Riesgo Aceptado L2 Corporate FINDING-03)**: Se acepta como debilidad intencional la colocalización L2 de `h_attacker` y `h_dc` en `s1` para fines pedagógicos de entrenamiento en Kerberoasting/AS-REP Roasting.
+- **RF-10.4 (Control Compensatorio SDN OpenFlow COMP-02)**: El controlador SDN (`network/sdn_controller.py`) aplica microsegmentación por tupla `(src_ip, dst_ip, dst_port)` y aislación por Circuit Breaker dinámico ante ráfagas DoS (> 50 pkt/s).
+
 ---
 
 ## 4. Requisitos No Funcionales (RNF)

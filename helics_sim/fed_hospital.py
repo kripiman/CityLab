@@ -79,6 +79,13 @@ class HospitalPlant:
             self.ups_energy_kwh -= (self.base_load_kw * dt) / 3600.0
             self.ups_energy_kwh = max(0.0, self.ups_energy_kwh)
 
+            # Control Compensatorio IEC 62443: Safe State Hardware Override
+            # Si el generador es suprimido por Modbus pero el UPS baja del 50% (37.5 kWh),
+            # el interbloqueo físico invalida la supresión de software.
+            if suppress_generator and self.ups_energy_kwh < 37.5:
+                LOGGER.warning('[SAFE-STATE OVERRIDE] Emergency hardware interlock unblocked generator (Modbus suppression overridden)')
+                suppress_generator = False
+
             if not suppress_generator and time.monotonic() >= self._gen_start_ts:
                 LOGGER.warning('Generator online → hospital autonomous')
                 self.state = PowerState.GENERATOR_ONLINE

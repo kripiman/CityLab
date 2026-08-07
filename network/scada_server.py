@@ -38,8 +38,12 @@ scada_state: Dict[str, Any] = {
 }
 
 
+# Rastreador de fallos consecutivos por sector (Watchdog Continuous Monitoring)
+_consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
+
+
 def poll_plcs() -> None:
-    """Hilo de fondo que consulta periódicamente los PLCs OT."""
+    """Hilo de fondo que consulta periódicamente los PLCs OT e implementa Watchdog Loss of View."""
     while True:
         timestamp = time.time()
         sector_data = {}
@@ -50,6 +54,7 @@ def poll_plcs() -> None:
                 if client.connect():
                     rr = client.read_coils(0, 4)
                     if rr and not rr.isError():
+                        _consecutive_failures[sector] = 0
                         sector_data[sector] = {
                             'status': 'ONLINE',
                             'coils': [bool(b) for b in rr.bits[:4]],
@@ -59,12 +64,21 @@ def poll_plcs() -> None:
                             'fault': bool(rr.bits[3]),
                         }
                     else:
-                        sector_data[sector] = {'status': 'ERROR_READ'}
+                        _consecutive_failures[sector] += 1
+                        status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= 3 else 'ERROR_READ'
+                        sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
                     client.close()
                 else:
-                    sector_data[sector] = {'status': 'UNREACHABLE'}
+                    _consecutive_failures[sector] += 1
+                    status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= 3 else 'UNREACHABLE'
+                    if status == 'LOSS_OF_VIEW':
+                        LOGGER.error('[ALARM][LOSS_OF_VIEW] Continuous Monitoring Watchdog: PLC %s (%s:502) unresponsive for %d cycles',
+                                     sector, ip, _consecutive_failures[sector])
+                    sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
             except Exception as exc:
-                sector_data[sector] = {'status': 'EXCEPTION', 'detail': str(exc)}
+                _consecutive_failures[sector] += 1
+                status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= 3 else 'EXCEPTION'
+                sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector], 'detail': str(exc)}
 
         scada_state['last_update'] = timestamp
         scada_state['sectors'] = sector_data
