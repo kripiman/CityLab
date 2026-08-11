@@ -2,15 +2,19 @@
 """
 Mininet topology for Phase 1 PoC (IEC 62443 segmentation)
 Zones:
- - Corporate (10.0.1.0/24) -> attacker host
- - DMZ       (10.0.2.0/24) -> jump/historian host
- - OT        (10.0.3.0/24) -> plc, icssim hosts
+ - Corporate (10.0.1.0/24) -> attacker, dc hosts
+ - DMZ       (10.0.2.0/24) -> jump, scada historian hosts
+ - OT        (10.0.3.0/24) -> plcs, icssim hosts
+ - EWS PAW   (10.0.4.0/24) -> engineering workstation host
+ - Honeypot  (10.0.5.0/24) -> decoy honeypot host
 
-A single user-space firewall host (fw) bridges the three switches and enforces
-segmentation via iptables. The fw host will have three interfaces:
+A single user-space firewall host (fw) bridges the five switches and enforces
+segmentation via iptables. The fw host will have five interfaces:
  - fw-eth0 -> Corporate (gw 10.0.1.1)
  - fw-eth1 -> DMZ       (gw 10.0.2.1)
  - fw-eth2 -> OT        (gw 10.0.3.1)
+ - fw-eth3 -> EWS PAW   (gw 10.0.4.1)
+ - fw-eth4 -> Honeypot  (gw 10.0.5.1)
 
 Usage (run as root):
   sudo python3 network/topology.py
@@ -57,10 +61,12 @@ class Iec62443Topo(Topo):
     def build(self) -> None:
         # Switches per zone
         s_corp = self.addSwitch('s1')
-        s_dmz = self.addSwitch('s2')
-        s_ot = self.addSwitch('s3')
+        s_dmz  = self.addSwitch('s2')
+        s_ot   = self.addSwitch('s3')
+        s_ews  = self.addSwitch('s4')  # Isolated EWS PAW Zone
+        s_honey = self.addSwitch('s5') # Honeypot observation VLAN
 
-        # Firewall host (will have 3 interfaces once linked)
+        # Firewall host (will have 5 interfaces once linked)
         fw = self.addHost('fw')
 
         # Corporate hosts
@@ -77,11 +83,14 @@ class Iec62443Topo(Topo):
         plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
         plc_trans = self.addHost('h_plc_trans',  ip='10.0.3.14/24')
         plc_hosp  = self.addHost('h_plc_hosp',   ip='10.0.3.15/24')
+        plc_honey = self.addHost('h_plc_honey',  ip='10.0.5.99/24')
 
-        # Links (order determines fw-eth names)
+        # Links (order determines fw-eth names: eth0=corp, eth1=dmz, eth2=ot, eth3=ews, eth4=honey)
         self.addLink(fw, s_corp)
         self.addLink(fw, s_dmz)
         self.addLink(fw, s_ot)
+        self.addLink(fw, s_ews)
+        self.addLink(fw, s_honey)
 
         # Connect switches to hosts
         self.addLink(s_corp, attacker)
@@ -93,22 +102,26 @@ class Iec62443Topo(Topo):
         self.addLink(s_ot, plc_elec)
         self.addLink(s_ot, plc_trans)
         self.addLink(s_ot, plc_hosp)
+        self.addLink(s_honey, plc_honey)
 
 
 def apply_fw_configuration(fw: Node) -> None:
     """Configure FW host interfaces, IP forwarding and iptables rules.
 
-    Assumes interfaces are named fw-eth0 (corp), fw-eth1 (dmz), fw-eth2 (ot)
-    and sets gateway IPs for each zone on the FW.
+    Assumes interfaces: fw-eth0 (corp), fw-eth1 (dmz), fw-eth2 (ot), fw-eth3 (ews), fw-eth4 (honey)
     """
     # Assign IPs to firewall interfaces
     fw.cmd('ip addr flush dev fw-eth0')
     fw.cmd('ip addr flush dev fw-eth1')
     fw.cmd('ip addr flush dev fw-eth2')
+    fw.cmd('ip addr flush dev fw-eth3')
+    fw.cmd('ip addr flush dev fw-eth4')
 
     fw.cmd('ip addr add 10.0.1.1/24 dev fw-eth0')
     fw.cmd('ip addr add 10.0.2.1/24 dev fw-eth1')
     fw.cmd('ip addr add 10.0.3.1/24 dev fw-eth2')
+    fw.cmd('ip addr add 10.0.4.1/24 dev fw-eth3')
+    fw.cmd('ip addr add 10.0.5.1/24 dev fw-eth4')
 
     # Enable IP forwarding
     fw.cmd('sysctl -w net.ipv4.ip_forward=1 > /dev/null')
@@ -120,12 +133,20 @@ def apply_fw_configuration(fw: Node) -> None:
     # Allow established related
     fw.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
 
-    # Permit DMZ -> OT Modbus/TCP (port 502) to all PLCs
+    # Permit h_scada (10.0.2.20) and h_ews (10.0.4.30) -> OT Modbus/TCP (port 502)
     for plc_ip in ('10.0.3.10', '10.0.3.12', '10.0.3.13', '10.0.3.14', '10.0.3.15'):
-        fw.cmd(f"iptables -A FORWARD -i fw-eth1 -o fw-eth2 -p tcp --dport 502 -d {plc_ip} -j ACCEPT")
-        fw.cmd(f"iptables -A FORWARD -i fw-eth2 -o fw-eth1 -p tcp --sport 502 -s {plc_ip} -j ACCEPT")
+        fw.cmd(f"iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d {plc_ip} -p tcp --dport 502 -j ACCEPT")
+        fw.cmd(f"iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d {plc_ip} -p tcp --dport 502 -j ACCEPT")
 
-    # Permit DMZ <-> Corporate (for management) on limited ports (SSH 22, icmp)
+    # Allow traffic to honeypot from anywhere to detect scanning
+    fw.cmd("iptables -A FORWARD -o fw-eth4 -d 10.0.5.99 -j ACCEPT")
+
+    # Permit h_scada and h_ews -> OT DNP3 (port 20000) for Electrical PLC (10.0.3.13)
+    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
+
+    # Permit Corporate (10.0.1.0/24) -> Isolated EWS Zone (10.0.4.30) ONLY via SSH (PAW Rule)
+    fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth3 -d 10.0.4.30 -p tcp --dport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p tcp --dport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth0 -p tcp --sport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p icmp -j ACCEPT")
@@ -151,10 +172,20 @@ def configure_host_routes(net: Mininet) -> None:
     h_dmz.cmd('ip route flush default')
     h_dmz.cmd('ip route add default via 10.0.2.1')
 
-    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec'):
-        h = net.get(ot_host)
-        h.cmd('ip route flush default')
-        h.cmd('ip route add default via 10.0.3.1')
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_trans', 'h_plc_hosp'):
+        try:
+            h = net.get(ot_host)
+            h.cmd('ip route flush default')
+            h.cmd('ip route add default via 10.0.3.1')
+        except KeyError:
+            pass
+
+    try:
+        h_honey = net.get('h_plc_honey')
+        h_honey.cmd('ip route flush default')
+        h_honey.cmd('ip route add default via 10.0.5.1')
+    except KeyError:
+        pass
 
     print('[*] Host default routes configured to use FW as gateway')
 
@@ -170,15 +201,24 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
     results: Dict[str, bool] = {}
     attacker = net.get('h_attacker')
     dmz = net.get('h_dmz')
+    scada = net.get('h_scada')
     plc = net.get('h_plc')
 
     print('[*] Testing: Attacker -> PLC (ping) - expected: BLOCKED')
     out = attacker.cmd('ping -c1 -W1 10.0.3.10')
     results['attacker_ping_plc'] = ('1 packets transmitted, 1 received' in out)
 
-    print('[*] Testing: DMZ -> PLC (tcp:502) - expected: ALLOWED (if PLC listens)')
-    tcp_test = dmz.cmd("timeout 1 bash -c '</dev/tcp/10.0.3.10/502' && echo open || echo closed'")
+    print('[*] Testing: h_scada (DMZ) -> PLC (tcp:502) - expected: ALLOWED (if PLC listens)')
+    tcp_test = scada.cmd("timeout 1 bash -c '</dev/tcp/10.0.3.10/502' && echo open || echo closed'")
     results['dmz_modbus_502'] = ('open' in tcp_test)
+
+    print('[*] Testing: h_scada (DMZ) -> Electrical PLC (tcp:20000 DNP3) - expected: ALLOWED')
+    dnp3_test = scada.cmd("timeout 1 bash -c '</dev/tcp/10.0.3.13/20000' && echo open || echo closed'")
+    results['dmz_dnp3_20000'] = ('open' in dnp3_test)
+
+    print('[*] Testing: Attacker -> Corporate DC (tcp:88 Kerberos) - expected: ALLOWED')
+    kdc_test = attacker.cmd("timeout 1 bash -c '</dev/tcp/10.0.1.20/88' && echo open || echo closed'")
+    results['attacker_kdc_88'] = ('open' in kdc_test)
 
     print('[*] Testing: DMZ -> Attacker (ping) - expected: ALLOWED')
     out2 = dmz.cmd('ping -c1 -W1 10.0.1.10')
@@ -199,9 +239,7 @@ def main() -> int:
     net.start()
 
     # Force standalone mode so OVS switches learn MACs/ARP without an external controller.
-    # Default fail_mode=secure drops all frames until a controller connects — root cause of
-    # the ARP/L2 failure observed in testing.
-    for sw in ('s1', 's2', 's3'):
+    for sw in ('s1', 's2', 's3', 's4', 's5'):
         net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
 
     # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
