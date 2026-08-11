@@ -38,6 +38,8 @@ scada_state: Dict[str, Any] = {
 }
 
 
+LOSS_OF_VIEW_THRESHOLD = 3
+_consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
 def poll_plcs() -> None:
     """Hilo de fondo que consulta periódicamente los PLCs OT."""
     while True:
@@ -76,6 +78,23 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
         pass  # Suppress per-request HTTP access log noise
 
     def do_GET(self) -> None:
+        token_env = os.getenv('SCADA_API_TOKEN')
+        if not token_env:
+            if os.getenv('STRICT_AUTH', '0') == '1':
+                LOGGER.error("SCADA_API_TOKEN no configurada en modo estricto")
+                self.send_response(500)
+                self.end_headers()
+                return
+            expected_token = 'SCADA_TOKEN_2026'
+        else:
+            expected_token = token_env
+
+        auth_header = self.headers.get('Authorization')
+        if auth_header != f'Bearer {expected_token}' and self.path != '/health':
+            self.send_response(401)
+            self.end_headers()
+            return
+
         if self.path in ('/', '/api/telemetry'):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -93,8 +112,9 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
 
 
 def run_http_server(port: int = 8080) -> None:
-    server = HTTPServer(('0.0.0.0', port), SCADAAPIHandler)
-    LOGGER.info('Servidor SCADA Central listo en http://0.0.0.0:%d', port)
+    host = '10.0.2.20'
+    server = HTTPServer((host, port), SCADAAPIHandler)
+    LOGGER.info('Servidor SCADA Central listo en http://%s:%d', host, port)
     server.serve_forever()
 
 

@@ -16,7 +16,13 @@ from __future__ import annotations
 import argparse
 import time
 from typing import Tuple
-from pymodbus.client import ModbusTcpClient
+try:
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    try:
+        from pymodbus.client.sync import ModbusTcpClient
+    except ImportError:
+        from pymodbus.client.tcp import ModbusTcpClient
 
 
 
