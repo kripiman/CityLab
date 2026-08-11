@@ -114,3 +114,21 @@ graph LR
     pub_tcong --> LoggerFed
     pub_ttrip --> LoggerFed
 ```
+
+---
+
+## 🚀 Componentes y Servicios Extendidos (Fases 1 a 9)
+
+| Componente | Archivo | Puerto / Protocolo | Función Principal |
+|---|---|---|---|
+| **Historian TSDB** | `network/historian.py` | SQLite WAL / REST API | Persistencia de telemetría OT en series temporales con timestamp nanosegundo. |
+| **RBAC / PAM** | `network/rbac.py` | Bearer Auth / LDAP | Control de acceso por roles (`auditor`, `operator`, `engineer`) y toggle `STRICT_AUTH`. |
+| **OPC UA Server** | `plc/opcua_emulator.py` | `:4840` UA/TCP | Emulación binaria de OPC UA Server con NodeSpace de 12 nodos OT. |
+| **IEC 61850 Substation** | `plc/iec61850_emulator.py` | UDP Multicast (GOOSE / SV) | Eventos de subestación GOOSE y muestreo de mediciones Sampled Values. |
+| **EPANET Physics** | `physical/water/epanet_solver.py` | Solver Hidráulico | Ecuaciones de Hazen-Williams, pérdidas por fricción y curva de bomba TDH. |
+| **Industrial HMI Server** | `network/hmi_server.py` | `:8085` HTTP REST | Dashboard HMI P&ID emulado con telemetría en tiempo real y mandos operacionales. |
+| **SCADA High Availability** | `network/scada_ha.py` | Heartbeat TCP/HTTP | Cluster Primario/Standby con failover automático y failback al recuperarse. |
+| **Safety System (SIS/ESD)** | `helics_sim/fed_sis.py` | Interlocks SIL-3 | Sistema de Parada de Emergencia independiente con anulación de comandos BPCS inseguros. |
+| **SOC / SIEM Pipeline** | `network/siem_pipeline.py` | Formato ECS / Syslog | Ingestión, normalización ECS y motor de reglas de correlación para ataques ciberfísicos. |
+| **Visualizador 2D/3D** | `network/viz_server.py` | `:8090` HTTP / WebSockets | Servidor de streaming presentacional para renderizado de la ciudad en 2D/3D. |
+
