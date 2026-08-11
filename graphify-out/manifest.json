@@ -1,111 +1,8 @@
 {
   "attacker/__init__.py": {
-    "mtime": 1785777363.0563917,
+    "mtime": 1785963945.6968458,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "helics/__init__.py": {
-    "mtime": 1785777363.0563917,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "helics/fed_gridmock.py": {
-    "mtime": 1785778381.9808178,
-    "ast_hash": "2fd2687460ea7a371dc8b707a12be851",
-    "semantic_hash": "2fd2687460ea7a371dc8b707a12be851"
-  },
-  "helics/fed_icssim.py": {
-    "mtime": 1785778371.9338098,
-    "ast_hash": "4e5fc4dd85a2c96a9712c61c25b11ff3",
-    "semantic_hash": "4e5fc4dd85a2c96a9712c61c25b11ff3"
-  },
-  "helics/gridlabd_federate.py": {
-    "mtime": 1785778439.6888735,
-    "ast_hash": "102b9b702af3e67f74372155011a76cd",
-    "semantic_hash": "102b9b702af3e67f74372155011a76cd"
-  },
-  "helics/start_broker.sh": {
-    "mtime": 1785778349.484237,
-    "ast_hash": "490c367faf761c1806a42ce5f49cfe83",
-    "semantic_hash": "490c367faf761c1806a42ce5f49cfe83"
-  },
-  "install_deps.sh": {
-    "mtime": 1785778299.230752,
-    "ast_hash": "77fe2a530a63c575308f293a870aad29",
-    "semantic_hash": "77fe2a530a63c575308f293a870aad29"
-  },
-  "network/__init__.py": {
-    "mtime": 1785777363.0563917,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "network/topology.py": {
-<<<<<<< Updated upstream
-    "mtime": 1785784935.2519264,
-    "ast_hash": "358764960aebef7dc2c84538b2d01ded",
-    "semantic_hash": "358764960aebef7dc2c84538b2d01ded"
-=======
-    "mtime": 1786419210.4608243,
-    "ast_hash": "9b743ff6fa6227e4f5ec541ef11fb2cc",
-    "semantic_hash": "9b743ff6fa6227e4f5ec541ef11fb2cc"
->>>>>>> Stashed changes
-  },
-  "physical/__init__.py": {
-    "mtime": 1785777294.8274758,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "physical/icssim/__init__.py": {
-    "mtime": 1785777363.0563917,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "physical/icssim/plant.py": {
-    "mtime": 1785778359.3098,
-    "ast_hash": "141a557285d029c793260752e184ecac",
-    "semantic_hash": "141a557285d029c793260752e184ecac"
-  },
-  "plc/__init__.py": {
-    "mtime": 1785777363.057392,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
-  },
-  "plc/modbus_emulator.py": {
-    "mtime": 1785778112.976154,
-    "ast_hash": "e8274d015d7fbb9186e7ecfc12ab1fb1",
-    "semantic_hash": "e8274d015d7fbb9186e7ecfc12ab1fb1"
-  },
-  "plc/start_openplc.sh": {
-    "mtime": 1785778101.2344546,
-    "ast_hash": "72f7d5108ee4f8c11bb1aa24ccf936c1",
-    "semantic_hash": "72f7d5108ee4f8c11bb1aa24ccf936c1"
-  },
-  "plc/tests/poc_modbus_test.py": {
-    "mtime": 1785778170.1565456,
-    "ast_hash": "38fdaa3fc6491c3c716b4123e9e8aae1",
-    "semantic_hash": "38fdaa3fc6491c3c716b4123e9e8aae1"
-  },
-  "run_phase1.sh": {
-    "mtime": 1785778400.8488357,
-    "ast_hash": "7d5fc2a477a78b812b589b4628e38628",
-    "semantic_hash": "7d5fc2a477a78b812b589b4628e38628"
-  },
-  "README.md": {
-    "mtime": 1785777380.6314707,
-    "ast_hash": "78098210763c40c245c8053e8bf478f6",
-    "semantic_hash": "78098210763c40c245c8053e8bf478f6"
-  },
-  "docs/OPERATIONS.md": {
-    "mtime": 1785778327.3133986,
-    "ast_hash": "b159a76e753265fa3ae4fbb15adec487",
-    "semantic_hash": "b159a76e753265fa3ae4fbb15adec487"
-  },
-  "requirements.txt": {
-    "mtime": 1785778143.9724927,
-    "ast_hash": "446d8e288d34cba4654389e5ccd7d21e",
-    "semantic_hash": "446d8e288d34cba4654389e5ccd7d21e"
-<<<<<<< Updated upstream
-=======
   },
   "attacker/attack_modbus.py": {
     "mtime": 1785963945.6968458,
@@ -133,9 +30,9 @@
     "semantic_hash": "90fde52e782cc07ca199e59d71ee8bf0"
   },
   "helics_sim/fed_hospital.py": {
-    "mtime": 1786137775.30655,
-    "ast_hash": "42067fae1e3b02cc4763029fab29c238",
-    "semantic_hash": "42067fae1e3b02cc4763029fab29c238"
+    "mtime": 1786422392.638852,
+    "ast_hash": "3f2a3d69cc36ce1a5fa389dce905f2b4",
+    "semantic_hash": "3f2a3d69cc36ce1a5fa389dce905f2b4"
   },
   "helics_sim/fed_icssim.py": {
     "mtime": 1785972506.5286489,
@@ -182,20 +79,65 @@
     "ast_hash": "490c367faf761c1806a42ce5f49cfe83",
     "semantic_hash": "490c367faf761c1806a42ce5f49cfe83"
   },
-  "lab_terminal.sh": {
-    "mtime": 1785984989.4276414,
-    "ast_hash": "420def4242d77ff5e5ca0db68beee077",
-    "semantic_hash": "420def4242d77ff5e5ca0db68beee077"
+  "install_deps.sh": {
+    "mtime": 1786422392.638852,
+    "ast_hash": "b4aaf3dcf89eb1db1d223efb413e3b05",
+    "semantic_hash": "b4aaf3dcf89eb1db1d223efb413e3b05"
+  },
+  "network/__init__.py": {
+    "mtime": 1785963945.6979995,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "network/ad_dc_emulator.py": {
-    "mtime": 1786134727.6690457,
+    "mtime": 1786478651.204142,
     "ast_hash": "adfedc9f619ffd093bb0915855969d42",
     "semantic_hash": "adfedc9f619ffd093bb0915855969d42"
   },
+  "network/modbus_proxy.py": {
+    "mtime": 1786424120.3200967,
+    "ast_hash": "e48e69b7c18995da16129afd80a94c12",
+    "semantic_hash": "e48e69b7c18995da16129afd80a94c12"
+  },
   "network/scada_server.py": {
-    "mtime": 1786419218.323833,
-    "ast_hash": "b9d97e5e51b2e0eedfdf74878074038a",
-    "semantic_hash": "b9d97e5e51b2e0eedfdf74878074038a"
+    "mtime": 1786424120.3460968,
+    "ast_hash": "1be4d16314f916f53b648ff060941591",
+    "semantic_hash": "1be4d16314f916f53b648ff060941591"
+  },
+  "network/sdn_controller.py": {
+    "mtime": 1786424120.3340967,
+    "ast_hash": "d544f8ef1bd8a915fcdab44e17515c40",
+    "semantic_hash": "d544f8ef1bd8a915fcdab44e17515c40"
+  },
+  "network/tests/test_dpi_and_scada.py": {
+    "mtime": 1786424120.3200967,
+    "ast_hash": "6c785119083dffc30b031b10e2474a4c",
+    "semantic_hash": "6c785119083dffc30b031b10e2474a4c"
+  },
+  "network/tests/test_sdn_and_dnp3_sa.py": {
+    "mtime": 1786478651.207142,
+    "ast_hash": "c252000d9960d3e7d44739852bf4740a",
+    "semantic_hash": "c252000d9960d3e7d44739852bf4740a"
+  },
+  "network/topology.py": {
+    "mtime": 1786424120.3340967,
+    "ast_hash": "cbbd660d363320e915251c82cb7e9237",
+    "semantic_hash": "cbbd660d363320e915251c82cb7e9237"
+  },
+  "physical/__init__.py": {
+    "mtime": 1785963945.6979995,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "physical/icssim/__init__.py": {
+    "mtime": 1785963945.6979995,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "physical/icssim/plant.py": {
+    "mtime": 1785972506.5286489,
+    "ast_hash": "4fd45559ff140809b3182e6de8d982fc",
+    "semantic_hash": "4fd45559ff140809b3182e6de8d982fc"
   },
   "physical/transport/__init__.py": {
     "mtime": 1785963945.6979995,
@@ -217,20 +159,45 @@
     "ast_hash": "fd5c88fd9d5593b14762666961b70e6c",
     "semantic_hash": "fd5c88fd9d5593b14762666961b70e6c"
   },
+  "plc/__init__.py": {
+    "mtime": 1785963945.6979995,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
   "plc/dnp3_client.py": {
-    "mtime": 1786134712.2081757,
+    "mtime": 1786478428.1731808,
     "ast_hash": "04fd312b52592a2fd7df014a35b2abe5",
     "semantic_hash": "04fd312b52592a2fd7df014a35b2abe5"
   },
   "plc/dnp3_emulator.py": {
-    "mtime": 1786138698.423035,
+    "mtime": 1786478428.1711807,
     "ast_hash": "6831ed6760031be5e5f6adef4344e467",
     "semantic_hash": "6831ed6760031be5e5f6adef4344e467"
   },
+  "plc/modbus_emulator.py": {
+    "mtime": 1785963945.6979995,
+    "ast_hash": "51682fff6f067a02cd46dd462df8aeec",
+    "semantic_hash": "51682fff6f067a02cd46dd462df8aeec"
+  },
+  "plc/start_openplc.sh": {
+    "mtime": 1785963945.6988325,
+    "ast_hash": "913709b3e2ce8cd68db19069543701ec",
+    "semantic_hash": "913709b3e2ce8cd68db19069543701ec"
+  },
+  "plc/tests/poc_modbus_test.py": {
+    "mtime": 1786424120.3460968,
+    "ast_hash": "2c3762eb41e37fdf6c4a70ac8c413dd5",
+    "semantic_hash": "2c3762eb41e37fdf6c4a70ac8c413dd5"
+  },
   "plc/tests/test_dnp3_ad.py": {
-    "mtime": 1786135039.6573434,
+    "mtime": 1786478353.3591938,
     "ast_hash": "81cad0fa1d338a6464a72ab732d9acf2",
     "semantic_hash": "81cad0fa1d338a6464a72ab732d9acf2"
+  },
+  "run_phase1.sh": {
+    "mtime": 1785963945.6988325,
+    "ast_hash": "4e7c96c43df442d7f3681425ea2319ad",
+    "semantic_hash": "4e7c96c43df442d7f3681425ea2319ad"
   },
   "run_phase2.sh": {
     "mtime": 1785963945.6988325,
@@ -241,26 +208,5 @@
     "mtime": 1785963945.6988325,
     "ast_hash": "33ad1d87e8164702696e3779d7c7bf58",
     "semantic_hash": "33ad1d87e8164702696e3779d7c7bf58"
-  },
-  "network/modbus_proxy.py": {
-    "mtime": 1786418320.8998415,
-    "ast_hash": "e48e69b7c18995da16129afd80a94c12",
-    "semantic_hash": "e48e69b7c18995da16129afd80a94c12"
-  },
-  "network/tests/test_dpi_and_scada.py": {
-    "mtime": 1786418062.3575451,
-    "ast_hash": "6c785119083dffc30b031b10e2474a4c",
-    "semantic_hash": "6c785119083dffc30b031b10e2474a4c"
-  },
-  "network/sdn_controller.py": {
-    "mtime": 1786419225.7368412,
-    "ast_hash": "d544f8ef1bd8a915fcdab44e17515c40",
-    "semantic_hash": "d544f8ef1bd8a915fcdab44e17515c40"
-  },
-  "network/tests/test_sdn_and_dnp3_sa.py": {
-    "mtime": 1786138717.2790444,
-    "ast_hash": "c252000d9960d3e7d44739852bf4740a",
-    "semantic_hash": "c252000d9960d3e7d44739852bf4740a"
->>>>>>> Stashed changes
   }
 }
