@@ -3,8 +3,16 @@
 
 Funcionalidad:
   - Polling periódico por Modbus/TCP hacia los 4 PLCs OT (Water, Gas, Elec, Transport).
-  - Almacena telemetría en tiempo real de la infraestructura crítica de la ciudad.
+  - Persiste telemetría en historian TSDB embebido (SQLite WAL) — Fase 1.
+  - RBAC / PAM por roles (auditor / operator / engineer) — Fase 2.
   - Expone un servidor HTTP / API JSON en puerto 8080 para monitoreo y ataque (DMZ).
+  - Endpoints:
+      GET /                     — telemetría en tiempo real (JSON)
+      GET /api/telemetry         — alias del anterior
+      GET /api/history           — histórico de campos (?sector=water&field=status&limit=200)
+      GET /api/history/snapshot  — snapshots completos (?sector=water&limit=50)
+      GET /api/whoami            — identidad y rol del token presentado
+      GET /health                — liveness probe (sin auth)
 """
 from __future__ import annotations
 
@@ -15,6 +23,10 @@ import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Dict, Any
+from urllib.parse import urlparse, parse_qs
+
+from network.historian import HistorianTSDB
+from network.rbac import _rbac
 
 try:
     from pymodbus.client import ModbusTcpClient
@@ -31,12 +43,14 @@ PLC_CONFIGS = {
     'transport': ('10.0.3.14', 502),
 }
 
-# Estado global SCADA
+# Estado global SCADA (telemetría en tiempo real)
 scada_state: Dict[str, Any] = {
     'last_update': 0.0,
     'sectors': {}
 }
 
+# Historian TSDB embebido (Fase 1) — persiste cada snapshot de polling
+_historian: HistorianTSDB = HistorianTSDB()
 
 LOSS_OF_VIEW_THRESHOLD = 3
 _consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
@@ -70,6 +84,14 @@ def poll_plcs() -> None:
 
         scada_state['last_update'] = timestamp
         scada_state['sectors'] = sector_data
+
+        # Fase 1 — Persistir snapshots en historian TSDB
+        for sector, data in sector_data.items():
+            try:
+                _historian.write_snapshot(sector, data, timestamp)
+            except Exception as exc:  # pragma: no cover
+                LOGGER.warning('[Historian] Error al escribir snapshot %s: %s', sector, exc)
+
         time.sleep(2.0)
 
 
@@ -78,30 +100,85 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
         pass  # Suppress per-request HTTP access log noise
 
     def do_GET(self) -> None:
-        token_env = os.getenv('SCADA_API_TOKEN')
-        if not token_env:
-            if os.getenv('STRICT_AUTH', '0') == '1':
-                LOGGER.error("SCADA_API_TOKEN no configurada en modo estricto")
-                self.send_response(500)
-                self.end_headers()
-                return
-            expected_token = 'SCADA_TOKEN_2026'
-        else:
-            expected_token = token_env
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
 
-        auth_header = self.headers.get('Authorization')
-        if auth_header != f'Bearer {expected_token}' and self.path != '/health':
-            self.send_response(401)
+        # --- Fase 2: RBAC auth (preserva STRICT_AUTH toggle para CTF) ---
+        if parsed.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
             self.end_headers()
+            self.wfile.write(b'OK')
             return
 
-        if self.path in ('/', '/api/telemetry'):
+        auth_header = self.headers.get('Authorization')
+        role, http_code = _rbac.resolve(auth_header)
+        if role is None:
+            self.send_response(http_code)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'unauthorized', 'code': http_code}).encode())
+            return
+
+        if not _rbac.is_authorized(role, parsed.path):
+            self.send_response(403)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'forbidden', 'role': role, 'path': parsed.path}).encode())
+            return
+
+        # --- Routing con rol verificado ---
+
+        if parsed.path in ('/', '/api/telemetry'):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('X-SCADA-Role', role)  # Fase 2: informar rol al cliente
             self.end_headers()
             response = json.dumps(scada_state, indent=2)
             self.wfile.write(response.encode('utf-8'))
-        elif self.path == '/health':
+
+        elif parsed.path == '/api/history':
+            # Fase 1: Consulta histórica de campos individuales.
+            # Params: ?sector=<name>&field=<field>&limit=<int>&since=<epoch>
+            sector = qs.get('sector', [None])[0]
+            field = qs.get('field', [None])[0]
+            limit = int(qs.get('limit', ['200'])[0])
+            since = float(qs.get('since', ['0'])[0]) or None
+            if not sector:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b'{"error": "sector param required"}')
+                return
+            rows = _historian.query(sector=sector, field=field, since=since, limit=limit)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'sector': sector, 'field': field, 'rows': rows}, indent=2).encode('utf-8'))
+
+        elif parsed.path == '/api/history/snapshot':
+            # Fase 1: Snapshots completos por sector (útil para HMI y análisis forense).
+            # Params: ?sector=<name>&limit=<int>&since=<epoch>
+            sector = qs.get('sector', [None])[0]
+            limit = int(qs.get('limit', ['50'])[0])
+            since = float(qs.get('since', ['0'])[0]) or None
+            if not sector:
+                # Sin sector: retorna último snapshot de todos los sectores
+                result = {s: _historian.last(s) for s in _historian.sectors()}
+            else:
+                result = _historian.query_snapshots(sector=sector, since=since, limit=limit)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
+
+        elif parsed.path == '/api/whoami':
+            # Fase 2: introspección de identidad y rol del token
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'role': role, 'strict_auth': os.getenv('STRICT_AUTH', '0') == '1'}).encode())
+
+        elif parsed.path == '/health':
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
