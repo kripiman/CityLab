@@ -38,7 +38,7 @@ class PumpConfig:
 
 
 class EpanetHydraulicSolver:
-    """Solver hidráulico de red de distribución de agua."""
+    """Solver hidráulico de red de distribución de agua (Modelo didáctico Hazen-Williams / EPANET)."""
 
     def __init__(
         self,
@@ -90,3 +90,6 @@ class EpanetHydraulicSolver:
         # Conversión de Head (m) a Presión (bar): 1 m = ~0.0981 bar
         pressure_bar = (total_head * 9.81 * 1000.0) / 100000.0
         return flow, pressure_bar, hf
+
+
+SimplifiedHydraulicModel = EpanetHydraulicSolver

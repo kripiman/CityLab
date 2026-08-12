@@ -74,6 +74,7 @@ class Iec62443Topo(Topo):
 
         # Corporate hosts
         attacker = self.addHost('h_attacker', ip='10.0.1.10/24')
+        dc       = self.addHost('h_dc',       ip='10.0.1.20/24')
 
         # DMZ hosts
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
@@ -99,6 +100,7 @@ class Iec62443Topo(Topo):
 
         # Connect switches to hosts
         self.addLink(s_corp, attacker)
+        self.addLink(s_corp, dc)
         self.addLink(s_dmz, dmz_jump)
         self.addLink(s_dmz, scada_server)
         self.addLink(s_ot, plc_water)
@@ -179,6 +181,10 @@ def configure_host_routes(net: Mininet) -> None:
     h_attacker = net.get('h_attacker')
     h_attacker.cmd('ip route flush default')
     h_attacker.cmd('ip route add default via 10.0.1.1')
+
+    h_dc = net.get('h_dc')
+    h_dc.cmd('ip route flush default')
+    h_dc.cmd('ip route add default via 10.0.1.1')
 
     h_dmz = net.get('h_dmz')
     h_dmz.cmd('ip route flush default')
@@ -333,11 +339,21 @@ def main() -> int:
 
         # Auto-start Honeypot en h_plc_honey (10.0.5.99:502)
         try:
+            honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
             h_honey_node = net.get('h_plc_honey')
-            h_honey_node.cmd(f'python3 {emulator} --plant-type honeypot > /tmp/h_plc_honey.log 2>&1 &')
-            print('[*] h_plc_honey (10.0.5.99): honeypot emulator spawned on :502')
+            h_honey_node.cmd(f'python3 {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_plc_honey.log 2>&1 &')
+            print('[*] h_plc_honey (10.0.5.99): honeypot_server daemon spawned on :502')
         except Exception as exc:
             print(f'[WARN] Honeypot auto-start skipped: {exc}')
+
+        # Auto-start Samba AD DC Emulator en h_dc (10.0.1.20)
+        try:
+            dc_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
+            h_dc_node = net.get('h_dc')
+            h_dc_node.cmd(f'python3 {dc_script} --host 0.0.0.0 > /tmp/h_dc.log 2>&1 &')
+            print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on :88, :389, :445')
+        except Exception as exc:
+            print(f'[WARN] AD DC auto-start skipped: {exc}')
 
         # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080)
         try:
