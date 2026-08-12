@@ -93,24 +93,25 @@ try:
 
     print('[*] 4. Leyendo log del daemon IED real para confirmar readback de disparo XCBR1...')
     log_content = h_ied.cmd('cat /tmp/h_ied_e2e.log').strip()
-    assert 'XCBR1.Pos.stVal=False' in log_content or 'XCBR1' in log_content, f'FAIL R1-C: El IED no registro cambio de estado XCBR1. Log: {log_content}'
-    print('    ↳ ✅ Readback confirmado: XCBR1.Pos.stVal=False (Breaker Tripped por GOOSE spoof).')
+    assert 'XCBR1.Pos.stVal=False' in log_content, f'FAIL R1-C: El IED no registro el disparo de interruptor XCBR1.Pos.stVal=False! Log: {log_content}'
+    print('    ↳ ✅ Readback verificado: XCBR1.Pos.stVal=False (Breaker Tripped por GOOSE spoofing).')
 
     print('[*] 5. Ingestando evento real de IED en motor SIEM y verificando alertas correlacionadas...')
     siem = SiemCorrelationEngine()
     siem.ingest_raw_event(
-        event_category='goose',
+        event_category='process_control',
         event_type='goose_injection',
         severity='CRITICAL',
         source_ip='10.0.1.10',
         destination_ip='10.0.3.20',
-        service_name='iec61850_goose',
+        service_name='iec61850_emulator',
         message='Paquete GOOSE falsificado detectado en subestacion (XCBR1.Pos.stVal=False)'
     )
-    alerts = siem.correlate_events()
+    alerts = siem.active_alerts
     print(f'    - Alertas SIEM correlacionadas: {len(alerts)}')
     assert len(alerts) > 0, 'FAIL R1-C: No se generaron alertas SIEM a partir del evento real del IED!'
-    print('    ↳ ✅ SIEM correlaciono exitosamente la alerta SOC-ALT-0002.')
+    assert alerts[0]['name'] == 'Ataque por Inyección / Spoofing de Mensajes GOOSE IEC 61850 (Industroyer2 Pattern)', 'FAIL R1-C: Alerta SIEM incorrecta!'
+    print('    ↳ ✅ SIEM correlaciono exitosamente la alerta SOC-ALT-0001 (GOOSE Industroyer2 Pattern).')
 
 finally:
     print('[*] Deteniendo red Mininet...')
