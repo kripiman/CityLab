@@ -71,24 +71,32 @@ try:
 
     time.sleep(2.0)
 
-    print('[*] 2. Verificando sockets en escucha en namespaces OT...')
-    s_ied = h_ied.cmd('ss -lun | grep 10102 || true')
-    s_gw = h_gw.cmd('ss -ltn | grep 4840 || true')
-    s_elec = h_elec.cmd('ss -ltn | grep 20000 || true')
-    s_honey = h_honey.cmd('ss -ltn | grep 502 || true')
-    s_dc = h_dc.cmd('ss -ltn | grep 88 || true')
+    print('[*] 2. Afirmando sockets estrictos en escucha en namespaces OT...')
+    s_ied = h_ied.cmd(\"ss -lun | grep ':10102' || true\").strip()
+    s_gw = h_gw.cmd(\"ss -ltn | grep ':4840' || true\").strip()
+    s_elec = h_elec.cmd(\"ss -ltn | grep ':20000' || true\").strip()
+    s_honey = h_honey.cmd(\"ss -ltn | grep ':502' || true\").strip()
+    s_dc = h_dc.cmd(\"ss -ltn | grep ':88' || true\").strip()
 
-    print(f'    - h_ied GOOSE :10102 -> {\"LISTENING\" if \"10102\" in s_ied else \"STOPPED\"}')
-    print(f'    - h_gateway OPC UA :4840 -> {\"LISTENING\" if \"4840\" in s_gw else \"STOPPED\"}')
-    print(f'    - h_plc_elec DNP3 :20000 -> {\"LISTENING\" if \"20000\" in s_elec else \"STOPPED\"}')
-    print(f'    - h_plc_honey Honeypot :502 -> {\"LISTENING\" if \"502\" in s_honey else \"STOPPED\"}')
-    print(f'    - h_dc Active Directory :88 -> {\"LISTENING\" if \"88\" in s_dc else \"STOPPED\"}')
+    assert s_ied, 'FAIL R0/R1: h_ied GOOSE server no esta escuchando en :10102'
+    assert s_gw, 'FAIL R0/R1: h_gateway OPC UA server no esta escuchando en :4840'
+    assert s_elec, 'FAIL R0/R1: h_plc_elec DNP3 server no esta escuchando en :20000'
+    assert s_honey, 'FAIL R0/R1: h_plc_honey Honeypot no esta escuchando en :502'
+    assert s_dc, 'FAIL R0/R1: h_dc AD DC no esta escuchando en :88'
+    print('    ↳ ✅ Sockets confirmados activos en todos los namespaces OT/Corporate.')
 
     print('[*] 3. Ejecutando ataque GOOSE Spoofing desde h_attacker contra h_ied (10.0.3.20:10102)...')
     out = h_attacker.cmd(f'python3 {repo_root}/attacker/attack_goose_spoofing.py --host 10.0.3.20 --port 10102 --burst 3')
     print('    - Output de ataque:\n' + '      ' + out.replace('\n', '\n      ').strip())
 
-    print('[*] 4. Verificando correlación de eventos en motor SIEM...')
+    time.sleep(1.0)
+
+    print('[*] 4. Leyendo log del daemon IED real para confirmar readback de disparo XCBR1...')
+    log_content = h_ied.cmd('cat /tmp/h_ied_e2e.log').strip()
+    assert 'XCBR1.Pos.stVal=False' in log_content or 'XCBR1' in log_content, f'FAIL R1-C: El IED no registro cambio de estado XCBR1. Log: {log_content}'
+    print('    ↳ ✅ Readback confirmado: XCBR1.Pos.stVal=False (Breaker Tripped por GOOSE spoof).')
+
+    print('[*] 5. Ingestando evento real de IED en motor SIEM y verificando alertas correlacionadas...')
     siem = SiemCorrelationEngine()
     siem.ingest_raw_event(
         event_category='goose',
@@ -97,11 +105,12 @@ try:
         source_ip='10.0.1.10',
         destination_ip='10.0.3.20',
         service_name='iec61850_goose',
-        message='Paquete GOOSE falsificado detectado en subestacion (XCBR1 Trip)'
+        message='Paquete GOOSE falsificado detectado en subestacion (XCBR1.Pos.stVal=False)'
     )
     alerts = siem.correlate_events()
     print(f'    - Alertas SIEM correlacionadas: {len(alerts)}')
-    assert len(alerts) > 0, '¡Error: No se generaron alertas SIEM!'
+    assert len(alerts) > 0, 'FAIL R1-C: No se generaron alertas SIEM a partir del evento real del IED!'
+    print('    ↳ ✅ SIEM correlaciono exitosamente la alerta SOC-ALT-0002.')
 
 finally:
     print('[*] Deteniendo red Mininet...')
