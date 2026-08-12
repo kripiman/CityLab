@@ -66,6 +66,7 @@ def poll_plcs() -> None:
                 if client.connect():
                     rr = client.read_coils(0, 4)
                     if rr and not rr.isError():
+                        _consecutive_failures[sector] = 0
                         sector_data[sector] = {
                             'status': 'ONLINE',
                             'coils': [bool(b) for b in rr.bits[:4]],
@@ -73,14 +74,21 @@ def poll_plcs() -> None:
                             'stop_cmd': bool(rr.bits[1]),
                             'actuator_running': bool(rr.bits[2]),
                             'fault': bool(rr.bits[3]),
+                            'consecutive_failures': 0
                         }
                     else:
-                        sector_data[sector] = {'status': 'ERROR_READ'}
+                        _consecutive_failures[sector] += 1
+                        status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'ERROR_READ'
+                        sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
                     client.close()
                 else:
-                    sector_data[sector] = {'status': 'UNREACHABLE'}
+                    _consecutive_failures[sector] += 1
+                    status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'UNREACHABLE'
+                    sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
             except Exception as exc:
-                sector_data[sector] = {'status': 'EXCEPTION', 'detail': str(exc)}
+                _consecutive_failures[sector] += 1
+                status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'EXCEPTION'
+                sector_data[sector] = {'status': status, 'detail': str(exc), 'consecutive_failures': _consecutive_failures[sector]}
 
         scada_state['last_update'] = timestamp
         scada_state['sectors'] = sector_data

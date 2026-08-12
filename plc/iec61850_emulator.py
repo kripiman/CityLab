@@ -296,3 +296,24 @@ class Iec61850Server:
             self.publish_goose_event()
             self.publish_sv_sample()
             time.sleep(0.5)
+
+
+def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Emulador IED Subestación IEC 61850 GOOSE/SV")
+    parser.add_argument("--host", default="0.0.0.0", help="Dirección IP de bind (default: 0.0.0.0)")
+    parser.add_argument("--goose-port", type=int, default=DEFAULT_GOOSE_PORT, help="Puerto GOOSE UDP (default: 10102)")
+    parser.add_argument("--sv-port", type=int, default=DEFAULT_SV_PORT, help="Puerto SV UDP (default: 10103)")
+    args = parser.parse_args()
+
+    server = Iec61850Server(host=args.host, goose_port=args.goose_port, sv_port=args.sv_port)
+    server.start()
+    try:
+        while True:
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        server.stop()
+
+
+if __name__ == '__main__':
+    main()

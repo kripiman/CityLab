@@ -66,6 +66,9 @@ class Iec62443Topo(Topo):
         s_ews  = self.addSwitch('s4')  # Isolated EWS PAW Zone
         s_honey = self.addSwitch('s5') # Honeypot observation VLAN
 
+        # Isolated EWS PAW Zone
+        ews = self.addHost('h_ews', ip='10.0.4.30/24')
+
         # Firewall host (will have 5 interfaces once linked)
         fw = self.addHost('fw')
 
@@ -106,6 +109,7 @@ class Iec62443Topo(Topo):
         self.addLink(s_ot, plc_hosp)
         self.addLink(s_ot, ied_subst)
         self.addLink(s_ot, gw_telem)
+        self.addLink(s_ews, ews)
         self.addLink(s_honey, plc_honey)
 
 
@@ -227,16 +231,30 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
     print('[*] Testing: Attacker -> Corporate DC (tcp:88 Kerberos) - expected: ALLOWED')
     kdc_test = attacker.cmd("timeout 1 bash -c '</dev/tcp/10.0.1.20/88' && echo open || echo closed'")
     results['attacker_kdc_88'] = ('open' in kdc_test)
+    h_attacker = net.get('h_attacker')
+    h_dmz = net.get('h_dmz')
 
-    print('[*] Testing: DMZ -> Attacker (ping) - expected: ALLOWED')
-    out2 = dmz.cmd('ping -c1 -W1 10.0.1.10')
-    results['dmz_ping_attacker'] = ('1 packets transmitted, 1 received' in out2)
+    # Attacker -> PLC should fail (firewall blocks corp -> ot)
+    res_icmp_fail = h_attacker.cmd('ping -c 1 -w 1 10.0.3.10')
+    attacker_blocked = '100% packet loss' in res_icmp_fail or 'Destination Port Unreachable' in res_icmp_fail or '0 received' in res_icmp_fail
 
-    return results
+    # DMZ -> PLC 502 should succeed
+    res_modbus_ok = h_dmz.cmd('nc -zv -w 2 10.0.3.10 502 2>&1')
+    dmz_modbus_allowed = 'open' in res_modbus_ok or 'succeeded' in res_modbus_ok
+
+    # DMZ -> Attacker (management) should succeed
+    res_mgmt_ok = h_dmz.cmd('ping -c 1 -w 1 10.0.1.10')
+    dmz_mgmt_allowed = '1 received' in res_mgmt_ok or '0% packet loss' in res_mgmt_ok
+
+    return {
+        'attacker_ping_plc': attacker_blocked,
+        'dmz_connect_modbus': dmz_modbus_allowed,
+        'dmz_ping_attacker': dmz_mgmt_allowed
+    }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Start Mininet IEC62443 PoC topology')
+    parser = argparse.ArgumentParser(description='CityLab IEC 62443 Cyber Range Topology')
     parser.add_argument('--test', action='store_true', help='Run automated connectivity tests and exit')
     args = parser.parse_args()
 
@@ -259,9 +277,7 @@ def main() -> int:
     apply_fw_configuration(fw)
     configure_host_routes(net)
 
-    # Optionally auto-start PLC runtime inside the Mininet host 'h_plc'. This
-    # starts start_openplc.sh (which launches OpenPLC or fallback emulator) so
-    # Modbus/TCP is available at 10.0.3.10:502 from other hosts.
+    # Optionally auto-start PLC runtime & OT emulators inside Mininet hosts.
     try:
         auto_plc = os.environ.get('AUTO_START_PLC', '1')
     except Exception:
@@ -287,6 +303,41 @@ def main() -> int:
                 print(f'[WARN] {host_name} not present; skipping')
             except Exception as exc:
                 print(f'[ERROR] {host_name}: {exc}')
+
+        # Auto-start DNP3 Outstation en h_plc_elec (10.0.3.13:20000)
+        try:
+            dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
+            h_elec = net.get('h_plc_elec')
+            h_elec.cmd(f'python3 {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
+            print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
+        except Exception as exc:
+            print(f'[WARN] DNP3 auto-start skipped: {exc}')
+
+        # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102)
+        try:
+            iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
+            h_ied_node = net.get('h_ied')
+            h_ied_node.cmd(f'python3 {iec_script} --host 0.0.0.0 --goose-port 10102 > /tmp/h_ied.log 2>&1 &')
+            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102')
+        except Exception as exc:
+            print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
+
+        # Auto-start OPC UA Server en h_gateway (10.0.3.30:4840)
+        try:
+            opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
+            h_gw_node = net.get('h_gateway')
+            h_gw_node.cmd(f'python3 {opcua_script} > /tmp/h_gateway.log 2>&1 &')
+            print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
+        except Exception as exc:
+            print(f'[WARN] OPC UA auto-start skipped: {exc}')
+
+        # Auto-start Honeypot en h_plc_honey (10.0.5.99:502)
+        try:
+            h_honey_node = net.get('h_plc_honey')
+            h_honey_node.cmd(f'python3 {emulator} --plant-type honeypot > /tmp/h_plc_honey.log 2>&1 &')
+            print('[*] h_plc_honey (10.0.5.99): honeypot emulator spawned on :502')
+        except Exception as exc:
+            print(f'[WARN] Honeypot auto-start skipped: {exc}')
 
         # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080)
         try:
