@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import hmac
 import logging
+import os
 import socket
 import struct
 import threading
@@ -253,7 +254,8 @@ class Dnp3Server:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Emulador DNP3 Outstation IEEE 1815 (PLC Eléctrico)")
-    parser.add_argument("--host", default="0.0.0.0", help="Dirección IP de bind (default: 0.0.0.0)")
+    default_host = os.getenv("DNP3_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    parser.add_argument("--host", default=default_host, help=f"Dirección IP de bind (default: {default_host})")
     parser.add_argument("--port", type=int, default=20000, help="Puerto DNP3 TCP (default: 20000)")
     args = parser.parse_args()
 

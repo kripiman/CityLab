@@ -8,21 +8,21 @@
 
 ## 1. Breve del Escenario (Storyline)
 
-El atacante ha comprometido una cuenta de usuario sin privilegios en el dominio `CITYLAB.LOCAL`. Su objetivo es solicitar un ticket de servicio TGS para la cuenta `scada_engineer_svc`, extraer el hash, realizar crackeo offline y obtener el token con rol `engineer` para tomar control total del SCADA Server.
+El atacante ha comprometido una cuenta de usuario sin privilegios en el dominio `CITYLAB.LOCAL`. Su objetivo es solicitar un ticket de servicio TGS para la cuenta `krbe_ews` (o `jdoe_eng`), extraer el hash, realizar crackeo offline y obtener el token con rol `engineer` para tomar control total del SCADA Server.
 
 ---
 
 ## 2. Cadena de Ataque y Ejecución Paso a Paso
 
 ### Paso 1: Extracción de Ticket TGS Kerberos
-1. Solicitar el ticket de servicio Kerberos contra el KDC en `h_dc` (`10.0.1.20:10088`):
+1. Solicitar el ticket de servicio Kerberos contra el KDC en `h_dc` (`10.0.1.20:88`):
    ```bash
    python3 attacker/attack_kerberoast_ad.py
    ```
 2. Verificar la obtención del token `engineer:ENG_TOKEN_2026`.
 
 ### Paso 2: Escalado de Privilegios en API SCADA
-1. Usar la credencial obtenida para ejecutar mandos de control crítico (`/api/control/write`).
+1. Usar la credencial obtenida para ejecutar mandos de control crítico (`/api/control/write` o `/api/control`).
 
 ---
 

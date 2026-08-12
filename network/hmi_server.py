@@ -48,17 +48,37 @@ class IndustrialHmiEngine:
 
     def get_overview(self) -> Dict[str, Any]:
         scada_data = self.fetch_scada_status()
+        sectors = scada_data.get('sectors', scada_data)
+
+        self.alarms = []
+        is_loss_of_view = False
+
+        for sector_name in ['water', 'gas', 'elec', 'transport']:
+            sec_info = sectors.get(sector_name, {}) if isinstance(sectors, dict) else {}
+            if isinstance(sec_info, dict) and sec_info.get('status') == 'LOSS_OF_VIEW':
+                is_loss_of_view = True
+                self.alarms.append({
+                    'alarm_id': f'ALM-LOV-{sector_name.upper()}',
+                    'sector': sector_name,
+                    'severity': 'CRITICAL',
+                    'message': f'Pérdida de Visibilidad SCADA (Loss-of-View) en sector {sector_name}'
+                })
+
+        scada_connected = scada_data.get('status') != 'OFFLINE'
+        has_critical_alarm = (not scada_connected) or is_loss_of_view
+
         return {
             'hmi_brand': 'CityLab OpenSCADA / Ignition Edge Emulator',
-            'scada_connected': scada_data.get('status') != 'OFFLINE',
+            'scada_connected': scada_connected,
             'process_diagram': {
-                'water_sector': scada_data.get('water', {'t1_level': 10.0, 't2_level': 15.0, 'p1_state': True}),
-                'gas_sector': scada_data.get('gas', {'pressure_psi': 145.0, 'valve_open': True}),
-                'elec_sector': scada_data.get('elec', {'grid_voltage': 230.0, 'breaker_closed': True}),
-                'transport_sector': scada_data.get('transport', {'traffic_light': 2, 'gate_open': True}),
+                'water_sector': sectors.get('water', {'t1_level': 10.0, 't2_level': 15.0, 'p1_state': True}),
+                'gas_sector': sectors.get('gas', {'pressure_psi': 145.0, 'valve_open': True}),
+                'elec_sector': sectors.get('elec', {'grid_voltage': 230.0, 'breaker_closed': True}),
+                'transport_sector': sectors.get('transport', {'traffic_light': 2, 'gate_open': True}),
             },
+            'alarms': self.alarms,
             'active_alarms_count': len(self.alarms),
-            'system_health': 'NORMAL' if scada_data.get('status') != 'OFFLINE' else 'ALARM_CRITICAL'
+            'system_health': 'ALARM_CRITICAL' if has_critical_alarm else 'NORMAL'
         }
 
     def trigger_control_action(self, action: str, target: str, role_token: str = 'engineer:secret') -> Dict[str, Any]:

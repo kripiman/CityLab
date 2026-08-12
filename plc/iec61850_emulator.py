@@ -18,6 +18,7 @@ Integración:
 from __future__ import annotations
 
 import logging
+import os
 import socket
 import struct
 import threading
@@ -206,13 +207,19 @@ class Iec61850Server:
     def start(self) -> None:
         self._goose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._goose_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._listen_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._listen_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            self._goose_sock.bind((self.host, self.goose_port))
+            self._listen_sock.bind((self.host, self.goose_port))
         except OSError:
-            pass  # Si el puerto ya está en uso en segundo plano
+            pass
             
         self._sv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self._sv_sock.bind((self.host, self.sv_port))
+        except OSError:
+            pass
         self._running = True
         self._thread = threading.Thread(target=self._publish_loop, daemon=True)
         self._thread.start()
@@ -244,7 +251,7 @@ class Iec61850Server:
         )
         if self._goose_sock:
             try:
-                self._goose_sock.sendto(pdu, (self.host, self.goose_port))
+                self._goose_sock.sendto(pdu, ('127.0.0.1', self.goose_port))
             except OSError:
                 pass
         return pdu
@@ -254,38 +261,37 @@ class Iec61850Server:
         state = self.dataset.get_state()
         v_a = float(state['data']['MMXU1.PhV.phsA.cVal.mag'])
         i_a = float(state['data']['MMXU1.Amp.phsA.cVal.mag'])
-        sq_num = self.dataset.increment_seq()
+        smp_cnt = self.dataset.increment_seq()
         pdu = Iec61850SvEncoder.encode(
             f"{state['ied_name']}/LLN0$SV$sv01",
-            sq_num,
+            smp_cnt,
             v_a,
             i_a
         )
         if self._sv_sock:
             try:
-                self._sv_sock.sendto(pdu, (self.host, self.sv_port))
+                self._sv_sock.sendto(pdu, ('127.0.0.1', self.sv_port))
             except OSError:
                 pass
         return pdu
 
     def _listen_loop(self) -> None:
         """Hilo receptor de mensajes GOOSE entrantes en la subestación."""
-        if not self._goose_sock:
+        if not hasattr(self, '_listen_sock') or not self._listen_sock:
             return
-        self._goose_sock.settimeout(0.5)
+        self._listen_sock.settimeout(0.5)
         while self._running:
             try:
-                data, addr = self._goose_sock.recvfrom(2048)
+                data, addr = self._listen_sock.recvfrom(2048)
                 if not data:
                     continue
                 decoded = Iec61850GooseEncoder.decode(data)
                 if decoded and 'breaker_pos' in decoded:
                     new_pos = decoded['breaker_pos']
                     st_num = decoded.get('st_num', 0)
-                    changed = self.dataset.set('XCBR1.Pos.stVal', new_pos)
-                    if changed:
-                        LOGGER.warning('[IEC61850] ¡Mensaje GOOSE recibido de %s! XCBR1.Pos.stVal=%s (stNum=%d)',
-                                       addr[0], new_pos, st_num)
+                    self.dataset.set('XCBR1.Pos.stVal', new_pos)
+                    LOGGER.warning('[IEC61850] ¡Mensaje GOOSE recibido de %s! XCBR1.Pos.stVal=%s (stNum=%d)',
+                                   addr[0], new_pos, st_num)
             except socket.timeout:
                 continue
             except Exception as e:
@@ -301,10 +307,13 @@ class Iec61850Server:
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Emulador IED Subestación IEC 61850 GOOSE/SV")
-    parser.add_argument("--host", default="0.0.0.0", help="Dirección IP de bind (default: 0.0.0.0)")
+    default_host = os.getenv("IEC61850_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    parser.add_argument("--host", default=default_host, help=f"Dirección IP de bind (default: {default_host})")
     parser.add_argument("--goose-port", type=int, default=DEFAULT_GOOSE_PORT, help="Puerto GOOSE UDP (default: 10102)")
     parser.add_argument("--sv-port", type=int, default=DEFAULT_SV_PORT, help="Puerto SV UDP (default: 10103)")
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(name)s] %(message)s')
 
     server = Iec61850Server(host=args.host, goose_port=args.goose_port, sv_port=args.sv_port)
     server.start()

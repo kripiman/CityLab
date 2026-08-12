@@ -54,52 +54,58 @@ _historian: HistorianTSDB = HistorianTSDB()
 
 LOSS_OF_VIEW_THRESHOLD = 3
 _consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
+
+def poll_plcs_once() -> Dict[str, Any]:
+    """Ejecuta una ronda individual de consulta a los PLCs OT."""
+    timestamp = time.time()
+    sector_data = {}
+
+    for sector, (ip, port) in PLC_CONFIGS.items():
+        client = ModbusTcpClient(ip, port=port, timeout=1.0)
+        try:
+            if client.connect():
+                rr = client.read_coils(0, 4)
+                if rr and not rr.isError():
+                    _consecutive_failures[sector] = 0
+                    sector_data[sector] = {
+                        'status': 'ONLINE',
+                        'coils': [bool(b) for b in rr.bits[:4]],
+                        'start_cmd': bool(rr.bits[0]),
+                        'stop_cmd': bool(rr.bits[1]),
+                        'actuator_running': bool(rr.bits[2]),
+                        'fault': bool(rr.bits[3]),
+                        'consecutive_failures': 0
+                    }
+                else:
+                    _consecutive_failures[sector] += 1
+                    status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'ERROR_READ'
+                    sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
+                client.close()
+            else:
+                _consecutive_failures[sector] += 1
+                status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'UNREACHABLE'
+                sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
+        except Exception as exc:
+            _consecutive_failures[sector] += 1
+            status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'EXCEPTION'
+            sector_data[sector] = {'status': status, 'detail': str(exc), 'consecutive_failures': _consecutive_failures[sector]}
+
+    scada_state['last_update'] = timestamp
+    scada_state['sectors'] = sector_data
+
+    # Fase 1 — Persistir snapshots en historian TSDB
+    for sector, data in sector_data.items():
+        try:
+            _historian.write_snapshot(sector, data, timestamp)
+        except Exception as exc:  # pragma: no cover
+            LOGGER.warning('[Historian] Error al escribir snapshot %s: %s', sector, exc)
+    return sector_data
+
+
 def poll_plcs() -> None:
     """Hilo de fondo que consulta periódicamente los PLCs OT."""
     while True:
-        timestamp = time.time()
-        sector_data = {}
-
-        for sector, (ip, port) in PLC_CONFIGS.items():
-            client = ModbusTcpClient(ip, port=port, timeout=1.0)
-            try:
-                if client.connect():
-                    rr = client.read_coils(0, 4)
-                    if rr and not rr.isError():
-                        _consecutive_failures[sector] = 0
-                        sector_data[sector] = {
-                            'status': 'ONLINE',
-                            'coils': [bool(b) for b in rr.bits[:4]],
-                            'start_cmd': bool(rr.bits[0]),
-                            'stop_cmd': bool(rr.bits[1]),
-                            'actuator_running': bool(rr.bits[2]),
-                            'fault': bool(rr.bits[3]),
-                            'consecutive_failures': 0
-                        }
-                    else:
-                        _consecutive_failures[sector] += 1
-                        status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'ERROR_READ'
-                        sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
-                    client.close()
-                else:
-                    _consecutive_failures[sector] += 1
-                    status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'UNREACHABLE'
-                    sector_data[sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
-            except Exception as exc:
-                _consecutive_failures[sector] += 1
-                status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'EXCEPTION'
-                sector_data[sector] = {'status': status, 'detail': str(exc), 'consecutive_failures': _consecutive_failures[sector]}
-
-        scada_state['last_update'] = timestamp
-        scada_state['sectors'] = sector_data
-
-        # Fase 1 — Persistir snapshots en historian TSDB
-        for sector, data in sector_data.items():
-            try:
-                _historian.write_snapshot(sector, data, timestamp)
-            except Exception as exc:  # pragma: no cover
-                LOGGER.warning('[Historian] Error al escribir snapshot %s: %s', sector, exc)
-
+        poll_plcs_once()
         time.sleep(2.0)
 
 
@@ -179,6 +185,13 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
 
+        elif parsed.path in ('/api/control', '/api/control/read', '/api/control/write'):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('X-SCADA-Role', role)
+            self.end_headers()
+            self.wfile.write(json.dumps({'status': 'SUCCESS', 'role': role, 'path': parsed.path}).encode('utf-8'))
+
         elif parsed.path == '/api/whoami':
             # Fase 2: introspección de identidad y rol del token
             self.send_response(200)
@@ -191,6 +204,46 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
             self.wfile.write(b'OK')
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def do_POST(self) -> None:
+        parsed = urlparse(self.path)
+        auth_header = self.headers.get('Authorization')
+        role, http_code = _rbac.resolve(auth_header)
+        if role is None:
+            self.send_response(http_code)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'unauthorized', 'code': http_code}).encode())
+            return
+
+        if not _rbac.is_authorized(role, parsed.path):
+            self.send_response(403)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'forbidden', 'role': role, 'path': parsed.path}).encode())
+            return
+
+        content_len = int(self.headers.get('Content-Length', 0))
+        post_body = self.rfile.read(content_len) if content_len > 0 else b'{}'
+        try:
+            body_json = json.loads(post_body.decode('utf-8'))
+        except Exception:
+            body_json = {}
+
+        if parsed.path in ('/api/control', '/api/control/write'):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('X-SCADA-Role', role)
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'status': 'SUCCESS',
+                'action_executed': body_json.get('action', 'write'),
+                'target': body_json.get('target', 'all'),
+                'role': role
+            }).encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()

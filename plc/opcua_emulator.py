@@ -456,7 +456,8 @@ def main() -> int:
     import argparse
     import os
     parser = argparse.ArgumentParser(description="Emulador de servidor OPC UA sobre TCP")
-    parser.add_argument("--host", default=os.getenv('OPCUA_HOST', '10.0.3.30'), help="IP de bind")
+    default_host = os.getenv('OPCUA_HOST', os.getenv('BIND_HOST', '0.0.0.0'))
+    parser.add_argument("--host", default=default_host, help=f"IP de bind (default: {default_host})")
     parser.add_argument("--port", type=int, default=int(os.getenv('OPCUA_PORT', str(OPCUA_DEFAULT_PORT))), help="Puerto OPC UA")
     args = parser.parse_args()
 

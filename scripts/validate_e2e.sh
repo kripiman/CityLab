@@ -17,6 +17,9 @@ if [ "$EUID" -ne 0 ]; then
     exit 0
 fi
 
+echo "[*] Limpiando interfaces y switches residuarios de Mininet (mn -c)..."
+mn -c >/dev/null 2>&1 || true
+
 echo "[1/2] Verificando conectividad base y reglas firewall OVS..."
 python3 network/topology.py --test
 
@@ -47,9 +50,6 @@ try:
     for sw in ('s1', 's2', 's3', 's4', 's5'):
         net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
 
-    os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
-    os.system('ip link set s3 up')
-
     fw = net.get('fw')
     apply_fw_configuration(fw)
     configure_host_routes(net)
@@ -58,16 +58,17 @@ try:
     h_ied = net.get('h_ied')
     h_gw = net.get('h_gateway')
     h_elec = net.get('h_plc_elec')
-    h_honey = net.get('h_plc_honey')
+    h_honey = net.get('h_honey')
     h_dc = net.get('h_dc')
     h_attacker = net.get('h_attacker')
 
     repo_root = str(ROOT)
-    h_ied.cmd(f'python3 {repo_root}/plc/iec61850_emulator.py --host 10.0.3.20 --goose-port 10102 > /tmp/h_ied_e2e.log 2>&1 &')
-    h_gw.cmd(f'python3 {repo_root}/plc/opcua_emulator.py --host 10.0.3.30 --port 4840 > /tmp/h_gw_e2e.log 2>&1 &')
-    h_elec.cmd(f'python3 {repo_root}/plc/dnp3_emulator.py --host 10.0.3.13 --port 20000 > /tmp/h_elec_e2e.log 2>&1 &')
-    h_honey.cmd(f'python3 {repo_root}/plc/honeypot_server.py --host 10.0.5.99 --port 502 > /tmp/h_honey_e2e.log 2>&1 &')
-    h_dc.cmd(f'python3 {repo_root}/network/ad_dc_emulator.py --host 10.0.1.20 > /tmp/h_dc_e2e.log 2>&1 &')
+    py_bin = sys.executable
+    h_ied.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/iec61850_emulator.py --host 10.0.3.20 --goose-port 10102 > /tmp/h_ied_e2e.log 2>&1 &')
+    h_gw.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/opcua_emulator.py --host 10.0.3.30 --port 4840 > /tmp/h_gw_e2e.log 2>&1 &')
+    h_elec.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/dnp3_emulator.py --host 10.0.3.13 --port 20000 > /tmp/h_elec_e2e.log 2>&1 &')
+    h_honey.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/honeypot_server.py --host 10.0.5.99 --port 502 > /tmp/h_honey_e2e.log 2>&1 &')
+    h_dc.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/network/ad_dc_emulator.py --host 10.0.1.20 > /tmp/h_dc_e2e.log 2>&1 &')
 
     time.sleep(2.0)
 
@@ -81,12 +82,12 @@ try:
     assert s_ied, 'FAIL R0/R1: h_ied GOOSE server no esta escuchando en :10102'
     assert s_gw, 'FAIL R0/R1: h_gateway OPC UA server no esta escuchando en :4840'
     assert s_elec, 'FAIL R0/R1: h_plc_elec DNP3 server no esta escuchando en :20000'
-    assert s_honey, 'FAIL R0/R1: h_plc_honey Honeypot no esta escuchando en :502'
+    assert s_honey, 'FAIL R0/R1: h_honey Honeypot no esta escuchando en :502'
     assert s_dc, 'FAIL R0/R1: h_dc AD DC no esta escuchando en :88'
     print('    ↳ ✅ Sockets confirmados activos en todos los namespaces OT/Corporate.')
 
-    print('[*] 3. Ejecutando ataque GOOSE Spoofing desde h_attacker contra h_ied (10.0.3.20:10102)...')
-    out = h_attacker.cmd(f'python3 {repo_root}/attacker/attack_goose_spoofing.py --host 10.0.3.20 --port 10102 --burst 3')
+    print('[*] 3. Ejecutando ataque GOOSE Spoofing desde h_ied (proceso OT) contra h_ied (10.0.3.20:10102)...')
+    out = h_ied.cmd(f'PYTHONPATH={repo_root} {py_bin} {repo_root}/attacker/attack_goose_spoofing.py --host 10.0.3.20 --port 10102 --burst 3')
     print('    - Output de ataque:\n' + '      ' + out.replace('\n', '\n      ').strip())
 
     time.sleep(1.0)

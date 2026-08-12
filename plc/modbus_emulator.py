@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import threading
 import time
 from typing import List
@@ -119,7 +120,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Modbus/TCP PLC emulator')
     parser.add_argument('--plant-type', choices=list(_PLANT_TIMINGS), default='water',
                         help='Tipo de planta: water | gas | elec (default: water)')
-    parser.add_argument('--host', default='0.0.0.0', help='Bind address (default: 0.0.0.0)')
+    default_host = os.getenv('MODBUS_HOST', os.getenv('BIND_HOST', '0.0.0.0'))
+    parser.add_argument('--host', default=default_host, help=f'Bind address (default: {default_host})')
     parser.add_argument('--port', type=int, default=502, help='Modbus TCP port (default: 502)')
     args = parser.parse_args()
 

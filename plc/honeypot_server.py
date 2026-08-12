@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import socket
 import sys
 import threading
@@ -94,7 +95,8 @@ class OtHoneypotServer:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Daemon Honeypot OT (VLAN s5)")
-    parser.add_argument("--host", default="0.0.0.0", help="IP de escucha")
+    default_host = os.getenv("HONEYPOT_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    parser.add_argument("--host", default=default_host, help=f"IP de escucha (default: {default_host})")
     parser.add_argument("--port", type=int, default=502, help="Puerto Modbus/TCP honeypot")
     args = parser.parse_args()
 

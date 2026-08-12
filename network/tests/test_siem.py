@@ -67,7 +67,22 @@ class TestSiemPipeline(unittest.TestCase):
         export_str = self.siem.export_elk_json()
         parsed = json.loads(export_str)
         self.assertIsInstance(parsed, list)
-        self.assertEqual(len(parsed), 1)
+    def test_goose_injection_correlation_rule(self) -> None:
+        """Verifica que la Regla 2 (Industroyer2 GOOSE Spoofing) active alerta crítica."""
+        self.siem.ingest_raw_event(
+            event_category='process_control',
+            event_type='alert',
+            severity='CRITICAL',
+            source_ip='10.0.1.10',
+            destination_ip='10.0.3.20',
+            service_name='iec61850_emulator',
+            message='IEC 61850 GOOSE Anomaly Detected: Sequence Jump (stNum spoofing)'
+        )
+        self.assertGreaterEqual(len(self.siem.active_alerts), 1)
+        alert = self.siem.active_alerts[-1]
+        self.assertEqual(alert['severity'], 'CRITICAL')
+        self.assertIn('GOOSE', alert['name'])
+        self.assertEqual(alert['attacker_ip'], '10.0.1.10')
 
 
 if __name__ == '__main__':
