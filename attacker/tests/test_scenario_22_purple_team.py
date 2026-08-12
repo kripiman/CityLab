@@ -12,7 +12,10 @@ class TestScenario22PurpleTeam(unittest.TestCase):
         mttd = PurpleTeamMttd()
         res = mttd.run_mttd_measurement()
         self.assertEqual(res['status'], 'SUCCESS')
-        self.assertTrue(res['nist_report_generated'])
+        self.assertGreaterEqual(res['alerts_count'], 2)
+        self.assertGreater(res['mttd_seconds'], 0)
+        self.assertIn('nist_report', res)
+        self.assertEqual(res['nist_report']['framework_standard'], 'NIST SP 800-61 Rev. 2')
 
 
 if __name__ == '__main__':

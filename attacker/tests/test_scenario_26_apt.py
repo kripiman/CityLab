@@ -13,6 +13,9 @@ class TestScenario26Apt(unittest.TestCase):
         res = apt.run_full_apt_campaign()
         self.assertEqual(res['status'], 'SUCCESS')
         self.assertEqual(res['total_phases'], 5)
+        self.assertTrue(res['phase_details']['phase3_goose']['breaker_tripped'])
+        self.assertEqual(res['phase_details']['phase4_anti_forensics']['records_wiped'], 1)
+        self.assertTrue(res['phase_details']['phase5_recovery']['recovery_completed'])
 
 
 if __name__ == '__main__':

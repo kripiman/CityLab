@@ -13,8 +13,14 @@ import argparse
 import logging
 import sys
 import time
+from pathlib import Path
 from typing import Dict, Any
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from helics_sim.fed_gridmock import main as fed_gridmock_main
 from physical.water.plant_water import TwoStageWaterPlant
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][ATTRIBUTION-ATTACK] %(message)s')

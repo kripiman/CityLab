@@ -90,7 +90,21 @@ class SiemCorrelationEngine:
                 'evidence': [asdict(e) for e in honeypot_events + modbus_dpi_alerts],
                 'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
             }
-            if not any(a['alert_id'] == alert['alert_id'] for a in self.active_alerts):
+            if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
+                self.active_alerts.append(alert)
+                LOGGER.critical('[SIEM-CORRELATION] ¡ALERTA SOC CRÍTICA! %s desde IP %s', alert['name'], event.source_ip)
+
+        # Regla 2: Inyección / Spoofing GOOSE IEC 61850 (Industroyer2 Pattern)
+        if event.event_category == 'process_control' and ('GOOSE' in event.message.upper() or event.service_name == 'iec61850_emulator'):
+            alert = {
+                'alert_id': f"SOC-ALT-{len(self.active_alerts)+1:04d}",
+                'name': 'Ataque por Inyección / Spoofing de Mensajes GOOSE IEC 61850 (Industroyer2 Pattern)',
+                'severity': 'CRITICAL',
+                'attacker_ip': event.source_ip,
+                'evidence': [asdict(event)],
+                'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+            }
+            if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
                 self.active_alerts.append(alert)
                 LOGGER.critical('[SIEM-CORRELATION] ¡ALERTA SOC CRÍTICA! %s desde IP %s', alert['name'], event.source_ip)
 

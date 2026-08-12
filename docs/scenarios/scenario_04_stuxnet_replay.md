@@ -17,7 +17,7 @@ Basado en la técnica usada por **Stuxnet** (2010), el atacante intercepta la co
 ```
 [Proceso Físico Real] ──(Nivel Crítico 0.1m³)──> [Atacante MITM]
                                                        │
-                                          (Inyección Baseline Falso 15.0m³)
+                                          (Inyección Baseline Falso 10.0m³)
                                                        ▼
                                             [HMI Operator / TSDB]
 ```
@@ -33,7 +33,7 @@ Basado en la técnica usada por **Stuxnet** (2010), el atacante intercepta la co
    ```
 
 ### Paso 2: Engaño a la HMI y Sabotaje de Planta
-1. Observar en los logs del servidor Historian cómo las lecturas persisten en rango normal ($15.0\text{ m}^3$) a pesar de que el tanque real se encuentra desabastecido o en condición de falla.
+1. Observar en los logs del servidor Historian cómo las lecturas persisten en rango normal ($10.0\text{ m}^3$) a pesar de que el tanque real se encuentra desabastecido o en condición de falla.
 
 ---
 

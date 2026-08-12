@@ -16,7 +16,12 @@ import argparse
 import logging
 import sys
 import time
+from pathlib import Path
 from typing import Dict, Any
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from helics_sim.fed_sis import SafetyInstrumentedLogic, SafetyInterlockLimits
 from physical.water.plant_water import TwoStageWaterPlant
@@ -36,28 +41,36 @@ class TritonLowSlowAttack:
         LOGGER.info("Iniciando ataque Triton Low-and-Slow en sector: %s", self.target_sector)
         plant = TwoStageWaterPlant()
         
-        # Ajustar estado del proceso rozando el umbral SIS sin superarlo
-        target_t1 = self.sis_limits.max_tank_level_m3 - 0.2  # 18.8 m³
-        plant.t1_level_m3 = target_t1
+        target_t1 = self.sis_limits.max_tank_level_m3 - 0.2  # 18.8 m³ (SIS limit: 19.0 m³)
+        target_gas = self.sis_limits.max_gas_pressure_psi - 1.5  # 178.5 PSI (SIS limit: 180.0 PSI)
+        
+        if self.target_sector == 'water':
+            plant.t1_level_m3 = target_t1
+            gas_val = 145.0
+        else:
+            gas_val = target_gas
 
         results = []
         for i in range(cycles):
-            # Simular avance del proceso con pulso de bomba controlado
-            plant.step(p1_cmd=True, p2_cmd=False, dt=0.1)
-            # Evitar superar el umbral exacto
-            plant.t1_level_m3 = min(plant.t1_level_m3, target_t1)
-            
-            state = {'water_t1_level': plant.t1_level_m3, 'gas_pressure': 178.5, 'grid_freq': 60.0}
+            if self.target_sector == 'water':
+                plant.step(p1_cmd=True, p2_cmd=False, dt=0.1)
+                plant.t1_level_m3 = min(plant.t1_level_m3, target_t1)
+                water_val = plant.t1_level_m3
+            else:
+                water_val = 10.0
+                gas_val = target_gas
+
+            state = {'water_t1_level': water_val, 'gas_pressure': gas_val, 'grid_freq': 60.0}
             must_trip, reason = self.sis_logic.evaluate_safety_state(state)
             
             LOGGER.info(
-                "Ciclo %d/%d — Nivel T1: %.2f m³ | Umbral SIS: %.1f m³ | SIS Tripped: %s",
-                i+1, cycles, plant.t1_level_m3, self.sis_limits.max_tank_level_m3, must_trip
+                "Ciclo %d/%d — Sector: %s | Valor: %.2f | SIS Tripped: %s",
+                i+1, cycles, self.target_sector, water_val if self.target_sector == 'water' else gas_val, must_trip
             )
-            results.append({'cycle': i+1, 'level': plant.t1_level_m3, 'sis_tripped': must_trip})
+            results.append({'cycle': i+1, 'val': water_val if self.target_sector == 'water' else gas_val, 'sis_tripped': must_trip})
             time.sleep(0.05)
 
-        return {'status': 'SUCCESS', 'stealth_maintained': not any(r['sis_tripped'] for r in results)}
+        return {'status': 'SUCCESS', 'sector': self.target_sector, 'stealth_maintained': not any(r['sis_tripped'] for r in results)}
 
 
 def main() -> int:

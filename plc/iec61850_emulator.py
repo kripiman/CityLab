@@ -190,7 +190,7 @@ class Iec61850SvEncoder:
 
 
 class Iec61850Server:
-    """Servidor IED Subestación IEC 61850 con emisión GOOSE & SV."""
+    """Servidor IED Subestación IEC 61850 con emisión GOOSE & SV y recepción de comandos."""
 
     def __init__(self, host: str = '127.0.0.1', goose_port: int = DEFAULT_GOOSE_PORT, sv_port: int = DEFAULT_SV_PORT) -> None:
         self.host = host
@@ -201,19 +201,31 @@ class Iec61850Server:
         self._goose_sock: Optional[socket.socket] = None
         self._sv_sock: Optional[socket.socket] = None
         self._thread: Optional[threading.Thread] = None
+        self._listen_thread: Optional[threading.Thread] = None
 
     def start(self) -> None:
         self._goose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._goose_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self._goose_sock.bind((self.host, self.goose_port))
+        except OSError:
+            pass  # Si el puerto ya está en uso en segundo plano
+            
         self._sv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._running = True
         self._thread = threading.Thread(target=self._publish_loop, daemon=True)
         self._thread.start()
+        self._listen_thread = threading.Thread(target=self._listen_loop, daemon=True)
+        self._listen_thread.start()
         LOGGER.info('[IEC61850] Servidor IED subestación activo en %s (GOOSE:%d, SV:%d)', self.host, self.goose_port, self.sv_port)
 
     def stop(self) -> None:
         self._running = False
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=1.0)
+        if self._listen_thread and self._listen_thread.is_alive():
+            self._listen_thread.join(timeout=1.0)
         if self._goose_sock:
             self._goose_sock.close()
         if self._sv_sock:
@@ -255,6 +267,29 @@ class Iec61850Server:
             except OSError:
                 pass
         return pdu
+
+    def _listen_loop(self) -> None:
+        """Hilo receptor de mensajes GOOSE entrantes en la subestación."""
+        if not self._goose_sock:
+            return
+        self._goose_sock.settimeout(0.5)
+        while self._running:
+            try:
+                data, addr = self._goose_sock.recvfrom(2048)
+                if not data:
+                    continue
+                decoded = Iec61850GooseEncoder.decode(data)
+                if decoded and 'breaker_pos' in decoded:
+                    new_pos = decoded['breaker_pos']
+                    st_num = decoded.get('st_num', 0)
+                    changed = self.dataset.set('XCBR1.Pos.stVal', new_pos)
+                    if changed:
+                        LOGGER.warning('[IEC61850] ¡Mensaje GOOSE recibido de %s! XCBR1.Pos.stVal=%s (stNum=%d)',
+                                       addr[0], new_pos, st_num)
+            except socket.timeout:
+                continue
+            except Exception as e:
+                LOGGER.debug('[IEC61850] Excepción en receiver loop GOOSE: %s', e)
 
     def _publish_loop(self) -> None:
         while self._running:

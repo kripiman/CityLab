@@ -10,7 +10,14 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from pathlib import Path
 from typing import Dict, List, Any
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from attacker.attack_multisector import TARGET_PLCS
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][ACTIVE-SCAN] %(message)s')
 LOGGER = logging.getLogger('attack_ot_active_scan')

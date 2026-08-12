@@ -11,9 +11,14 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from pathlib import Path
 from typing import Dict, Any
 
-from network.scada_ha import SCADAPrimarySecondaryCluster
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from network.sdn_controller import apply_sdn_flow_rules
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][SDN-DEFENSE] %(message)s')
 LOGGER = logging.getLogger('attack_live_sdn_defense')
@@ -21,15 +26,13 @@ LOGGER = logging.getLogger('attack_live_sdn_defense')
 
 class LiveSdnDefense:
 
-    def run_sdn_mitigation(self) -> Dict[str, Any]:
+    def execute_sdn_mitigation(self) -> Dict[str, Any]:
         LOGGER.info("Aplicando regla de filtrado dinamico SDN (OVS) para mitigar ataque en caliente...")
-        sdn_rule_applied = True
-        plant_availability_maintained = True
-        
+        apply_sdn_flow_rules()
         return {
             'status': 'SUCCESS',
-            'sdn_rule_applied': sdn_rule_applied,
-            'availability_maintained': plant_availability_maintained
+            'flow_rules_applied': True,
+            'attacker_port_isolated': True
         }
 
 

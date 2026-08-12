@@ -12,7 +12,9 @@ class TestPassiveRecon(unittest.TestCase):
         recon = OtPassiveRecon()
         res = recon.run_passive_sniff()
         self.assertEqual(res['status'], 'SUCCESS')
-        self.assertEqual(res['devices_mapped'], 5)
+        self.assertEqual(res['devices_mapped'], 7)
+        self.assertTrue(res['stealth_maintained'])
+        self.assertEqual(len(res['devices']), 7)
 
 
 if __name__ == '__main__':

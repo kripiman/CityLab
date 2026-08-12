@@ -10,9 +10,9 @@ class TestScenario23Sdn(unittest.TestCase):
 
     def test_sdn_defense_execution(self) -> None:
         sdn = LiveSdnDefense()
-        res = sdn.run_sdn_mitigation()
+        res = sdn.execute_sdn_mitigation()
         self.assertEqual(res['status'], 'SUCCESS')
-        self.assertTrue(res['sdn_rule_applied'])
+        self.assertTrue(res['flow_rules_applied'])
 
 
 if __name__ == '__main__':

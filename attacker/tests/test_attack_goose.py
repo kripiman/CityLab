@@ -33,6 +33,19 @@ class TestGooseSpoofingAttack(unittest.TestCase):
         self.assertEqual(decoded['st_num'], 99)
         self.assertFalse(decoded['breaker_pos'])
 
+    def test_goose_spoofing_server_reception(self) -> None:
+        spoof_goose_trip(
+            target_host='127.0.0.1',
+            target_port=10105,
+            ied_name='CITYLAB_IED1',
+            st_num=200,
+            breaker_pos=False
+        )
+        import time
+        time.sleep(0.2)
+        pos = self.server.dataset.get('XCBR1.Pos.stVal')
+        self.assertFalse(pos)
+
 
 if __name__ == '__main__':
     unittest.main()
