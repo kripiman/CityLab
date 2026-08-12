@@ -16,7 +16,7 @@ Aprovechando la falta de autenticación y cifrado en el protocolo multicast **IE
 
 ## 2. Mapa de Componentes e IPs
 
-- **Atacante (IT / DMZ Pivoting)**: `10.0.1.10` (`h_attacker`) / `10.0.2.10` (`h_dmz`)
+- **Atacante (Requiere Pivoteo OT)**: Acceso previo a red OT (`10.0.3.0/24`) vía `h_dmz` (`10.0.2.10`) o `h_scada` (`10.0.2.20`) — *Cadena con Escenario 19*.
 - **Subestación Eléctrica IED**: `10.0.3.20` (`h_ied` / `CITYLAB_IED1`)
 - **Puerto UDP GOOSE**: `10102` (Default standard; configurable vía `--port`)
 - **Controlador de Proceso**: `plc/iec61850_emulator.py`
@@ -25,20 +25,26 @@ Aprovechando la falta de autenticación y cifrado en el protocolo multicast **IE
 
 ## 3. Cadena de Ataque y Ejecución Paso a Paso
 
-### Paso 1: Escaneo y Sniffing de Mensajes GOOSE
-1. Capturar tráfico de la red OT para identificar la presencia de PDUs GOOSE:
+> **Nota de Arquitectura IEC 62443 / Industroyer2**:
+> El protocolo GOOSE no es enrutable a través del firewall perimetral IT/OT (`fw`). El ataque exige estar posicionado dentro del segmento L2 de la subestación (`10.0.3.0/24`).
+
+### Paso 1: Pivoteo hacia la Red OT
+1. Establecer túnel o sesión de ejecución interactiva en el segmento OT tras encadenar la intrusión desde DMZ (Escenario 19).
+
+### Paso 2: Escaneo y Sniffing de Mensajes GOOSE
+1. Capturar tráfico de la red de proceso OT para identificar PDUs GOOSE activos:
    ```bash
    python3 -c "import socket; s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.bind(('0.0.0.0', 10102)); print(s.recvfrom(1024))"
    ```
 2. Extraer el identificador del IED (`gcb_ref`: `CITYLAB_IED1/LLN0$GO$gcb01`) y el `stNum` actual.
 
-### Paso 2: Inyección de Disparo Falsificado (Spoofing)
-1. Ejecutar el script de ataque `attacker/attack_goose_spoofing.py` forzando un `stNum` elevado y `breaker_pos = False` (TRIP):
+### Paso 3: Inyección de Disparo Falsificado (Spoofing)
+1. Ejecutar el script de ataque `attacker/attack_goose_spoofing.py` desde el segmento OT forzando un `stNum` elevado y `breaker_pos = False` (TRIP):
    ```bash
    python3 attacker/attack_goose_spoofing.py --host 10.0.3.20 --port 10102 --ied CITYLAB_IED1 --stnum 500 --burst 5
    ```
 
-### Paso 3: Verificación de Impacto Ciberfísico
+### Paso 4: Verificación de Impacto Ciberfísico
 1. Comprobar la apertura del interruptor en la telemetría del IED.
 2. Observar la propagación de la caída de voltaje en la red eléctrica (`grid_voltage_pu -> 0.0`).
 

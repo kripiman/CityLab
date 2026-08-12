@@ -149,6 +149,10 @@ def apply_fw_configuration(fw: Node) -> None:
     fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
 
+    # Permit h_scada and h_ews -> OT OPC UA (port 4840) for Telemetry Gateway (10.0.3.30)
+    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d 10.0.3.30 -p tcp --dport 4840 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d 10.0.3.30 -p tcp --dport 4840 -j ACCEPT")
+
     # Permit Corporate (10.0.1.0/24) -> Isolated EWS Zone (10.0.4.30) ONLY via SSH (PAW Rule)
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth3 -d 10.0.4.30 -p tcp --dport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p tcp --dport 22 -j ACCEPT")
