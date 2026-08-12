@@ -30,8 +30,8 @@ graph TD
         L1A["Nivel 1: Fácil (5 Escenarios Onboarding)"]
         L1B["Nivel 2: Fácil-Media (4 Escenarios Guiados)"]
     end
-    subgraph "Núcleo Existente (Verificado & Operativo)"
-        N0["Fases 0-9 & Escenarios 01-12 (Media a Avanzada)"]
+    subgraph "Nivel 3: Núcleo Existente (Verificado & Operativo)"
+        N0["Nivel 3: Media a Avanzada (Fases 0-9 & Escenarios 01-12)"]
     end
     subgraph "Lote 2: Techo de la Curva (Diseño Complejo & Purple Team)"
         L2A["Nivel 4: Avanzada-Profesional (4 Escenarios Purple/SDN)"]
@@ -82,7 +82,7 @@ graph TD
 *Empaquetado de componentes existentes con documentación interactiva.*
 
 6. **`scenario_18_modbus_single_coil_write` (Fácil-Media)**:
-   - **TTP**: Escritura forzada de un solo coil Modbus (`Coil 0` bomba agua).
+   - **TTP**: Escritura forzada de un solo coil Modbus (`Coil 0` bomba agua) reutilizando script `attacker/exploit_modbus.py`.
    - **Objetivo**: Provocar el arranque manual del actuador y medir el incremento del proceso en la HMI.
    - **Enseña**: Control directo sin autenticación en protocolos legados.
 
@@ -157,7 +157,7 @@ Al completar la incorporación de los Lotes 1 y 2, la curva pedagógica del City
 
 ```
 [Fácil: 5] ──> [Fácil-Media: 5] ──> [Media: 4] ──> [Media-Avanzada: 3] ──> [Avanzada: 4] ──> [Avanzada-Prof: 4] ──> [Profesional: 4]
-   (17.8%)          (17.8%)          (14.3%)            (10.7%)            (14.3%)             (14.3%)             (14.3%)
+   (17.2%)          (17.2%)          (13.8%)            (10.3%)            (13.8%)             (13.8%)             (13.8%)
 ```
 
 - **Total de Escenarios en el Catálogo**: 29 escenarios CTF documentados.
