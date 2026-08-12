@@ -76,13 +76,15 @@ class Iec62443Topo(Topo):
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
         scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
 
-        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15)
+        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15), ied (10.0.3.20), gateway (10.0.3.30)
         plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
         icssim    = self.addHost('h_icssim',     ip='10.0.3.11/24')
         plc_gas   = self.addHost('h_plc_gas',    ip='10.0.3.12/24')
         plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
         plc_trans = self.addHost('h_plc_trans',  ip='10.0.3.14/24')
         plc_hosp  = self.addHost('h_plc_hosp',   ip='10.0.3.15/24')
+        ied_subst = self.addHost('h_ied',        ip='10.0.3.20/24')
+        gw_telem  = self.addHost('h_gateway',    ip='10.0.3.30/24')
         plc_honey = self.addHost('h_plc_honey',  ip='10.0.5.99/24')
 
         # Links (order determines fw-eth names: eth0=corp, eth1=dmz, eth2=ot, eth3=ews, eth4=honey)
@@ -102,6 +104,8 @@ class Iec62443Topo(Topo):
         self.addLink(s_ot, plc_elec)
         self.addLink(s_ot, plc_trans)
         self.addLink(s_ot, plc_hosp)
+        self.addLink(s_ot, ied_subst)
+        self.addLink(s_ot, gw_telem)
         self.addLink(s_honey, plc_honey)
 
 
@@ -172,7 +176,7 @@ def configure_host_routes(net: Mininet) -> None:
     h_dmz.cmd('ip route flush default')
     h_dmz.cmd('ip route add default via 10.0.2.1')
 
-    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_trans', 'h_plc_hosp'):
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_trans', 'h_plc_hosp', 'h_ied', 'h_gateway'):
         try:
             h = net.get(ot_host)
             h.cmd('ip route flush default')

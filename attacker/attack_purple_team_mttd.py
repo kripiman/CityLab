@@ -32,22 +32,22 @@ class PurpleTeamMttd:
         self.siem = SiemCorrelationEngine()
 
     def run_mttd_measurement(self) -> Dict[str, Any]:
-        LOGGER.info("Iniciando ejercicio Purple Team con medicion real de MTTD/MTTR (NIST SP 800-61)...")
+        LOGGER.info("Iniciando ejercicio Purple Team con medicion real de MTTD (SIEM) y simulación MTTR (NIST SP 800-61)...")
         start_ts = time.time()
-        attacker_ip = '10.0.5.99'
+        attacker_ip = '10.0.1.10'  # h_attacker IP (Corporate network 10.0.1.0/24)
 
-        # 1. Ingestión de escaneo de intrusión IT (Honeypot)
+        # 1. Ingestión de escaneo de intrusión IT (Honeypot 10.0.5.99)
         self.siem.ingest_raw_event(
             event_category='honeypot',
             event_type='alert',
             severity='HIGH',
             source_ip=attacker_ip,
-            destination_ip='10.0.5.10',
+            destination_ip='10.0.5.99',
             service_name='honeypot_vlan5',
             message='Reconocimiento no autorizado detectado en honeypot'
         )
 
-        # 2. Ingestión de ataque ciberfísico en celda OT (Inyección GOOSE)
+        # 2. Ingestión de ataque ciberfísico en celda OT (IED 10.0.3.20 Inyección GOOSE)
         evt_ot = self.siem.ingest_raw_event(
             event_category='process_control',
             event_type='alert',
@@ -60,7 +60,8 @@ class PurpleTeamMttd:
 
         end_ts = time.time()
         mttd_sec = max(end_ts - start_ts, 0.001)
-        mttr_sec = mttd_sec * 3.5  # Tiempo estimado de contención y aislamiento de puerto
+        # MTTR simulado basado en factor de contención estándar (aislamiento SDN OVS)
+        mttr_sec = mttd_sec * 3.5
 
         alerts = self.siem.active_alerts
         if not alerts:

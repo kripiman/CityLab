@@ -16,9 +16,9 @@ Aprovechando la falta de autenticación y cifrado en el protocolo multicast **IE
 
 ## 2. Mapa de Componentes e IPs
 
-- **Atacante (OT Cell / Pivoting)**: `10.0.3.99` (`h_attacker` o Jump host en zona OT)
-- **Subestación Eléctrica IED**: `10.0.3.20` (`CITYLAB_IED1`)
-- **Puerto UDP GOOSE**: `10102` (Multicast standard: `239.0.0.1`)
+- **Atacante (IT / DMZ Pivoting)**: `10.0.1.10` (`h_attacker`) / `10.0.2.10` (`h_dmz`)
+- **Subestación Eléctrica IED**: `10.0.3.20` (`h_ied` / `CITYLAB_IED1`)
+- **Puerto UDP GOOSE**: `10102` (Default standard; configurable vía `--port`)
 - **Controlador de Proceso**: `plc/iec61850_emulator.py`
 
 ---

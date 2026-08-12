@@ -3,7 +3,7 @@
 
 Inspirado en la amenaza ciberfísica Triton/Trisis (2017).
 Manipula deliberadamente las variables de proceso (nivel de agua en tanque SWaT T1 o presión de gas)
-manteniéndose exactamente un 1% por debajo de los umbrales de disparo del Safety Instrumented System (SIS):
+manteniéndose en un margen absoluto controlado justo por debajo de los umbrales de disparo del Safety Instrumented System (SIS):
   - Tanque SWaT T1: Mantiene nivel en 18.8 m³ (Límite SIS trip = 19.0 m³).
   - Presión de Gas: Mantiene presión en 178.5 PSI (Límite SIS trip = 180.0 PSI).
 
