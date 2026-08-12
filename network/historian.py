@@ -258,31 +258,40 @@ class HistorianTSDB:
     #  Mantenimiento (retención)                                           #
     # ------------------------------------------------------------------ #
 
-    def prune(self) -> int:
+    def prune(self, keep_records: Optional[int] = None) -> int:
         """Elimina puntos excedentes para mantener retención máxima por sector.
+
+        Args:
+            keep_records: Máximo de registros a conservar. Si es 0, borra todo (anti-forensics).
 
         Returns:
             Número total de filas eliminadas.
         """
+        max_points = keep_records if keep_records is not None else _MAX_RETENTION_POINTS
         deleted = 0
         conn = self._conn()
         with self._lock:
-            for (sector,) in conn.execute(
-                'SELECT DISTINCT sector FROM telemetry'
-            ).fetchall():
-                count = conn.execute(
-                    'SELECT COUNT(*) FROM telemetry WHERE sector=?', (sector,)
-                ).fetchone()[0]
-                if count > _MAX_RETENTION_POINTS:
-                    to_del = count - _MAX_RETENTION_POINTS
-                    conn.execute(
-                        '''DELETE FROM telemetry WHERE id IN (
-                            SELECT id FROM telemetry WHERE sector=?
-                            ORDER BY ts ASC LIMIT ?
-                        )''',
-                        (sector, to_del),
-                    )
-                    deleted += to_del
+            if max_points == 0:
+                cur1 = conn.execute('DELETE FROM telemetry')
+                cur2 = conn.execute('DELETE FROM telemetry_raw')
+                deleted = cur1.rowcount + cur2.rowcount
+            else:
+                for (sector,) in conn.execute(
+                    'SELECT DISTINCT sector FROM telemetry'
+                ).fetchall():
+                    count = conn.execute(
+                        'SELECT COUNT(*) FROM telemetry WHERE sector=?', (sector,)
+                    ).fetchone()[0]
+                    if count > max_points:
+                        to_del = count - max_points
+                        conn.execute(
+                            '''DELETE FROM telemetry WHERE id IN (
+                                SELECT id FROM telemetry WHERE sector=?
+                                ORDER BY ts ASC LIMIT ?
+                            )''',
+                            (sector, to_del),
+                        )
+                        deleted += to_del
             conn.commit()
         return deleted
 
