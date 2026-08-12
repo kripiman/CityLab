@@ -1,8 +1,7 @@
 # 🔧 PLAN DE REMEDIACIÓN — Cierre de Deficiencias Verificadas (CityLab)
 
-> **Estado**: COMPLETADO / CERRADO ✅ · **Rama**: `test` · **Fecha**: 2026-08-12
-> **Alcance**: Defectos concretos de la auditoría GICSP/IEC 62443 remediados y validados vía `scripts/validate_e2e.sh`.
-> **Resultado**: 100% de fases R0, R1, R2 y R3 resueltas. 111/111 pruebas unitarias y de integración PASS.
+> **Estado**: EN PROGRESO / PARCIALMENTE COMPLETADO 🟡 · **Rama**: `test` · **Fecha**: 2026-08-12
+> **Resumen**: R0 (A,B,C), R1 (A,B), R2 (A,B) y R3 (A,B) CERRADOS. R1-C (Mininet e2e harness) en progreso con soporte dual (`validate_e2e.sh` sudo/Mininet + `validate_localhost.py` CI/localhost). 113/113 tests PASS.
 
 ---
 

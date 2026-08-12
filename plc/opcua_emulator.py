@@ -453,11 +453,15 @@ class OpcUaClient:
 
 def main() -> int:
     """Punto de entrada standalone del emulador OPC UA."""
+    import argparse
     import os
-    host = os.getenv('OPCUA_HOST', '10.0.3.20')
-    port = int(os.getenv('OPCUA_PORT', str(OPCUA_DEFAULT_PORT)))
+    parser = argparse.ArgumentParser(description="Emulador de servidor OPC UA sobre TCP")
+    parser.add_argument("--host", default=os.getenv('OPCUA_HOST', '10.0.3.30'), help="IP de bind")
+    parser.add_argument("--port", type=int, default=int(os.getenv('OPCUA_PORT', str(OPCUA_DEFAULT_PORT))), help="Puerto OPC UA")
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s][OPC_UA] %(message)s')
-    server = OpcUaServer(host=host, port=port)
+    server = OpcUaServer(host=args.host, port=args.port)
     try:
         server.start()
     except KeyboardInterrupt:

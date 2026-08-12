@@ -314,8 +314,8 @@ def main() -> int:
         try:
             dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
             h_elec = net.get('h_plc_elec')
-            h_elec.cmd(f'python3 {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
-            print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
+            h_elec.cmd(f'python3 {dnp3_script} --host 10.0.3.13 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
+            print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on 10.0.3.13:20000')
         except Exception as exc:
             print(f'[WARN] DNP3 auto-start skipped: {exc}')
 
@@ -323,8 +323,8 @@ def main() -> int:
         try:
             iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
             h_ied_node = net.get('h_ied')
-            h_ied_node.cmd(f'python3 {iec_script} --host 0.0.0.0 --goose-port 10102 > /tmp/h_ied.log 2>&1 &')
-            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102')
+            h_ied_node.cmd(f'python3 {iec_script} --host 10.0.3.20 --goose-port 10102 > /tmp/h_ied.log 2>&1 &')
+            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on 10.0.3.20:10102')
         except Exception as exc:
             print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
 
@@ -332,8 +332,8 @@ def main() -> int:
         try:
             opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
             h_gw_node = net.get('h_gateway')
-            h_gw_node.cmd(f'python3 {opcua_script} > /tmp/h_gateway.log 2>&1 &')
-            print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
+            h_gw_node.cmd(f'python3 {opcua_script} --host 10.0.3.30 --port 4840 > /tmp/h_gateway.log 2>&1 &')
+            print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on 10.0.3.30:4840')
         except Exception as exc:
             print(f'[WARN] OPC UA auto-start skipped: {exc}')
 
@@ -341,8 +341,8 @@ def main() -> int:
         try:
             honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
             h_honey_node = net.get('h_plc_honey')
-            h_honey_node.cmd(f'python3 {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_plc_honey.log 2>&1 &')
-            print('[*] h_plc_honey (10.0.5.99): honeypot_server daemon spawned on :502')
+            h_honey_node.cmd(f'python3 {honey_script} --host 10.0.5.99 --port 502 > /tmp/h_plc_honey.log 2>&1 &')
+            print('[*] h_plc_honey (10.0.5.99): honeypot_server daemon spawned on 10.0.5.99:502')
         except Exception as exc:
             print(f'[WARN] Honeypot auto-start skipped: {exc}')
 
@@ -350,8 +350,8 @@ def main() -> int:
         try:
             dc_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
             h_dc_node = net.get('h_dc')
-            h_dc_node.cmd(f'python3 {dc_script} --host 0.0.0.0 > /tmp/h_dc.log 2>&1 &')
-            print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on :88, :389, :445')
+            h_dc_node.cmd(f'python3 {dc_script} --host 10.0.1.20 > /tmp/h_dc.log 2>&1 &')
+            print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on 10.0.1.20:88, :389, :445')
         except Exception as exc:
             print(f'[WARN] AD DC auto-start skipped: {exc}')
 
