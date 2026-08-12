@@ -34,11 +34,11 @@ class HoneypotTouch:
             service_name='substation_honeypot_s5',
             message='Conexion no autorizada detectada en trampa Honeypot'
         )
-        LOGGER.info("Evento ingerido en SIEM: ID=%s | Severidad=%s", evt['event_id'], evt['severity'])
+        LOGGER.info("Evento ingerido en SIEM: Categoría=%s | Severidad=%s", evt.event_category, evt.severity)
         return {
             'status': 'SUCCESS',
             'honeypot_triggered': True,
-            'siem_event_id': evt['event_id']
+            'siem_event_category': evt.event_category
         }
 
 

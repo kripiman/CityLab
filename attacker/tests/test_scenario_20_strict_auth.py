@@ -10,7 +10,7 @@ class TestScenario20StrictAuth(unittest.TestCase):
 
     def test_strict_auth_toggle(self) -> None:
         resolver = RBACResolver()
-        role, status = resolver.resolve("Bearer operator:OPERATOR_TOKEN_2026")
+        role, status = resolver.resolve("Bearer operator:SCADA_TOKEN_2026")
         self.assertEqual(role, 'operator')
         self.assertEqual(status, 200)
 

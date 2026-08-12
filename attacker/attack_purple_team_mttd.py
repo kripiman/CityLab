@@ -42,7 +42,7 @@ class PurpleTeamMttd:
         end_ts = time.time()
         mttd_sec = end_ts - start_ts
         
-        LOGGER.info("Alerta SIEM capturada en %.4f segundos | Severidad: %s", mttd_sec, evt['severity'])
+        LOGGER.info("Alerta SIEM capturada en %.4f segundos | Severidad: %s", mttd_sec, evt.severity)
         return {
             'status': 'SUCCESS',
             'mttd_seconds': mttd_sec,

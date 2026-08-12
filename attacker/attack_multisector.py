@@ -11,7 +11,10 @@ import logging
 import sys
 import time
 from typing import Dict, Tuple
-from pymodbus.client import ModbusTcpClient
+try:
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    from pymodbus.client.sync import ModbusTcpClient
 
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][%(levelname)s] %(message)s')

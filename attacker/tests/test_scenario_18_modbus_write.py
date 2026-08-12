@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import unittest
 from attacker.exploit_modbus import action_start
-from pymodbus.client import ModbusTcpClient
+try:
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    from pymodbus.client.sync import ModbusTcpClient
 from plc.opcua_emulator import OpcUaServer  # import valid execution target mock if needed
 
 class TestScenario18ModbusWrite(unittest.TestCase):

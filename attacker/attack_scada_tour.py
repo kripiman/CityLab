@@ -12,7 +12,7 @@ import logging
 import sys
 from typing import Dict, Any
 
-from network.hmi_server import HmiServer
+from network.hmi_server import IndustrialHmiEngine
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][SCADA-TOUR] %(message)s')
 LOGGER = logging.getLogger('attack_scada_tour')
@@ -22,9 +22,8 @@ class ScadaTour:
 
     def run_scada_exploration(self) -> Dict[str, Any]:
         LOGGER.info("Iniciando tour guiado por la API REST y HMI SCADA (Puerto 8085)...")
-        server = HmiServer(port=18085)
-        
-        state = server.get_process_overview()
+        engine = IndustrialHmiEngine()
+        state = engine.get_overview()
         LOGGER.info("Respuesta de /api/telemetry HMI: %s", state)
         
         return {
