@@ -32,43 +32,49 @@ def run_ovs_cmd(cmd: str) -> bool:
         return False
 
 
-def apply_sdn_flow_rules() -> None:
+def apply_sdn_flow_rules() -> bool:
     """Aplica la matriz de microsegmentación OpenFlow en los switches OVS s3 (OT) y s5 (Honeypot)."""
     LOGGER.info("Aplicando reglas de microsegmentación SDN OpenFlow en OVS (s3 OT, s5 Honeypot)...")
+    results = []
 
     # Limpiar flujos previos en switch OT (s3) y Honeypot (s5)
-    run_ovs_cmd("ovs-ofctl del-flows s3")
-    run_ovs_cmd("ovs-ofctl del-flows s5")
+    results.append(run_ovs_cmd("ovs-ofctl del-flows s3"))
+    results.append(run_ovs_cmd("ovs-ofctl del-flows s5"))
 
     # 1. Regla por defecto: Normal (Prioridad 10)
-    run_ovs_cmd("ovs-ofctl add-flow s3 'priority=10,actions=NORMAL'")
-    run_ovs_cmd("ovs-ofctl add-flow s5 'priority=10,actions=NORMAL'")
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s3 'priority=10,actions=NORMAL'"))
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s5 'priority=10,actions=NORMAL'"))
 
     # 2. Bloquear Modbus TCP (port 502) en s3 desde cualquier origen por defecto (Prioridad 100)
-    run_ovs_cmd("ovs-ofctl add-flow s3 'priority=100,dl_type=0x0800,nw_proto=6,tp_dst=502,actions=drop'")
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s3 'priority=100,dl_type=0x0800,nw_proto=6,tp_dst=502,actions=drop'"))
 
     # 3. Bloquear DNP3 (port 20000) en s3 desde cualquier origen por defecto (Prioridad 100)
-    run_ovs_cmd("ovs-ofctl add-flow s3 'priority=100,dl_type=0x0800,nw_proto=6,tp_dst=20000,actions=drop'")
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s3 'priority=100,dl_type=0x0800,nw_proto=6,tp_dst=20000,actions=drop'"))
 
     # 4. Permitir Modbus/TCP desde h_scada (10.0.2.20) y h_ews (10.0.4.30) en s3 (Prioridad 200)
     for src in ('10.0.2.20', '10.0.4.30'):
-        run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=200,dl_type=0x0800,nw_proto=6,nw_src={src},tp_dst=502,actions=NORMAL'")
+        results.append(run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=200,dl_type=0x0800,nw_proto=6,nw_src={src},tp_dst=502,actions=NORMAL'"))
 
     # 5. Permitir DNP3 desde h_scada (10.0.2.20) y h_ews (10.0.4.30) hacia 10.0.3.13 en s3 (Prioridad 200)
     for src in ('10.0.2.20', '10.0.4.30'):
-        run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=200,dl_type=0x0800,nw_proto=6,nw_src={src},nw_dst=10.0.3.13,tp_dst=20000,actions=NORMAL'")
+        results.append(run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=200,dl_type=0x0800,nw_proto=6,nw_src={src},nw_dst=10.0.3.13,tp_dst=20000,actions=NORMAL'"))
 
     # 6. Reglas s5 Honeypot: Permitir in-bound hacia 10.0.5.99, aislar out-bound pivoteo hacia OT (10.0.3.0/24)
-    run_ovs_cmd("ovs-ofctl add-flow s5 'priority=200,dl_type=0x0800,nw_src=10.0.5.99,nw_dst=10.0.3.0/24,actions=drop'")
-    run_ovs_cmd("ovs-ofctl add-flow s5 'priority=100,dl_type=0x0800,nw_dst=10.0.5.99,actions=NORMAL'")
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s5 'priority=200,dl_type=0x0800,nw_src=10.0.5.99,nw_dst=10.0.3.0/24,actions=drop'"))
+    results.append(run_ovs_cmd("ovs-ofctl add-flow s5 'priority=100,dl_type=0x0800,nw_dst=10.0.5.99,actions=NORMAL'"))
 
-    LOGGER.info("[*] Matriz de flujos OpenFlow s3 (OT) y s5 (Honeypot) configurada exitosamente.")
+    success = all(results)
+    if success:
+        LOGGER.info("[*] Matriz de flujos OpenFlow s3 (OT) y s5 (Honeypot) configurada exitosamente.")
+    else:
+        LOGGER.warning("[WARN] Una o más reglas OVS fallaron al aplicarse (¿sin entorno OVS/root?).")
+    return success
 
 
-def apply_circuit_breaker(offending_ip: str) -> None:
+def apply_circuit_breaker(offending_ip: str) -> bool:
     """Dispara una regla Circuit Breaker dinámica para aislar un host en caso de DoS/Flooding (>50 pkt/s)."""
     LOGGER.warning("[CIRCUIT-BREAKER] Aislando host %s por exceso de tasa de tráfico en switch OT", offending_ip)
-    run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=500,dl_type=0x0800,nw_src={offending_ip},actions=drop'")
+    return run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=500,dl_type=0x0800,nw_src={offending_ip},actions=drop'")
 
 
 def main() -> None:

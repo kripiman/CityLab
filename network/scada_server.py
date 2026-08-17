@@ -250,7 +250,7 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
 
 
 def run_http_server(port: int = 8080) -> None:
-    host = '10.0.2.20'
+    host = '0.0.0.0'
     server = HTTPServer((host, port), SCADAAPIHandler)
     LOGGER.info('Servidor SCADA Central listo en http://%s:%d', host, port)
     server.serve_forever()

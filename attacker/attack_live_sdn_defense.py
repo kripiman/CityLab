@@ -28,17 +28,17 @@ class LiveSdnDefense:
 
     def execute_sdn_mitigation(self) -> Dict[str, Any]:
         LOGGER.info("Aplicando regla de filtrado dinamico SDN (OVS) para mitigar ataque en caliente...")
-        apply_sdn_flow_rules()
+        applied = apply_sdn_flow_rules()
         return {
-            'status': 'SUCCESS',
-            'flow_rules_applied': True,
-            'attacker_port_isolated': True
+            'status': 'SUCCESS' if applied else 'SKIPPED_NO_OVS',
+            'flow_rules_applied': bool(applied),
+            'attacker_port_isolated': bool(applied)
         }
 
 
 def main() -> int:
     sdn = LiveSdnDefense()
-    res = sdn.run_sdn_mitigation()
+    res = sdn.execute_sdn_mitigation()
     LOGGER.info("Resultado de Defensa SDN en Caliente: %s", res)
     return 0
 

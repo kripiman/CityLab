@@ -159,10 +159,12 @@ def apply_fw_configuration(fw: Node) -> None:
     fw.cmd("iptables -A FORWARD -s 10.0.4.30 -d 10.0.3.0/24 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -s 10.0.3.0/24 -d 10.0.4.30 -j ACCEPT")
 
-    # 3. Allow Corporate (10.0.1.0/24) <-> Corporate (10.0.1.0/24) & DMZ SSH
+    # 3. Allow Corporate (10.0.1.0/24) <-> Corporate (10.0.1.0/24) & DMZ SSH / ICMP ping
     fw.cmd("iptables -A FORWARD -s 10.0.1.0/24 -d 10.0.1.0/24 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p tcp --dport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth0 -p tcp --sport 22 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.2.0/24 -d 10.0.1.0/24 -p icmp -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.1.0/24 -d 10.0.2.0/24 -p icmp -j ACCEPT")
 
     # 4. Allow traffic to honeypot from anywhere to detect scanning
     fw.cmd("iptables -A FORWARD -d 10.0.5.99 -j ACCEPT")
@@ -249,11 +251,11 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
 
     print('[*] Testing: h_scada (DMZ) -> PLC (ping) - expected: ALLOWED')
     out_dmz_ot = h_scada.cmd('ping -c 1 -W 1 10.0.3.10')
-    results['dmz_ping_plc'] = ('1 received' in out_dmz_ot or '0% packet loss' in out_dmz_ot or '1 packets transmitted' in out_dmz_ot)
+    results['dmz_ping_plc'] = ('1 received' in out_dmz_ot or ('0% packet loss' in out_dmz_ot and '100% packet loss' not in out_dmz_ot))
 
     print('[*] Testing: DMZ -> Attacker (ping) - expected: ALLOWED')
     out2 = h_dmz.cmd('ping -c 1 -W 1 10.0.1.10')
-    results['dmz_ping_attacker'] = ('1 received' in out2 or '0% packet loss' in out2 or '1 packets transmitted' in out2)
+    results['dmz_ping_attacker'] = ('1 received' in out2 or ('0% packet loss' in out2 and '100% packet loss' not in out2))
 
     return results
 
@@ -269,16 +271,16 @@ def main() -> int:
     print('[*] Starting network... (requires root)')
     net.start()
 
-    # Configure OVS switches to standalone mode so they act as standard L2 switches without remote controller
+    # Configure OVS switches to standalone mode and add NORMAL fallback flow
     for sw_name in ('s1', 's2', 's3', 's4', 's5'):
         try:
-            net.get(sw_name).cmd(f'ovs-vsctl set-fail-mode {sw_name} standalone')
-        except Exception:
-            pass
-
-    # Force standalone mode so OVS switches learn MACs/ARP without an external controller.
-    for sw in ('s1', 's2', 's3', 's4', 's5'):
-        net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
+            sw_node = net.get(sw_name)
+            res1 = sw_node.cmd(f'ovs-vsctl set-fail-mode {sw_name} standalone')
+            res2 = sw_node.cmd(f'ovs-ofctl add-flow {sw_name} "priority=0,actions=NORMAL"')
+            if 'error' in res1.lower() or 'error' in res2.lower() or 'ovs-ofctl:' in res2.lower() or 'ovs-vsctl:' in res1.lower():
+                print(f'[WARN] OVS command emitted error on {sw_name}: {res1.strip()} {res2.strip()}')
+        except Exception as exc:
+            print(f'[WARN] Fallo al configurar switch OVS {sw_name}: {exc}')
 
     # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
     # to communicate with OT devices (like h_plc).

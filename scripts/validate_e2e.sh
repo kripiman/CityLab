@@ -48,7 +48,9 @@ net.start()
 
 try:
     for sw in ('s1', 's2', 's3', 's4', 's5'):
-        net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
+        sw_node = net.get(sw)
+        sw_node.cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
+        sw_node.cmd(f'ovs-ofctl add-flow {sw} "priority=0,actions=NORMAL"')
 
     fw = net.get('fw')
     apply_fw_configuration(fw)
@@ -113,6 +115,27 @@ try:
     assert len(alerts) > 0, 'FAIL R1-C: No se generaron alertas SIEM a partir del evento real del IED!'
     assert alerts[0]['name'] == 'Ataque por Inyección / Spoofing de Mensajes GOOSE IEC 61850 (Industroyer2 Pattern)', 'FAIL R1-C: Alerta SIEM incorrecta!'
     print('    ↳ ✅ SIEM correlaciono exitosamente la alerta SOC-ALT-0001 (GOOSE Industroyer2 Pattern).')
+
+    print('[*] 6. Verificando mitigación dinámicas SDN en caliente en Mininet real...')
+    from attacker.attack_live_sdn_defense import LiveSdnDefense
+    from network.sdn_controller import apply_circuit_breaker
+    sdn_defense = LiveSdnDefense()
+    sdn_res = sdn_defense.execute_sdn_mitigation()
+    assert sdn_res['status'] == 'SUCCESS', f'FAIL R5/SDN: Mitigación SDN OpenFlow falló u OVS no disponible: {sdn_res}'
+    assert sdn_res['flow_rules_applied'] is True, 'FAIL R5/SDN: Las reglas OpenFlow no se aplicaron'
+    cb_ok = apply_circuit_breaker('10.0.1.10')
+    assert cb_ok is True, 'FAIL R5/SDN: No se pudo aplicar regla Circuit Breaker para aislar IP 10.0.1.10'
+
+    # Readback estricto de tabla de flujos OVS en s3
+    s3_node = net.get('s3')
+    flows_s3 = s3_node.cmd('ovs-ofctl dump-flows s3')
+    assert '10.0.1.10' in flows_s3 and 'drop' in flows_s3, f'FAIL R5/SDN: Regla Circuit Breaker (10.0.1.10 -> drop) no presente en s3!\nFlows:\n{flows_s3}'
+    print('    ↳ ✅ Readback verificado: Regla OpenFlow de aislamiento (10.0.1.10 -> drop) activa en tabla de s3.')
+
+    # Demostración del aislamiento en el dataplane (h_attacker no puede alcanzar la red OT tras el Circuit Breaker)
+    ping_post_cb = h_attacker.cmd('ping -c 1 -W 1 10.0.3.10')
+    assert ('100% packet loss' in ping_post_cb or '0 received' in ping_post_cb), f'FAIL R5/SDN: Dataplane no aislo al atacante! Output: {ping_post_cb}'
+    print('    ↳ ✅ Aislamiento dataplane demostrado: Ping de h_attacker (10.0.1.10) a PLC OT (10.0.3.10) bloqueado en s3 (100% packet loss).')
 
 finally:
     print('[*] Deteniendo red Mininet...')
