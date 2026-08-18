@@ -67,6 +67,38 @@ class TestSiemPipeline(unittest.TestCase):
         export_str = self.siem.export_elk_json()
         parsed = json.loads(export_str)
         self.assertIsInstance(parsed, list)
+        self.assertEqual(len(parsed), 1)
+
+    def test_syslog_rfc5424_export(self) -> None:
+        self.siem.ingest_raw_event(
+            event_category='network',
+            event_type='alert',
+            severity='HIGH',
+            source_ip='10.0.1.99',
+            destination_ip='10.0.3.1',
+            service_name='sdn_controller',
+            message='Rate limiting flow installed'
+        )
+        syslog_lines = self.siem.export_syslog_rfc5424()
+        self.assertEqual(len(syslog_lines), 1)
+        self.assertIn('<13>1', syslog_lines[0])
+        self.assertIn('citylab-siem', syslog_lines[0])
+
+    def test_export_file(self) -> None:
+        import tempfile
+        import os
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            self.siem.ingest_raw_event('network', 'alert', 'LOW', '10.0.1.1', '10.0.1.2', 'test', 'msg')
+            self.siem.export_file(tmp_path)
+            self.assertTrue(os.path.exists(tmp_path))
+            with open(tmp_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            self.assertEqual(len(data), 1)
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
     def test_goose_injection_correlation_rule(self) -> None:
         """Verifica que la Regla 2 (Industroyer2 GOOSE Spoofing) active alerta crítica."""
         self.siem.ingest_raw_event(

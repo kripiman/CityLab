@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """physical/elec/grid_elec.py — Modelo Físico de Subestación Eléctrica
 
+NOTA DE ALCANCE: este módulo NO está conectado a ningún federado HELICS en vivo.
+Solo lo importan physical/tests/test_sector_physical_models.py. Decisión de
+borrar o cablear: diferida (plan de expansión de sectores, Fase 5).
+
 Simula la frecuencia de red (Hz), voltaje de barra (kV) y estado del interruptor de potencia (Breaker XCBR1).
 Ecuaciones de inercia y balance de potencia:
   df/dt = (P_gen - P_load) / (2 * H)

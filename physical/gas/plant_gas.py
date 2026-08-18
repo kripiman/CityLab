@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """physical/gas/plant_gas.py — Modelo Físico de Gasoducto y Compresión de Gas
 
+NOTA DE ALCANCE: este módulo NO está conectado a ningún federado HELICS en vivo.
+Solo lo importan physical/tests/test_sector_physical_models.py. Decisión de
+borrar o cablear: diferida (plan de expansión de sectores, Fase 5).
+
 Simula la dinámica de presión (bar) y flujo volumétrico (m³/h) en el sector gas.
 Ecuaciones de estado:
   dP/dt = (Q_in * P_in - Q_out * P_out) / V_pipe - k_leak * P

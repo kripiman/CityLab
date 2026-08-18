@@ -18,9 +18,12 @@ import json
 import logging
 import urllib.request
 import urllib.error
+from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from typing import Any, Dict, List, Optional
+
+from network.historian import HistorianTSDB
 
 LOGGER = logging.getLogger('hmi_server')
 
@@ -29,10 +32,11 @@ DEFAULT_SCADA_URL = 'http://127.0.0.1:8080'
 
 
 class IndustrialHmiEngine:
-    """Motor de estado HMI para consolidación P&ID y gestión de alarmas."""
+    """Motor de estado HMI para consolidación P&ID, tendencias históricas y gestión de alarmas."""
 
-    def __init__(self, scada_url: str = DEFAULT_SCADA_URL) -> None:
+    def __init__(self, scada_url: str = DEFAULT_SCADA_URL, historian: Optional[HistorianTSDB] = None) -> None:
         self.scada_url = scada_url
+        self.historian = historian if historian is not None else HistorianTSDB()
         self.alarms: List[Dict[str, Any]] = []
 
     def fetch_scada_status(self) -> Dict[str, Any]:
@@ -81,6 +85,22 @@ class IndustrialHmiEngine:
             'system_health': 'ALARM_CRITICAL' if has_critical_alarm else 'NORMAL'
         }
 
+    def get_history(
+        self,
+        sector: str = 'water',
+        field: Optional[str] = None,
+        since: Optional[float] = None,
+        limit: int = 200
+    ) -> Dict[str, Any]:
+        """Consulta series de tiempo históricas directamente a HistorianTSDB en SQLite WAL."""
+        history_points = self.historian.query(sector=sector, field=field, since=since, limit=limit)
+        return {
+            'sector': sector,
+            'field': field,
+            'count': len(history_points),
+            'history': history_points
+        }
+
     def trigger_control_action(self, action: str, target: str, role_token: str = 'engineer:secret') -> Dict[str, Any]:
         """Envía una acción de control al SCADA Server."""
         try:
@@ -108,11 +128,21 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     engine = IndustrialHmiEngine()
 
     def do_GET(self) -> None:
-        if self.path == '/api/hmi/overview':
+        parsed = urlparse(self.path)
+        path = parsed.path
+        params = parse_qs(parsed.query)
+
+        if path == '/api/hmi/overview':
             self._send_json(self.engine.get_overview())
-        elif self.path == '/api/hmi/alarms':
+        elif path == '/api/hmi/alarms':
             self._send_json({'alarms': self.engine.alarms})
-        elif self.path == '/' or self.path == '/index.html':
+        elif path in ('/api/history', '/api/hmi/history'):
+            sector = params.get('sector', ['water'])[0]
+            field = params.get('field', [None])[0]
+            since_val = float(params['since'][0]) if 'since' in params else None
+            limit_val = int(params['limit'][0]) if 'limit' in params else 200
+            self._send_json(self.engine.get_history(sector=sector, field=field, since=since_val, limit=limit_val))
+        elif path == '/' or path == '/index.html':
             html = """<!DOCTYPE html>
 <html>
 <head><title>CityLab Industrial HMI</title></head>

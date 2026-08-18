@@ -27,6 +27,7 @@ from urllib.parse import urlparse, parse_qs
 
 from network.historian import HistorianTSDB
 from network.rbac import _rbac
+from network.scada_ha import SCADAPrimarySecondaryCluster
 
 try:
     from pymodbus.client import ModbusTcpClient
@@ -51,6 +52,12 @@ scada_state: Dict[str, Any] = {
 
 # Historian TSDB embebido (Fase 1) — persiste cada snapshot de polling
 _historian: HistorianTSDB = HistorianTSDB()
+
+# Cluster de Alta Disponibilidad DCS HA (Fase 6)
+_ha_cluster: SCADAPrimarySecondaryCluster = SCADAPrimarySecondaryCluster(
+    node_role=os.getenv('HA_ROLE', 'PRIMARY'),
+    peer_url=os.getenv('HA_PEER_URL', 'http://127.0.0.1:8081')
+)
 
 LOSS_OF_VIEW_THRESHOLD = 3
 _consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
@@ -199,6 +206,12 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'role': role, 'strict_auth': os.getenv('STRICT_AUTH', '0') == '1'}).encode())
 
+        elif parsed.path == '/api/ha/status':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(_ha_cluster.get_cluster_status()).encode('utf-8'))
+
         elif parsed.path == '/health':
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
@@ -210,6 +223,33 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+
+        content_len = int(self.headers.get('Content-Length', 0))
+        post_body = self.rfile.read(content_len) if content_len > 0 else b'{}'
+        try:
+            body_json = json.loads(post_body.decode('utf-8'))
+        except Exception:
+            body_json = {}
+
+        if parsed.path == '/api/ha/heartbeat':
+            sender_role = body_json.get('role', 'UNKNOWN')
+            resp = _ha_cluster.receive_heartbeat(sender_role=sender_role)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(resp).encode('utf-8'))
+            return
+        elif parsed.path == '/api/ha/sync':
+            state_snapshot = body_json.get('state', {})
+            if state_snapshot:
+                scada_state['sectors'].update(state_snapshot)
+                scada_state['last_update'] = time.time()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'status': 'SYNC_OK'}).encode('utf-8'))
+            return
+
         auth_header = self.headers.get('Authorization')
         role, http_code = _rbac.resolve(auth_header)
         if role is None:
@@ -225,13 +265,6 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'error': 'forbidden', 'role': role, 'path': parsed.path}).encode())
             return
-
-        content_len = int(self.headers.get('Content-Length', 0))
-        post_body = self.rfile.read(content_len) if content_len > 0 else b'{}'
-        try:
-            body_json = json.loads(post_body.decode('utf-8'))
-        except Exception:
-            body_json = {}
 
         if parsed.path in ('/api/control', '/api/control/write'):
             self.send_response(200)
@@ -260,10 +293,12 @@ def main() -> int:
     LOGGER.info('Iniciando Servidor SCADA Central / Historian (DMZ)...')
     t = threading.Thread(target=poll_plcs, daemon=True)
     t.start()
+    _ha_cluster.start_ha_monitor()
     try:
         run_http_server(8080)
     except KeyboardInterrupt:
         LOGGER.info('Apagando Servidor SCADA Central...')
+        _ha_cluster.stop_ha_monitor()
     return 0
 
 

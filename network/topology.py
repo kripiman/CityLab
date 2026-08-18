@@ -81,13 +81,15 @@ class Iec62443Topo(Topo):
         dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
         scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
 
-        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15), ied (10.0.3.20), gateway (10.0.3.30)
+        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15), desal (10.0.3.16), lighting (10.0.3.17), ied (10.0.3.20), gateway (10.0.3.30)
         plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
         icssim    = self.addHost('h_icssim',     ip='10.0.3.11/24')
         plc_gas   = self.addHost('h_plc_gas',    ip='10.0.3.12/24')
         plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
         plc_trans = self.addHost('h_plc_tr',     ip='10.0.3.14/24')
         plc_hosp  = self.addHost('h_plc_hosp',   ip='10.0.3.15/24')
+        plc_desal = self.addHost('h_desal',      ip='10.0.3.16/24')
+        plc_light = self.addHost('h_lighting',   ip='10.0.3.17/24')
         ied_subst = self.addHost('h_ied',        ip='10.0.3.20/24')
         gw_telem  = self.addHost('h_gateway',    ip='10.0.3.30/24')
         plc_honey = self.addHost('h_honey',      ip='10.0.5.99/24')
@@ -110,6 +112,8 @@ class Iec62443Topo(Topo):
         self.addLink(s_ot, plc_elec)
         self.addLink(s_ot, plc_trans)
         self.addLink(s_ot, plc_hosp)
+        self.addLink(s_ot, plc_desal)
+        self.addLink(s_ot, plc_light)
         self.addLink(s_ot, ied_subst)
         self.addLink(s_ot, gw_telem)
         self.addLink(s_ews, ews)
@@ -212,7 +216,7 @@ def configure_host_routes(net: Mininet) -> None:
     except KeyError:
         pass
 
-    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_tr', 'h_plc_hosp', 'h_ied', 'h_gateway'):
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_tr', 'h_plc_hosp', 'h_desal', 'h_lighting', 'h_ied', 'h_gateway'):
         try:
             h = net.get(ot_host)
             h.cmd('ip route flush default')
@@ -306,7 +310,9 @@ def main() -> int:
             ('h_plc_gas',    'gas'),
             ('h_plc_elec',   'elec'),
             ('h_plc_tr',     'transport'),
-            ('h_plc_hosp',   'elec'),
+            ('h_plc_hosp',   'hospital'),
+            ('h_desal',      'water'),
+            ('h_lighting',   'elec'),
         ]
         for host_name, plant_type in plc_hosts:
             try:

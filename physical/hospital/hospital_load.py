@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """physical/hospital/hospital_load.py — Modelo Físico de Carga Crítica Hospitalaria
 
+NOTA DE ALCANCE: este módulo NO está conectado a ningún federado HELICS en vivo.
+Solo lo importan physical/tests/test_sector_physical_models.py. El federado
+en vivo usa HospitalPlant inline en helics_sim/fed_hospital.py. Decisión de
+borrar o cablear: diferida (plan de expansión de sectores, Fase 5).
+
 Simula el suministro de energía ininterrumpida (UPS / Generadores diésel de emergencia)
 para la unidad de cuidados intensivos (UCI).
 """

@@ -62,10 +62,22 @@ class IEC61850DataSet:
             # Logical Node CSWI (Switch Controller)
             'CSWI1.Pos.stVal': True,
         }
+        self._quality_flags: Dict[str, int] = {
+            'XCBR1.Pos.stVal': 0x0000,     # 0x0000 = GOOD, 0x0001 = INVALID, 0x0004 = TEST
+            'MMXU1.PhV.phsA.cVal.mag': 0x0000,
+        }
 
     def get(self, key: str) -> Any:
         with self._lock:
             return self._data.get(key)
+
+    def get_quality(self, key: str) -> int:
+        with self._lock:
+            return self._quality_flags.get(key, 0x0000)
+
+    def set_quality(self, key: str, q_flags: int) -> None:
+        with self._lock:
+            self._quality_flags[key] = q_flags
 
     def set(self, key: str, value: Any) -> bool:
         with self._lock:
@@ -90,7 +102,8 @@ class IEC61850DataSet:
                 'ied_name': self.ied_name,
                 'st_num': self._st_num,
                 'sq_num': self._sq_num,
-                'data': dict(self._data)
+                'data': dict(self._data),
+                'quality': dict(self._quality_flags)
             }
 
 
@@ -98,19 +111,21 @@ class Iec61850GooseEncoder:
     """Codificador/Decodificador binario simplificado para PDU GOOSE IEC 61850."""
 
     @staticmethod
-    def encode(gcb_ref: str, datset_ref: str, st_num: int, sq_num: int, breaker_pos: bool) -> bytes:
-        """Codifica un PDU GOOSE binario en formato TLV / APDU."""
+    def encode(gcb_ref: str, datset_ref: str, st_num: int, sq_num: int, breaker_pos: bool, conf_rev: int = 1, test_mode: bool = False) -> bytes:
+        """Codifica un PDU GOOSE binario en formato TLV / APDU con ConfRev y Test mode."""
         gcb_bytes = gcb_ref.encode('utf-8')
         ds_bytes = datset_ref.encode('utf-8')
         
         payload = struct.pack(
-            '>HH H%ds H%ds II ?' % (len(gcb_bytes), len(ds_bytes)),
+            '>HH H%ds H%ds II I??' % (len(gcb_bytes), len(ds_bytes)),
             ETHERTYPE_GOOSE,
-            len(gcb_bytes) + len(ds_bytes) + 15,
+            len(gcb_bytes) + len(ds_bytes) + 20,
             len(gcb_bytes), gcb_bytes,
             len(ds_bytes), ds_bytes,
             st_num,
             sq_num,
+            conf_rev,
+            test_mode,
             breaker_pos
         )
         return payload
@@ -134,13 +149,20 @@ class Iec61850GooseEncoder:
             datset_ref = data[offset:offset+ds_len].decode('utf-8')
             offset += ds_len
             
-            st_num, sq_num, breaker_pos = struct.unpack_from('>II?', data, offset)
+            if len(data) >= offset + 14:
+                st_num, sq_num, conf_rev, test_mode, breaker_pos = struct.unpack_from('>III??', data, offset)
+            else:
+                st_num, sq_num, breaker_pos = struct.unpack_from('>II?', data, offset)
+                conf_rev, test_mode = 1, False
+
             return {
                 'ethertype': hex(ethertype),
                 'gcb_ref': gcb_ref,
                 'datset_ref': datset_ref,
                 'st_num': st_num,
                 'sq_num': sq_num,
+                'conf_rev': conf_rev,
+                'test_mode': test_mode,
                 'breaker_pos': breaker_pos
             }
         except Exception as e:

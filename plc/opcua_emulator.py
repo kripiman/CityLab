@@ -57,6 +57,7 @@ SVC_GET_ENDPOINTS_REQ  = 0x01
 SVC_CREATE_SESSION_REQ = 0x02
 SVC_READ_REQ           = 0x03
 SVC_BROWSE_REQ         = 0x04
+SVC_WRITE_REQ          = 0x05
 
 # Puerto OPC UA estándar
 OPCUA_DEFAULT_PORT = 4840
@@ -278,6 +279,11 @@ class OpcUaServer:
                 self._svc_read(conn, node_id)
         elif svc_code == SVC_BROWSE_REQ:
             self._svc_browse(conn)
+        elif svc_code == SVC_WRITE_REQ:
+            if len(body) >= 9:
+                node_id = struct.unpack_from('<I', body, 1)[0]
+                val_float = struct.unpack_from('<f', body, 5)[0]
+                self._svc_write(conn, node_id, val_float)
         else:
             LOGGER.debug('[OPC UA] Servicio desconocido: 0x%02x', svc_code)
             # Respuesta de error de servicio OPC UA (StatusCode Bad_ServiceUnsupported)
@@ -327,6 +333,13 @@ class OpcUaServer:
             node_data += struct.pack('<I', n['node_id'])
             node_data += struct.pack('<H', len(name_bytes)) + name_bytes
         response = b'\x00' + count + node_data
+        self._send_msg(conn, MSG_MSG, response)
+
+    def _svc_write(self, conn: socket.socket, node_id: int, value: float) -> None:
+        """Escribe un nuevo valor en el espacio de nodos OPC UA."""
+        ok = self.nodes.write(node_id, value)
+        status = 0x00000000 if ok else 0x80340000
+        response = b'\x00' + struct.pack('<I', node_id) + struct.pack('<I', status)
         self._send_msg(conn, MSG_MSG, response)
 
 
@@ -405,6 +418,18 @@ class OpcUaClient:
             return []
         count = struct.unpack_from('<I', data, 1)[0]
         return list(range(count))  # Retorna conteo de nodos como lista
+
+    def write_node(self, node_id: int, value: float) -> bool:
+        """Escribe un valor numérico a un nodo OPC UA sobre la red."""
+        if not self._sock:
+            return False
+        body = bytes([SVC_WRITE_REQ]) + struct.pack('<I', node_id) + struct.pack('<f', float(value))
+        self._send_msg(MSG_MSG, body)
+        resp = self._recv_msg()
+        if not resp or resp[0] != MSG_MSG or not resp[1]:
+            return False
+        data = resp[1]
+        return len(data) >= 9 and struct.unpack_from('<I', data, 5)[0] == 0
 
     def get_endpoints(self) -> bool:
         """Consulta los endpoints disponibles (GetEndpoints)."""

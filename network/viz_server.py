@@ -34,14 +34,22 @@ class CityVisualizerStateEngine:
                 'hospital': {'powered': True, 'generator_active': False}
             }
         }
+        self.frame_history: List[Dict[str, Any]] = []
 
     def update_sector_state(self, sector: str, payload: Dict[str, Any]) -> None:
         if sector in self.state['city_sectors']:
             self.state['city_sectors'][sector].update(payload)
             self.state['timestamp'] = time.time()
+            frame_copy = json.loads(json.dumps(self.state))
+            self.frame_history.append(frame_copy)
+            if len(self.frame_history) > 100:
+                self.frame_history.pop(0)
 
     def get_render_frame(self) -> Dict[str, Any]:
         return dict(self.state)
+
+    def get_history_frames(self) -> List[Dict[str, Any]]:
+        return list(self.frame_history)
 
 
 class VizRequestHandler(BaseHTTPRequestHandler):
@@ -51,6 +59,8 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == '/api/viz/frame':
             self._send_json(self.engine.get_render_frame())
+        elif self.path == '/api/viz/history':
+            self._send_json({'frames': self.engine.get_history_frames()})
         elif self.path == '/' or self.path == '/index.html':
             html = """<!DOCTYPE html>
 <html>
@@ -73,6 +83,24 @@ class VizRequestHandler(BaseHTTPRequestHandler):
 </body>
 </html>"""
             self._send_html(html)
+        else:
+            self.send_error(404, 'Not Found')
+
+    def do_POST(self) -> None:
+        if self.path == '/api/viz/update':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body_bytes = self.rfile.read(content_length)
+            try:
+                data = json.loads(body_bytes.decode('utf-8'))
+                sector = data.get('sector', '')
+                payload = data.get('payload', {})
+                if sector and isinstance(payload, dict):
+                    self.engine.update_sector_state(sector, payload)
+                    self._send_json({'status': 'UPDATED', 'sector': sector})
+                else:
+                    self._send_json({'status': 'ERROR', 'message': 'invalid sector or payload'}, status=400)
+            except Exception as e:
+                self._send_json({'status': 'ERROR', 'message': str(e)}, status=400)
         else:
             self.send_error(404, 'Not Found')
 

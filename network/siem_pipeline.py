@@ -108,6 +108,80 @@ class SiemCorrelationEngine:
                 self.active_alerts.append(alert)
                 LOGGER.critical('[SIEM-CORRELATION] ¡ALERTA SOC CRÍTICA! %s desde IP %s', alert['name'], event.source_ip)
 
+        # Regla 3: Alerta de Inspección Pasiva Zeek / Suricata Coincidente
+        if 'zeek' in event.service_name or 'suricata' in event.service_name:
+            if event.severity in ('HIGH', 'CRITICAL'):
+                alert = {
+                    'alert_id': f"SOC-ALT-{len(self.active_alerts)+1:04d}",
+                    'name': f"Alerta de Inspección Pasiva Network Bridge ({event.service_name})",
+                    'severity': event.severity,
+                    'attacker_ip': event.source_ip,
+                    'evidence': [asdict(event)],
+                    'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                }
+                if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
+                    self.active_alerts.append(alert)
+                    LOGGER.info('[SIEM-PASSIVE] Alerta SOC inspección pasiva desde IP %s', event.source_ip)
+
+    def ingest_zeek_log(self, raw_entry: Dict[str, Any] | str) -> EcsEvent:
+        """Ingiere y normaliza un registro de log Zeek (conn.log, notice.log, modbus.log)."""
+        data: Dict[str, Any] = json.loads(raw_entry) if isinstance(raw_entry, str) else raw_entry
+        src_ip = data.get('id.orig_h') or data.get('id_orig_h') or data.get('src_ip') or '0.0.0.0'
+        dst_ip = data.get('id.resp_h') or data.get('id_resp_h') or data.get('dst_ip') or '0.0.0.0'
+        proto = data.get('proto') or data.get('service') or 'zeek'
+        note = str(data.get('note') or data.get('msg') or data.get('history') or 'Zeek passive traffic record')
+        action = data.get('action') or ('alert' if 'notice' in note.lower() or 'unauthorized' in note.lower() else 'allowed')
+        severity = 'HIGH' if action == 'alert' or 'unauthorized' in note.lower() or 'attack' in note.lower() else 'LOW'
+
+        return self.ingest_raw_event(
+            event_category='network' if 'modbus' not in str(proto).lower() else 'process_control',
+            event_type=action,
+            severity=severity,
+            source_ip=src_ip,
+            destination_ip=dst_ip,
+            service_name=f'zeek_{proto}',
+            message=f"Zeek Event [{proto}]: {note}",
+            metadata=data
+        )
+
+    def ingest_suricata_eve(self, raw_entry: Dict[str, Any] | str) -> EcsEvent:
+        """Ingiere y normaliza un registro de alerta Suricata Eve JSON (eve.json)."""
+        data: Dict[str, Any] = json.loads(raw_entry) if isinstance(raw_entry, str) else raw_entry
+        src_ip = data.get('src_ip') or '0.0.0.0'
+        dst_ip = data.get('dest_ip') or '0.0.0.0'
+        event_type = data.get('event_type') or 'alert'
+        
+        alert_info = data.get('alert') or {}
+        sig = alert_info.get('signature') or data.get('message') or 'Suricata alert signature'
+        suricata_sev = alert_info.get('severity', 3)
+        severity_map = {1: 'CRITICAL', 2: 'HIGH', 3: 'MEDIUM', 4: 'LOW'}
+        severity = severity_map.get(suricata_sev, 'MEDIUM')
+
+        return self.ingest_raw_event(
+            event_category='network',
+            event_type=event_type,
+            severity=severity,
+            source_ip=src_ip,
+            destination_ip=dst_ip,
+            service_name='suricata_eve',
+            message=f"Suricata Eve Alert: {sig}",
+            metadata=data
+        )
+
     def export_elk_json(self) -> str:
         """Exporta buffer de eventos en formato JSON compatible con Logstash / Elasticsearch."""
         return json.dumps([asdict(e) for e in self.events_buffer], indent=2)
+
+    def export_file(self, filepath: str) -> None:
+        """Guarda buffer de eventos ECS en un archivo JSON en disco."""
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(self.export_elk_json())
+
+    def export_syslog_rfc5424(self) -> List[str]:
+        """Exporta eventos en formato Syslog estandarizado RFC 5424."""
+        lines = []
+        for e in self.events_buffer:
+            pri = 13 if e.severity in ('HIGH', 'CRITICAL') else 14  # Notice / Informational
+            line = f"<{pri}>1 {e.timestamp} citylab-siem {e.service_name} - - - [{e.event_category} src={e.source_ip} dst={e.destination_ip}] {e.message}"
+            lines.append(line)
+        return lines
