@@ -12,7 +12,20 @@ Findings **F-03, F-05, F-06, F-07 are deliberate CTF material.** Never "fix", cl
 
 ## Commands
 
-- **Run the unit tests** (115 total, no root needed — they use mocks, not Mininet):
+**`./citylab.sh` is the single entrypoint.** It sets `PYTHONPATH` for you and wraps every operation:
+
+```bash
+sudo ./citylab.sh up [--phase N]   # deploy the lab (default phase 3; delegates to run_phase*.sh)
+sudo ./citylab.sh down             # kill all federates/emulators/servers + `mn -c`
+./citylab.sh smoke [--phase N]     # HELICS co-simulation, no root (phase 7 default = 10 federates)
+./citylab.sh test [pytest args]    # unit-test suite
+./citylab.sh profile               # REAL RSS/CPU measurement of live components
+./citylab.sh status                # what is running right now
+```
+
+The `run_phase*.sh` scripts are now internal implementation invoked by `up`; do not document them as the entrypoint.
+
+- **Run the unit tests** (no root needed — they use mocks, not Mininet). Prefer `./citylab.sh test`; the raw form is:
   ```bash
   PYTHONPATH=. python3 -m pytest network/tests plc/tests physical helics_sim attacker/tests -q
   ```
@@ -22,18 +35,18 @@ Findings **F-03, F-05, F-06, F-07 are deliberate CTF material.** Never "fix", cl
   PYTHONPATH=. python3 -m pytest attacker/tests/test_scenario_21_loss_of_view.py::TestScenario21LossOfView::test_hmi_detects_loss_of_view_alarm
   ```
 - **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests`.
-- **Bring up the full lab** (requires root — Mininet + Open vSwitch):
+- **Bring up the full lab** (requires root — Mininet + Open vSwitch): `sudo ./citylab.sh up`. Lower-level entry points, when you need them directly:
   ```bash
   sudo python3 network/topology.py          # interactive Mininet CLI
   sudo python3 network/topology.py --test    # automated firewall connectivity checks, then exit
-  sudo ./run_phase1.sh | run_phase2.sh | run_phase3.sh   # phased entrypoints
-  sudo mn -c                                 # clean stale Mininet/OVS state first if needed
+  sudo ./citylab.sh down                     # cleanup, including `mn -c`, before a fresh run
   ```
 - **End-to-end validation harness** (root only; exits 0 as a no-op if not root):
   ```bash
   sudo ./scripts/validate_e2e.sh
   ```
 - **Install dependencies:** `./install_deps.sh`. It installs Python packages **system-wide on purpose** — Mininet host processes run under `sudo`, so `pip --user` packages are not visible inside the network namespaces. Mininet, Open vSwitch, and GridLAB-D are system packages, not pip; `pymodbus` is pinned to `2.5.3` (v3.x has an incompatible API — the code has fallback imports for both).
+- **Resource figures:** every `~N MB` in the docs is a design estimate. The measured number comes from `./citylab.sh profile` (`scripts/profile_resources.py`), which samples RSS/CPU of live CityLab processes into `logs/resource_profile_summary.txt`. Never present an unmeasured figure as measured.
 - **Knowledge graph:** `graphify-out/` holds a prebuilt graph. Prefer `graphify query "<question>"` for codebase questions, and run `graphify update .` after modifying code to keep it current.
 
 ## Architecture — the big picture

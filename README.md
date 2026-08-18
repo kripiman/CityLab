@@ -54,17 +54,33 @@
 
 ## ⚡ Inicio Rápido
 
-### 1. Iniciar la Co-Simulación Completa (Fase 3)
+`./citylab.sh` es el **punto de entrada único** del laboratorio. Los scripts `run_phase*.sh` quedan como implementación interna a la que delega `up`.
+
 ```bash
-sudo ./run_phase3.sh
+./citylab.sh help                  # todos los subcomandos
 ```
 
-### 2. Ejecutar Pruebas Automatizadas Locales (Smoke Test 7 Federados)
+### 1. Iniciar la Co-Simulación Completa (Fase 3)
 ```bash
-./helics_sim/smoke_test_phase3.sh
+sudo ./citylab.sh up
+```
+
+### 2. Co-Simulación HELICS sin root (Fase 7 — 10 federados, incluye SIS SIL-3)
+```bash
+./citylab.sh smoke
 ```
 
 ### 3. Inspeccionar el Log CSV de Eventos en Tiempo Real
 ```bash
 tail -f logs/cascading_events.csv
+```
+
+### 4. Medir el Consumo Real de Recursos
+```bash
+./citylab.sh profile               # RSS/CPU medidos -> logs/resource_profile_summary.txt
+```
+
+### 5. Detener y Limpiar
+```bash
+sudo ./citylab.sh down             # mata federados/emuladores/servicios + mn -c
 ```

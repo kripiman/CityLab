@@ -6,16 +6,25 @@ Instrucciones para desplegar y operar la co-simulación multisectorial de ciudad
 
 ## 1. Ejecución de la Ciudad Completa (Fase 3)
 
+`./citylab.sh` es el punto de entrada único. Los `run_phase*.sh` son implementación interna a la que delega `up`; no los invoques directamente.
+
 ### Modo Interactivo con Mininet + 7 Federados
 ```bash
-sudo ./run_phase3.sh
+sudo ./citylab.sh up            # Fase 3 por defecto (equivale a --phase 3)
+sudo ./citylab.sh up --phase 1  # Nodo mínimo viable
+sudo ./citylab.sh up --phase 2  # Co-simulación multisectorial
 ```
 
-El script desplegará:
+Desplegará:
 - Broker HELICS (7 federados en puerto `23404` / `23500`).
 - Simulaciones físicas: Agua SWaT 2 Etapas, Gas, Elec Swing, Transporte/Semáforos.
 - Federados de Infraestructura: GridLAB-D 13.8 kV, Hospital UPS, Servidor SCADA Central en DMZ (`10.0.2.20:8080`).
 - Observabilidad Centralizada CSV.
+
+Detener y limpiar (federados/emuladores/servicios + `mn -c`):
+```bash
+sudo ./citylab.sh down
+```
 
 ---
 
@@ -28,11 +37,18 @@ curl http://10.0.2.20:8080/api/telemetry
 
 ---
 
-## 3. Pruebas Automatizadas Locales (Smoke Test 7 Federados)
+## 3. Pruebas Automatizadas Locales (Smoke Test sin Mininet)
 
-Para validar la federación de 7 procesos sin Mininet:
+Co-simulación HELICS sin root. `smoke` usa fase 7 por defecto (10 federados, incluye SIS SIL-3):
 ```bash
-./helics_sim/smoke_test_phase3.sh
+./citylab.sh smoke              # fase 7 (10 federados)
+./citylab.sh smoke --phase 4    # fase 4 (9 federados)
+```
+
+Suite de pruebas unitarias y medición de recursos:
+```bash
+./citylab.sh test               # 151 tests
+./citylab.sh profile            # RSS/CPU medidos -> logs/resource_profile_summary.txt
 ```
 
 ---
