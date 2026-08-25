@@ -314,6 +314,7 @@ def build_server(
         except Exception:
             bacnet = None
 
+    ModbusTcpServer.allow_reuse_address = True
     server = ModbusTcpServer(context, address=(host, port))
     return server, context, actuator, ntcip, bacnet
 
