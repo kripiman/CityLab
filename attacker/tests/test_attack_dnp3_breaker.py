@@ -11,11 +11,11 @@ class TestDnp3BreakerAttack(unittest.TestCase):
 
     def test_dnp3_breaker_live_socket_trip_mutates_state(self) -> None:
         """Verifica que el ataque DNP3 CROB TRIP abra el disyuntor real en el servidor DNP3."""
-        with running_dnp3_server(port=15200) as server:
+        with running_dnp3_server(port=15210) as server:
             # Estado inicial cerrado
             self.assertTrue(server.state.breaker_closed)
 
-            attacker = Dnp3BreakerAttack(target_host='127.0.0.1', target_port=15200)
+            attacker = Dnp3BreakerAttack(target_host='127.0.0.1', target_port=15210)
             res = attacker.execute_trip_attack(command='TRIP')
 
             self.assertEqual(res['status'], 'SUCCESS')
@@ -27,10 +27,10 @@ class TestDnp3BreakerAttack(unittest.TestCase):
 
     def test_dnp3_breaker_live_socket_close_mutates_state(self) -> None:
         """Verifica que el ataque DNP3 CROB CLOSE cierre el disyuntor real."""
-        with running_dnp3_server(port=15201) as server:
+        with running_dnp3_server(port=15211) as server:
             server.state.breaker_closed = False
 
-            attacker = Dnp3BreakerAttack(target_host='127.0.0.1', target_port=15201)
+            attacker = Dnp3BreakerAttack(target_host='127.0.0.1', target_port=15211)
             res = attacker.execute_trip_attack(command='CLOSE')
 
             self.assertEqual(res['status'], 'SUCCESS')
@@ -49,8 +49,8 @@ class TestDnp3BreakerAttack(unittest.TestCase):
 
     def test_dnp3_breaker_cli(self) -> None:
         """Verifica invocación CLI."""
-        with running_dnp3_server(port=15202):
-            rc = dnp3_breaker_main(['--host', '127.0.0.1', '--port', '15202', '--command', 'TRIP'])
+        with running_dnp3_server(port=15212):
+            rc = dnp3_breaker_main(['--host', '127.0.0.1', '--port', '15212', '--command', 'TRIP'])
             self.assertEqual(rc, 0)
 
 
