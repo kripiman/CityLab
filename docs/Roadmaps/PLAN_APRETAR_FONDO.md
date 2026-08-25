@@ -72,20 +72,20 @@ Se extendió el harness con `running_bacnet_server`, `running_ntcip_server` y `r
 
 Salida de Track B: fidelidad verificada **9 → 13 (45%)** [LOGRADO]. 180/180 suite PASS.
 
-### Track C — Integración con el stack defensivo in-process (sin root)
+### Track C — Integración con el stack defensivo in-process [COMPLETADO]
 
 El objetivo es un servicio Python real (SCADA HTTP, SIEM, historian, HA), no un PLC. La mutación se verifica en el estado de ese servicio.
 
-| Script | Objetivo | Mutación a verificar | Nota |
+| Script | Objetivo | Mutación a verificar | Estado |
 |---|---|---|---|
-| `attack_insider_rbac.py` | `scada_server :8080` `/api/control/write` + `rbac` | write aceptado (STRICT_AUTH=0) y denegado (STRICT_AUTH=1) | **Preservar toggle F-06, testear ambas ramas** |
-| `attack_honeypot_touch.py` | `honeypot_server :502` + `siem_pipeline` | honeypot registra la conexión Y el SIEM ingiere la alerta | encadena dos objetivos reales |
-| `attack_siem_rule_evasion.py` | `siem_pipeline.ingest_raw_event` | eventos multi-IP ingresan; umbral evaluado sobre estado real | verificar que la evasión efectivamente no dispara la regla |
-| `attack_ntp_time_spoofing.py` | `historian` | telemetría con timestamp desfasado persiste; divergencia detectable | fila real con timestamp manipulado |
-| `attack_historian_anti_forensics.py` | `historian` TSDB SQLite/WAL | fila/WAL manipulada; tamper detectable en readback | ya toca DB, falta assert de mutación |
-| `attack_dcs_failover.py` | clúster HA de `scada_server` | conmutación primaria→secundaria observable | Medio-Alto |
+| `attack_insider_rbac.py` | `scada_server :8080` `/api/control/write` + `rbac` | write aceptado (STRICT_AUTH=0) y denegado (STRICT_AUTH=1) | **COMPLETADO** (`test_attack_insider.py`, 3/3 PASS) |
+| `attack_honeypot_touch.py` | `honeypot_server :15025` + `siem_pipeline` | honeypot registra la conexión Y el SIEM ingiere la alerta | **COMPLETADO** (`test_attack_honeypot_touch.py`, 3/3 PASS) |
+| `attack_siem_rule_evasion.py` | `siem_pipeline.ingest_raw_event` | eventos multi-IP ingresan; evasión no dispara regla vs baseline | **COMPLETADO** (`test_scenario_24_siem_evasion.py`, 3/3 PASS) |
+| `attack_ntp_time_spoofing.py` | `historian` TSDB | telemetría con timestamp desfasado persiste en SQLite | **COMPLETADO** (`test_attack_time_spoofing.py`, 2/2 PASS) |
+| `attack_historian_anti_forensics.py` | `historian` TSDB SQLite/WAL | registros purgados; tamper detectable en readback | **COMPLETADO** (`test_attack_anti_forensics.py`, 2/2 PASS) |
+| `attack_dcs_failover.py` | clúster HA de `scada_server` | conmutación standby→active_standby observable | **COMPLETADO** (`test_attack_failover.py`, 2/2 PASS) |
 
-Salida de Track C: fidelidad verificada **13 → 19 (66%)**. Techo alcanzable **sin root**.
+Salida de Track C: fidelidad verificada **13 → 19 (66%)** [LOGRADO]. Techo alcanzable **sin root** completado al 100%. 189/189 suite PASS.
 
 ### Track D — Bloqueados por root / Mininet (sesión con `sudo`)
 

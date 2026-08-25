@@ -145,3 +145,19 @@ def running_ad_dc(
         krb_thread.running = False
         ldap_thread.running = False
 
+
+@contextlib.contextmanager
+def running_honeypot_server(
+    host: str = '127.0.0.1',
+    port: int = 15025
+) -> Iterator[Any]:
+    """Inicia OtHoneypotServer en puerto alto y asegura stop() en finally."""
+    from plc.honeypot_server import OtHoneypotServer
+    server = OtHoneypotServer(host=host, port=port)
+    server.start()
+    time.sleep(0.05)
+    try:
+        yield server
+    finally:
+        server.stop()
+

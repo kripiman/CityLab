@@ -90,7 +90,12 @@ class OtHoneypotServer:
     def stop(self) -> None:
         self._running = False
         if self._sock:
-            self._sock.close()
+            try:
+                self._sock.close()
+            except OSError:
+                pass
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=1.0)
 
 
 def main() -> None:

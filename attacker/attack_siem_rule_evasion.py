@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""attacker/attack_siem_rule_evasion.py — Escenario 24: Evasion de Reglas SIEM Multi-IP
-
-Diseña una inyección distribuida multi-IP para evitar la regla de correlación fija del SIEM (`network/siem_pipeline.py`):
-  1. Divide los escaneos y comandos Modbus entre múltiples direcciones origen.
-  2. Logra la manipulación del proceso evitando el umbral de disparo por firma.
-"""
 from __future__ import annotations
 
 import argparse
@@ -25,8 +18,8 @@ LOGGER = logging.getLogger('attack_siem_rule_evasion')
 
 class SiemRuleEvasion:
 
-    def __init__(self) -> None:
-        self.siem = SiemCorrelationEngine()
+    def __init__(self, siem: SiemCorrelationEngine | None = None) -> None:
+        self.siem = siem or SiemCorrelationEngine()
 
     def run_multi_ip_evasion(self) -> Dict[str, Any]:
         LOGGER.info("Iniciando ataque distribuido multi-IP para evadir reglas fijas del SIEM...")
@@ -47,15 +40,21 @@ class SiemRuleEvasion:
         LOGGER.info("Alertas criticas correlacionadas en SIEM: %d", alerts_triggered)
         return {
             'status': 'SUCCESS',
-            'evasion_successful': alerts_triggered == 0
+            'mode': 'ENGINE_DIRECT',
+            'evasion_successful': alerts_triggered == 0,
+            'alerts_triggered': alerts_triggered,
+            'events_ingested': len(ips),
         }
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="SIEM Multi-IP Rule Evasion Script")
+    _ = parser.parse_args(argv)
+
     evasion = SiemRuleEvasion()
     res = evasion.run_multi_ip_evasion()
     LOGGER.info("Resultado de Evasion SIEM: %s", res)
-    return 0
+    return 0 if res['status'] == 'SUCCESS' else 1
 
 
 if __name__ == '__main__':
