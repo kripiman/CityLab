@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "plc/modbus_emulator.py": {
-    "mtime": 1787634681.012421,
-    "ast_hash": "c6d3393abb6f2513cf61447ea0b23f88",
+    "mtime": 1787636280.2770038,
+    "ast_hash": "ffdd064b71f0f7200aa626571314d095",
     "semantic_hash": ""
   },
   "plc/start_openplc.sh": {
@@ -210,8 +210,8 @@
     "semantic_hash": "33ad1d87e8164702696e3779d7c7bf58"
   },
   ".claude/settings.local.json": {
-    "mtime": 1787108746.0298462,
-    "ast_hash": "77fe760433d7fdf5c87c23d166da4573",
+    "mtime": 1787674223.5745428,
+    "ast_hash": "b337ea1ea9391553150ac08970e191fc",
     "semantic_hash": ""
   },
   "attacker/attack_apt_sandworm_campaign.py": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "scripts/validate_localhost.py": {
-    "mtime": 1786509713.3082685,
-    "ast_hash": "24583833c5ae75ed30232cdd923a5b3c",
+    "mtime": 1787635077.8198442,
+    "ast_hash": "35562111a86c2d4a0334910017826655",
     "semantic_hash": ""
   },
   ".amazonq/rules/memory-bank/guidelines.md": {
@@ -990,8 +990,8 @@
     "semantic_hash": ""
   },
   "docs/Roadmaps/PLAN_FIDELIDAD_ATAQUES.md": {
-    "mtime": 1787634725.3514798,
-    "ast_hash": "d477e730cc770e7f2423d8fede4f6899",
+    "mtime": 1787635087.201853,
+    "ast_hash": "c7744cd892d05d390c7c3e9f344217cb",
     "semantic_hash": ""
   },
   "docs/Roadmaps/PROMPT_AUDITOR_spanish.md": {
@@ -1002,6 +1002,16 @@
   "docs/Roadmaps/PROMPT_QA.md": {
     "mtime": 1787634701.7874486,
     "ast_hash": "99d5ce274a625d6cf6f5c6c0634aa6e9",
+    "semantic_hash": ""
+  },
+  "conftest.py": {
+    "mtime": 1787635068.5900743,
+    "ast_hash": "efbbae012a945ee987255c115be56792",
+    "semantic_hash": ""
+  },
+  "docs/Roadmaps/PLAN_APRETAR_FONDO.md": {
+    "mtime": 1787675377.1164,
+    "ast_hash": "64dd3be856facfa201eb1cbde834c1db",
     "semantic_hash": ""
   }
 }
