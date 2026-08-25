@@ -39,6 +39,10 @@ class TestProtocolFidelityPhase3(unittest.TestCase):
     def tearDownClass(cls) -> None:
         cls.opcua_server.stop()
         cls.dnp3_server.stop()
+        if hasattr(cls, 'opcua_thread'):
+            cls.opcua_thread.join(timeout=2.0)
+        if hasattr(cls, 'dnp3_thread'):
+            cls.dnp3_thread.join(timeout=2.0)
 
     def test_opcua_write_node_over_network(self) -> None:
         client = OpcUaClient('127.0.0.1', self.opcua_port)

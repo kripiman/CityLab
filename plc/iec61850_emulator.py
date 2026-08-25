@@ -255,6 +255,8 @@ class Iec61850Server:
             self._thread.join(timeout=1.0)
         if self._listen_thread and self._listen_thread.is_alive():
             self._listen_thread.join(timeout=1.0)
+        if hasattr(self, '_listen_sock') and self._listen_sock:
+            self._listen_sock.close()
         if self._goose_sock:
             self._goose_sock.close()
         if self._sv_sock:

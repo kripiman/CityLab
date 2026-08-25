@@ -90,6 +90,8 @@ class TestOpcUaServerClient(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.server.stop()
+        if hasattr(cls, 'server_thread'):
+            cls.server_thread.join(timeout=2.0)
 
     def _make_client(self) -> OpcUaClient:
         """Crea y conecta un cliente para el test."""
@@ -100,58 +102,73 @@ class TestOpcUaServerClient(unittest.TestCase):
     def test_handshake_hello_ack(self) -> None:
         """El servidor responde ACK al HEL correctamente (UA/TCP handshake)."""
         client = self._make_client()
-        # Si connect() retorna True, el handshake HEL→ACK+OPN fue exitoso
-        self.assertIsNotNone(client._sock)
-        client.close()
+        try:
+            # Si connect() retorna True, el handshake HEL→ACK+OPN fue exitoso
+            self.assertIsNotNone(client._sock)
+        finally:
+            client.close()
 
     def test_read_float_node(self) -> None:
         """Lectura de nodo Float (WaterTank_Level, NodeId=1001) retorna valor numérico."""
         client = self._make_client()
-        value = client.read_node(1001)
-        client.close()
-        self.assertIsNotNone(value, "Debe retornar un valor Float")
-        self.assertAlmostEqual(value, 75.0, places=0)
+        try:
+            value = client.read_node(1001)
+            self.assertIsNotNone(value, "Debe retornar un valor Float")
+            self.assertAlmostEqual(value, 75.0, places=0)
+        finally:
+            client.close()
 
     def test_read_boolean_node(self) -> None:
         """Lectura de nodo Boolean (WaterPump_State, NodeId=1002)."""
         client = self._make_client()
-        value = client.read_node(1002)
-        client.close()
-        self.assertIsNotNone(value)
-        self.assertIsInstance(value, bool)
-        self.assertTrue(value)
+        try:
+            value = client.read_node(1002)
+            self.assertIsNotNone(value)
+            self.assertIsInstance(value, bool)
+            self.assertTrue(value)
+        finally:
+            client.close()
 
     def test_read_int32_node(self) -> None:
         """Lectura de nodo Int32 (Traffic_Light_State, NodeId=4001)."""
         client = self._make_client()
-        value = client.read_node(4001)
-        client.close()
-        self.assertIsNotNone(value)
-        self.assertIsInstance(value, int)
+        try:
+            value = client.read_node(4001)
+            self.assertIsNotNone(value)
+            self.assertIsInstance(value, int)
+            self.assertEqual(value, 2)
+        finally:
+            client.close()
 
     def test_read_unknown_node_returns_none(self) -> None:
         """Lectura de NodeId desconocido retorna None (BadNodeIdUnknown)."""
         client = self._make_client()
-        value = client.read_node(9999)
-        client.close()
-        self.assertIsNone(value)
+        try:
+            value = client.read_node(9999)
+            self.assertIsNone(value)
+        finally:
+            client.close()
 
     def test_write_and_read_back_via_client(self) -> None:
         """Escritura directa al NodeSpace y lectura confirmada vía cliente."""
         # Escribir nuevo valor directamente al NodeSpace (como haría HELICS federate)
         self.node_space.write(1004, 5.5)
         client = self._make_client()
-        value = client.read_node(1004)
-        client.close()
-        self.assertIsNotNone(value)
-        self.assertAlmostEqual(value, 5.5, places=1)
+        try:
+            value = client.read_node(1004)
+            self.assertIsNotNone(value)
+            self.assertAlmostEqual(value, 5.5, places=1)
+        finally:
+            client.close()
 
     def test_browse_returns_node_count(self) -> None:
         """Browse retorna lista con conteo correcto de nodos."""
         client = self._make_client()
-        nodes = client.browse()
-        client.close()
-        self.assertGreater(len(nodes), 0)
+        try:
+            nodes = client.browse()
+            self.assertGreater(len(nodes), 0)
+        finally:
+            client.close()
 
     def test_get_endpoints_succeeds(self) -> None:
         """GetEndpoints responde con 200 de servicio (SecurityMode=None)."""

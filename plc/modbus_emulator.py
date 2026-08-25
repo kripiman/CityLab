@@ -7,6 +7,10 @@ Coils (idénticos para todos los tipos de planta):
   2 -> actuator_running (estado, salida)
   3 -> actuator_fault   (fallo, salida)
 
+Holding Registers:
+  10 -> chemical_dosing_ppm_x10 (setpoint dosificación cloro ppm × 10: 15 = 1.5 ppm, 85 = 8.5 ppm)
+  20 -> process_variable_x10    (variable física de proceso × 10: nivel de tanque m³ en agua / presión PSI en gas)
+
 Uso:
   python3 plc/modbus_emulator.py --plant-type water --port 502
   python3 plc/modbus_emulator.py --plant-type gas   --port 502
@@ -22,16 +26,16 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
-    from pymodbus.server import StartTcpServer
+    from pymodbus.server import StartTcpServer, ModbusTcpServer
 except ImportError:
-    from pymodbus.server.sync import StartTcpServer
+    from pymodbus.server.sync import StartTcpServer, ModbusTcpServer
 
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext, ModbusSlaveContext
 
@@ -275,41 +279,69 @@ class BacnetListener:
                 pass
 
 
-def run_server(host: str, port: int, plant_type: str, ntcip_port: int = 0, bacnet_port: int = 0) -> None:
+def build_server(
+    host: str,
+    port: int,
+    plant_type: str,
+    ntcip_port: int = 0,
+    bacnet_port: int = 0
+) -> Tuple[ModbusTcpServer, ModbusServerContext, ActuatorEmulator, Optional[NtcipListener], Optional[BacnetListener]]:
+    """Construye las instancias del emulador Modbus sin iniciar el bucle bloqueante."""
     start_delay, stop_delay = _PLANT_TIMINGS[plant_type]
-    logger = logging.getLogger('modbus_emulator')
 
-    store = ModbusSlaveContext(co=ModbusSequentialDataBlock(0, [0] * 100))
+    initial_hr = [0] * 100
+    initial_hr[10] = 15  # Setpoint baseline: 1.5 ppm de cloro (HR 10 = 15)
+
+    store = ModbusSlaveContext(
+        co=ModbusSequentialDataBlock(0, [0] * 100),
+        hr=ModbusSequentialDataBlock(0, initial_hr),
+        zero_mode=True
+    )
     context = ModbusServerContext(slaves=store, single=True)
-
     actuator = ActuatorEmulator(context, start_delay, stop_delay, plant_type)
-    t = threading.Thread(target=actuator.loop, daemon=True)
-    t.start()
 
     ntcip: Optional[NtcipListener] = None
     if ntcip_port:
         try:
             ntcip = NtcipListener(host, ntcip_port)
-            ntcip.start()
-        except Exception as exc:
-            logger.warning('Failed to start NTCIP listener on %s:%d: %s', host, ntcip_port, exc)
+        except Exception:
             ntcip = None
 
     bacnet: Optional[BacnetListener] = None
     if bacnet_port:
         try:
             bacnet = BacnetListener(host, bacnet_port)
-            bacnet.start()
-        except Exception as exc:
-            logger.warning('Failed to start BACnet listener on %s:%d: %s', host, bacnet_port, exc)
+        except Exception:
             bacnet = None
+
+    server = ModbusTcpServer(context, address=(host, port))
+    return server, context, actuator, ntcip, bacnet
+
+
+def run_server(host: str, port: int, plant_type: str, ntcip_port: int = 0, bacnet_port: int = 0) -> None:
+    logger = logging.getLogger('modbus_emulator')
+    server, context, actuator, ntcip, bacnet = build_server(
+        host, port, plant_type, ntcip_port=ntcip_port, bacnet_port=bacnet_port
+    )
+
+    t = threading.Thread(target=actuator.loop, daemon=True)
+    t.start()
+    if ntcip:
+        ntcip.start()
+    if bacnet:
+        bacnet.start()
 
     logger.info('Starting Modbus TCP server [%s] on %s:%d', plant_type, host, port)
     try:
-        StartTcpServer(context, address=(host, port))
+        server.serve_forever()
     except Exception:
         logger.exception('Modbus server terminated')
     finally:
+        try:
+            server.shutdown()
+            server.server_close()
+        except Exception:
+            pass
         actuator.stop()
         if ntcip:
             ntcip.stop()
