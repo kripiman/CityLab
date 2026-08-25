@@ -1,25 +1,25 @@
-# Graph Report - CityLab  (2026-08-18)
+# Graph Report - CityLab  (2026-08-25)
 
 ## Corpus Check
-- 197 files · ~72,437 words
+- 200 files · ~77,488 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1686 nodes · 2443 edges · 133 communities (124 shown, 9 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 139 edges (avg confidence: 0.51)
+- 1752 nodes · 2561 edges · 145 communities (133 shown, 12 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 141 edges (avg confidence: 0.51)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f5b6489a`
+- Built from commit: `07f59dc3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- fed_icssim.py
+- Hallazgos
 - Dnp3OutstationState
-- Dnp3MasterClient
-- scada_server.py
-- Iec61850Server
+- TestDnp3AndAdDcEmulators
+- ModbusDpiEngine
+- TestIEC61850Emulator
 - exploit_modbus.py
 - main
 - traffic.py
@@ -38,31 +38,31 @@
 - smoke_test_local.sh
 - start_broker.sh
 - install_deps.sh
-- attack_grid_heatwave_attribution.py
+- TestGooseSpoofingAttack
 - start_openplc.sh
 - CityLab - Development Guidelines
-- ThreadedHmiServer
+- IndustrialHmiEngine
 - TestRBACResolver
 - CityLab - Technology Stack
 - SCADAPrimarySecondaryCluster
 - ElectricalSubstationGrid
-- OpcUaServer
+- OpcUaNodeSpace
 - TestOpcUaServerClient
 - CityVisualizerStateEngine
-- SafetyInstrumentedLogic
-- EpanetHydraulicSolver
-- 🔧 PLAN DE REMEDIACIÓN — Cierre de Deficiencias Verificadas (CityLab)
+- fed_icssim.py
+- TwoStageWaterPlant
+- Plan de Fidelidad de Ataques — De Simulación a Laboratorio Profesional
 - TestHistorianTSDB
 - HistorianTSDB
 - TestScadaRBACHTTPEndpoints
 - RBACResolver
 - ._conn
 - profile_resources.py
-- 🎯 3. Fases del Roadmap de Fidelidad (Fases 0 a 9)
-- socket
+- Dnp3MasterClient
+- OpcUaServer
 - OpcUaClient
-- IndustrialHmiEngine
-- TestScadaHistorianHTTPEndpoints
+- HmiRequestHandler
+- SCADAAPIHandler
 - TestOpcUaNodeSpace
 - Core Components
 - 🎓 CityLab Cyber Range — Roadmap Curricular de Escenarios CTF (IEC 62443 / GICSP Aligned)
@@ -81,7 +81,7 @@
 - HoneypotTouch
 - InsiderRbacAttack
 - NtpTimeSpoofingAttack
-- .solve_network
+- Iec61850Server
 - PurpleTeamMttd
 - SiemRuleEvasion
 - CLAUDE.md
@@ -90,7 +90,7 @@
 - Escenario CTF 03: Evasión Sigilosa de SIS Triton/Trisis (Low-and-Slow Attack)
 - Escenario CTF 04: Replay de Telemetría Man-in-the-Middle (Estilo Stuxnet)
 - EcsEvent
-- ._svc_write
+- running_modbus_server
 - CityLab - Product Overview
 - BlindRandomizedEnv
 - RansomwareTabletop
@@ -127,35 +127,47 @@
 - Escenario CTF 29: Recuperación Post-Incidente y Reintegración Operacional (Disaster Recovery)
 - TestSiemPipeline
 - CityLab — Guía de Operaciones (Fase 3 Ciudad Completa)
-- main
+- scada_server.py
 - 🛡️ Arquitectura del Cyber Range CityLab (Fase 3 Ciudad Completa)
-- TankPlant
+- KerberoastAttack
 - PROMPT_AUDITOR.md
 - PROMPT_IMPLEMENTADOR.md
 - validate_e2e.sh
-- TwoStageWaterPlant
-- SCADAAPIHandler
-- RansomwareOtImpactAttack
+- OtActiveScan
+- HistorianAntiForensicsAttack
+- SafetyInstrumentedLogic
+- PostIncidentRecovery
 - smoke_test_phase7.sh
+- IEC61850DataSet
 - smoke_test_phase4.sh
+- test_protocols_fidelity.py
+- _emulator_harness.py
+- .resolve
+- PROMPT_AUDITOR_spanish.md
+- PROMPT_QA.md
+- ad_dc_emulator.py
+- FailoverExploitAttack
+- TestSisFederate
+- TestSafetyInstrumentedSystem
+- TankPlant
 
 ## God Nodes (most connected - your core abstractions)
-1. `HistorianTSDB` - 41 edges
+1. `HistorianTSDB` - 42 edges
 2. `SiemCorrelationEngine` - 37 edges
-3. `TwoStageWaterPlant` - 26 edges
-4. `OpcUaServer` - 25 edges
-5. `SCADAPrimarySecondaryCluster` - 20 edges
-6. `OpcUaClient` - 20 edges
-7. `IndustrialHmiEngine` - 19 edges
-8. `RBACResolver` - 19 edges
-9. `TestRBACResolver` - 19 edges
-10. `Iec61850Server` - 19 edges
+3. `OpcUaServer` - 27 edges
+4. `TwoStageWaterPlant` - 24 edges
+5. `Iec61850Server` - 21 edges
+6. `SCADAPrimarySecondaryCluster` - 20 edges
+7. `OpcUaClient` - 20 edges
+8. `IndustrialHmiEngine` - 19 edges
+9. `RBACResolver` - 19 edges
+10. `TestRBACResolver` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AptSandwormCampaign` --uses--> `Iec61850Server`  [INFERRED]
   attacker/attack_apt_sandworm_campaign.py → plc/iec61850_emulator.py
-- `GridHeatwaveAttributionAttack` --uses--> `TwoStageWaterPlant`  [INFERRED]
-  attacker/attack_grid_heatwave_attribution.py → physical/water/plant_water.py
+- `FailoverExploitAttack` --uses--> `SCADAPrimarySecondaryCluster`  [INFERRED]
+  attacker/attack_dcs_failover.py → network/scada_ha.py
 - `HistorianAntiForensicsAttack` --uses--> `HistorianTSDB`  [INFERRED]
   attacker/attack_historian_anti_forensics.py → network/historian.py
 - `HoneypotTouch` --uses--> `SiemCorrelationEngine`  [INFERRED]
@@ -166,27 +178,27 @@
 ## Import Cycles
 - None detected.
 
-## Communities (133 total, 9 thin omitted)
+## Communities (145 total, 12 thin omitted)
 
-### Community 0 - "fed_icssim.py"
-Cohesion: 0.14
-Nodes (14): create_federate(), main(), Any, helics_federate, ModbusTcpClient, read_actuator_running(), ElecPlant, GasPlant (+6 more)
+### Community 0 - "Hallazgos"
+Cohesion: 0.07
+Nodes (27): Bloqueado / no verificado, Clasificación IEC 62443-3-3, 🟡 Constantes técnicas declaradas pero muertas (defecto #8), Correcciones verificadas (post-auditoría), Estado actual (tras correcciones), Estado inicial (antes de correcciones), Hallazgos, 🟡 `helics_sim/fed_desal.py:49` · NUEVO · Suscripción HELICS sin productor (+19 more)
 
 ### Community 1 - "Dnp3OutstationState"
 Cohesion: 0.08
 Nodes (22): LiveSdnDefense, main(), Any, patch, TestScenario23Sdn, apply_circuit_breaker(), apply_sdn_flow_rules(), main() (+14 more)
 
-### Community 2 - "Dnp3MasterClient"
-Cohesion: 0.08
-Nodes (23): DomainControllerEmulator, KerberosServerThread, LdapServerThread, main(), socket, Escuchador SMB v2/v3 en puerto 445., Orquestador completo del controlador de dominio h_dc., Escuchador LDAP en puerto 389. (+15 more)
+### Community 2 - "TestDnp3AndAdDcEmulators"
+Cohesion: 0.22
+Nodes (7): KerberosServerThread, LdapServerThread, Escuchador SMB v2/v3 en puerto 445., Escuchador LDAP en puerto 389., Escuchador Kerberos KDC en puerto 88., SmbServerThread, TestDnp3AndAdDcEmulators
 
-### Community 3 - "scada_server.py"
-Cohesion: 0.09
-Nodes (19): patch, Ejercita la lógica de producción poll_plcs_once() y verifica la transición real…, main(), ModbusDpiEngine, ModbusDpiProxyServer, socket, RateLimiter, Proxy TCP transparente/inverso que filtra tráfico Modbus hacia los PLCs. (+11 more)
+### Community 3 - "ModbusDpiEngine"
+Cohesion: 0.13
+Nodes (10): main(), ModbusDpiEngine, ModbusDpiProxyServer, socket, RateLimiter, Proxy TCP transparente/inverso que filtra tráfico Modbus hacia los PLCs., Controlador de tasa de escrituras por IP de origen., Motor de Inspección Profunda de Paquetes (DPI) Modbus/TCP. (+2 more)
 
-### Community 4 - "Iec61850Server"
-Cohesion: 0.08
-Nodes (20): main(), Construye y transmite un paquete GOOSE malicioso de disparo de interruptor., spoof_goose_trip(), TestGooseSpoofingAttack, IEC61850DataSet, Iec61850GooseEncoder, Iec61850Server, Iec61850SvEncoder (+12 more)
+### Community 4 - "TestIEC61850Emulator"
+Cohesion: 0.19
+Nodes (4): Codifica un PDU GOOSE binario en formato TLV / APDU con ConfRev y Test mode., Decodifica un PDU GOOSE binario., Hilo receptor de mensajes GOOSE entrantes en la subestación., TestIEC61850Emulator
 
 ### Community 5 - "exploit_modbus.py"
 Cohesion: 0.22
@@ -205,8 +217,8 @@ Cohesion: 0.25
 Nodes (9): create_federate(), HospitalPlant, main(), PowerState, Enum, helics_federate, helics_input, helics_publication (+1 more)
 
 ### Community 9 - "BacnetListener"
-Cohesion: 0.07
-Nodes (20): BacnetAttacker, main(), Any, Emulador de ataque BACnet/IP sobre UDP 47808., main(), NtcipAttacker, Any, Emulador de ataque NTCIP 1202 sobre TCP 161. (+12 more)
+Cohesion: 0.06
+Nodes (23): BacnetAttacker, main(), Any, Emulador de ataque BACnet/IP sobre UDP 47808., main(), NtcipAttacker, Any, Emulador de ataque NTCIP 1202 sobre TCP 161. (+15 more)
 
 ### Community 10 - "SmartLightingSystem"
 Cohesion: 0.08
@@ -245,20 +257,20 @@ Cohesion: 0.33
 Nodes (5): HELICS_BROKER_PORT, MOCK_PLC, PYTHONPATH, PYTHONUNBUFFERED, smoke_test_phase3.sh script
 
 ### Community 19 - "attack_multisector.py"
-Cohesion: 0.13
-Nodes (13): main(), ModbusReadOnly, Any, execute_cascading_attack(), force_coil(), main(), read_plc_state(), main() (+5 more)
+Cohesion: 0.19
+Nodes (9): main(), ModbusReadOnly, Any, execute_cascading_attack(), force_coil(), main(), read_plc_state(), TestModbusRead (+1 more)
 
-### Community 23 - "attack_grid_heatwave_attribution.py"
-Cohesion: 0.33
-Nodes (5): GridHeatwaveAttributionAttack, main(), Any, TestAttributionAttack, main()
+### Community 23 - "TestGooseSpoofingAttack"
+Cohesion: 0.18
+Nodes (5): Verifica la codificación y decodificación binaria del PDU GOOSE., Ataque real vía socket UDP provoca mutación de estado observable en el IED., Paquetes UDP malformados no deben mutar el estado del interruptor., El entrypoint CLI main() ejecuta ráfagas de spoofing sobre el puerto de test…, TestGooseSpoofingAttack
 
 ### Community 33 - "CityLab - Development Guidelines"
 Cohesion: 0.04
 Nodes (47): 1. Language and Terminology, 1. New Component Development, 1. Project Organization Patterns, 1. Python Code Formatting (5/5 files follow these patterns), 1. Recurring Implementation Patterns, 1. Security Practices (5/5 files exhibit), 2. Comment Style, 2. Common Architectural Approaches (+39 more)
 
-### Community 34 - "ThreadedHmiServer"
-Cohesion: 0.17
-Nodes (5): HTTPServer, ThreadingMixIn, ThreadedHmiServer, TestHmiHistorianIntegration, TestHmiServer
+### Community 34 - "IndustrialHmiEngine"
+Cohesion: 0.14
+Nodes (9): Verifica que el motor HMI registre alarma de LOSS_OF_VIEW y cambie a…, TestScenario21LossOfView, IndustrialHmiEngine, HTTPServer, ThreadingMixIn, Motor de estado HMI para consolidación P&ID, tendencias históricas y gestión de…, ThreadedHmiServer, TestHmiHistorianIntegration (+1 more)
 
 ### Community 35 - "TestRBACResolver"
 Cohesion: 0.07
@@ -269,52 +281,52 @@ Cohesion: 0.07
 Nodes (27): 1. Environment Setup, 2. Development Testing, 3. Integration Testing, 4. Attack Development, Attack Execution, Build Systems and Development Tools, CityLab - Technology Stack, Core Dependencies (+19 more)
 
 ### Community 37 - "SCADAPrimarySecondaryCluster"
-Cohesion: 0.12
-Nodes (9): FailoverExploitAttack, main(), Any, TestFailoverAttack, Any, Administrador de cluster de Alta Disponibilidad SCADA., Procesa un heartbeat recibido del peer., SCADAPrimarySecondaryCluster (+1 more)
+Cohesion: 0.16
+Nodes (5): Any, Administrador de cluster de Alta Disponibilidad SCADA., Procesa un heartbeat recibido del peer., SCADAPrimarySecondaryCluster, TestSCADAHighAvailability
 
 ### Community 38 - "ElectricalSubstationGrid"
 Cohesion: 0.11
 Nodes (13): ElectricalSubstationGrid, GridParams, Modelo físico de subestación de transmisión / distribución eléctrica., Avanza la simulación dinámica de la red eléctrica dt_s segundos., GasPipelineParams, GasPipelinePlant, Modelo físico dinámico de gasoducto con estación compresora., Avanza la simulación física de gas dt_s segundos. (+5 more)
 
-### Community 39 - "OpcUaServer"
-Cohesion: 0.17
-Nodes (7): OpcUaNodeSpace, OpcUaServer, Lista todos los nodos disponibles., Servidor TCP que emula el protocolo UA/TCP de OPC UA. Suficiente para…, Envía un mensaje UA/TCP., Espacio de nodos OPC UA en memoria. Thread-safe., TestProtocolFidelityPhase3
+### Community 39 - "OpcUaNodeSpace"
+Cohesion: 0.16
+Nodes (7): OpcUaNodeSpace, Any, Lee el valor actual de un nodo., Escribe el valor de un nodo. Retorna True si el nodo existe., Lista todos los nodos disponibles., Retorna snapshot completo del espacio de nodos por sector., Espacio de nodos OPC UA en memoria. Thread-safe.
 
 ### Community 40 - "TestOpcUaServerClient"
-Cohesion: 0.11
+Cohesion: 0.10
 Nodes (13): El servidor responde ACK al HEL correctamente (UA/TCP handshake)., Lectura de nodo Float (WaterTank_Level, NodeId=1001) retorna valor numérico., Lectura de nodo Boolean (WaterPump_State, NodeId=1002)., Lectura de nodo Int32 (Traffic_Light_State, NodeId=4001)., Lectura de NodeId desconocido retorna None (BadNodeIdUnknown)., Escritura directa al NodeSpace y lectura confirmada vía cliente., Browse retorna lista con conteo correcto de nodos., GetEndpoints responde con 200 de servicio (SecurityMode=None). (+5 more)
 
 ### Community 41 - "CityVisualizerStateEngine"
 Cohesion: 0.13
 Nodes (10): TestVizServer, TestCityVisualizer, CityVisualizerStateEngine, Any, BaseHTTPRequestHandler, HTTPServer, ThreadingMixIn, Motor de estado de visualización presentacional 2D/3D. (+2 more)
 
-### Community 42 - "SafetyInstrumentedLogic"
-Cohesion: 0.09
-Nodes (15): main(), Any, TritonLowSlowAttack, TestTritonAttack, create_federate(), main(), Any, helics_sim/fed_sis.py — Safety Instrumented System (SIS / ESD Independiente)… (+7 more)
+### Community 42 - "fed_icssim.py"
+Cohesion: 0.14
+Nodes (14): create_federate(), main(), Any, helics_federate, ModbusTcpClient, read_actuator_running(), ElecPlant, GasPlant (+6 more)
 
-### Community 43 - "EpanetHydraulicSolver"
-Cohesion: 0.26
-Nodes (6): TestPhysicsEngine, EpanetHydraulicSolver, PipeConfig, PumpConfig, Solver hidráulico de red de distribución de agua (Modelo didáctico Hazen-…, physical/water/plant_water.py — Modelo físico de tratamiento de agua en 2…
+### Community 43 - "TwoStageWaterPlant"
+Cohesion: 0.05
+Nodes (32): ChemicalDosingAttack, main(), Any, Vector de ataque de sobre-dosificación química sobre PLC de agua., Ejecuta el ataque escribiendo en el Holding Register Modbus/TCP y confirmando…, GridHeatwaveAttributionAttack, main(), Any (+24 more)
 
-### Community 44 - "🔧 PLAN DE REMEDIACIÓN — Cierre de Deficiencias Verificadas (CityLab)"
-Cohesion: 0.10
-Nodes (20): Distinción crítica: LoV muerto ≠ F-06, 🟥 FASE R0 — El laboratorio arranca de verdad (P0, bloqueante), 🟧 FASE R1 — La cadena de detección funciona (P1), 🟨 FASE R2 — Fidelidad física honesta (P1), 🟦 FASE R3 — Superficie de exposición e higiene (P2), 🚫 Fuera de alcance de este plan (no tocar), ✅ Orden de ejecución recomendado, 🔧 PLAN DE REMEDIACIÓN — Cierre de Deficiencias Verificadas (CityLab) (+12 more)
+### Community 44 - "Plan de Fidelidad de Ataques — De Simulación a Laboratorio Profesional"
+Cohesion: 0.13
+Nodes (14): Convención de puertos de test (bloque reservado 15000–15999), Dependencias técnicas resueltas, Estado real de cada script piloto (auditado línea por línea), Fases Ejecutadas, Grupo 1: Pilotos con Socket Real y Mutación Física (5 escenarios — 100% Completados), Grupo 2: Ejercicios Tabletop / Decisión / Gobernanza Legítimos (6 escenarios), Grupo 3: Ataques a Servicios de Red / Identidad / SDN (7 escenarios), Grupo 4: Candidatos para Próxima Migración a Sockets OT (11 escenarios) (+6 more)
 
 ### Community 45 - "TestHistorianTSDB"
-Cohesion: 0.10
-Nodes (11): prune() elimina puntos más antiguos manteniendo los más recientes., query() con parámetro `since` filtra por timestamp correctamente., Tests unitarios del módulo historian.py (HistorianTSDB)., write() persiste puntos individuales y query() los recupera correctamente., write_snapshot() persiste el estado completo y query_snapshots() lo recupera., last() devuelve el snapshot más reciente de un sector., last() devuelve None cuando el sector no tiene datos., sectors() lista exactamente los sectores con datos registrados. (+3 more)
+Cohesion: 0.08
+Nodes (12): Crea las tablas si no existen. Idempotente., prune() elimina puntos más antiguos manteniendo los más recientes., query() con parámetro `since` filtra por timestamp correctamente., Tests unitarios del módulo historian.py (HistorianTSDB)., write() persiste puntos individuales y query() los recupera correctamente., write_snapshot() persiste el estado completo y query_snapshots() lo recupera., last() devuelve el snapshot más reciente de un sector., last() devuelve None cuando el sector no tiene datos. (+4 more)
 
 ### Community 46 - "HistorianTSDB"
-Cohesion: 0.18
-Nodes (8): main(), Any, StuxnetReplayAttack, TestStuxnetAttack, HistorianTSDB, Cierra la conexión del hilo actual., Time-Series historian embebido sobre SQLite WAL. Interfaz pública idéntica a la…, Crea las tablas si no existen. Idempotente.
+Cohesion: 0.20
+Nodes (10): main(), Any, Ataque Replay con sabotaje físico y verificación de divergencia telemetría vs…, StuxnetReplayAttack, Verifica que el ataque sabotee el PLC vía Modbus mientras el Historian recibe…, Si el PLC no está activo, el ataque activa el modo TABLETOP_FALLBACK…, TestStuxnetAttack, HistorianTSDB (+2 more)
 
 ### Community 47 - "TestScadaRBACHTTPEndpoints"
 Cohesion: 0.14
 Nodes (9): Tests de integración HTTP para RBAC en scada_server., /health responde 200 sin Authorization., /api/telemetry con token válido → 200., /api/telemetry sin token → 401., /api/whoami retorna el rol del token presentado., /api/whoami con token legado → rol operator (modo CTF)., STRICT_AUTH=1 rechaza token plano legado con 403., Auditor recibe 403 en /api/control/write. (+1 more)
 
 ### Community 48 - "RBACResolver"
-Cohesion: 0.14
-Nodes (10): TestScenario20StrictAuth, _load_token_store(), Resuelve el rol de una petición HTTP a partir de su cabecera Authorization.…, Recarga el almacén de tokens (útil tras rotación de credenciales)., Resuelve el rol asociado a una cabecera Authorization. Args: auth_header: Valor…, Verifica si el rol tiene permiso para acceder al endpoint. Args: role: Rol…, Carga el mapa de tokens a roles desde variables de entorno. Variables de…, Intenta autenticar contra el AD LDAP emulado de h_dc (`ad_dc_emulator.py`).… (+2 more)
+Cohesion: 0.21
+Nodes (7): TestScenario20StrictAuth, _load_token_store(), Resuelve el rol de una petición HTTP a partir de su cabecera Authorization.…, Recarga el almacén de tokens (útil tras rotación de credenciales)., Verifica si el rol tiene permiso para acceder al endpoint. Args: role: Rol…, Carga el mapa de tokens a roles desde variables de entorno. Variables de…, RBACResolver
 
 ### Community 49 - "._conn"
 Cohesion: 0.14
@@ -324,25 +336,25 @@ Nodes (10): Connection, Any, Escribe un punto de telemetría. Args: sector: Nomb
 Cohesion: 0.15
 Nodes (20): resource.getrusage debe devolver un RSS positivo real, no una estimación fija., El muestreo real no debe clasificar procesos ajenos al laboratorio., TestProfileResources, classify(), collect_sample(), _iter_processes_proc(), _iter_processes_psutil(), main() (+12 more)
 
-### Community 51 - "🎯 3. Fases del Roadmap de Fidelidad (Fases 0 a 9)"
-Cohesion: 0.12
-Nodes (16): 📌 1. Estado de Arquitectura y Baseline Real (Fase 0), 🔒 2. Matriz de Deuda Técnica y Hallazgos IEC 62443, 🎯 3. Fases del Roadmap de Fidelidad (Fases 0 a 9), 🗺️ CityLab Cyber Range — Roadmap de Fidelidad e Implementación, Componentes en Vivo (7 Federados HELICS):, Estado de Módulos Específicos:, 🔵 Fase 0 — Fundaciones sin Root & Reestructuración (COMPLETADA), 🔵 Fase 1 — Endpoints Livianos OT Categoría B (NTCIP / BACnet) (COMPLETADA) (+8 more)
+### Community 51 - "Dnp3MasterClient"
+Cohesion: 0.22
+Nodes (8): Dnp3MasterClient, main(), Any, Cliente Master DNP3 ultraligero para consulta y control en Cyber Range., Envía una solicitud DNP3 READ (Group 1 BI & Group 30 AI)., Envía comando CROB Direct Operate / Pulse ON para disparar o cerrar el…, crc16_dnp(), Calcula el CRC-16 especificado por DNP3 (invertido / complemento a unos).
 
-### Community 52 - "socket"
-Cohesion: 0.16
-Nodes (9): socket, Maneja una conexión de cliente OPC UA., Lee exactamente n bytes del socket., Responde a HEL con ACK — primer paso del handshake UA/TCP., Maneja OpenSecureChannel con SecurityMode=None., Despacha servicios OPC UA: Read, Browse, GetEndpoints., Retorna la lista de endpoints disponibles., Lee el valor de un nodo del espacio OPC UA. (+1 more)
+### Community 52 - "OpcUaServer"
+Cohesion: 0.12
+Nodes (15): main(), OpcUaServer, socket, Servidor TCP que emula el protocolo UA/TCP de OPC UA. Suficiente para…, Arranca el servidor. Bloqueante — llamar desde un hilo., Maneja una conexión de cliente OPC UA., Lee exactamente n bytes del socket., Envía un mensaje UA/TCP. (+7 more)
 
 ### Community 53 - "OpcUaClient"
 Cohesion: 0.18
-Nodes (8): OpcUaClient, Cliente OPC UA TCP mínimo para pruebas de integración. Replica exactamente el…, Establece conexión y realiza handshake HEL/ACK + OpenSecureChannel., Lee el valor de un nodo OPC UA., Lista nodos disponibles en el servidor., Escribe un valor numérico a un nodo OPC UA sobre la red., Consulta los endpoints disponibles (GetEndpoints)., Recibe un mensaje UA/TCP. Retorna (tipo, body) o None.
+Nodes (9): OpcUaClient, Lista todos los nodos del espacio OPC UA., Cliente OPC UA TCP mínimo para pruebas de integración. Replica exactamente el…, Establece conexión y realiza handshake HEL/ACK + OpenSecureChannel., Lee el valor de un nodo OPC UA., Lista nodos disponibles en el servidor., Escribe un valor numérico a un nodo OPC UA sobre la red., Consulta los endpoints disponibles (GetEndpoints). (+1 more)
 
-### Community 54 - "IndustrialHmiEngine"
-Cohesion: 0.15
-Nodes (10): Verifica que el motor HMI registre alarma de LOSS_OF_VIEW y cambie a…, TestScenario21LossOfView, HmiRequestHandler, IndustrialHmiEngine, Any, BaseHTTPRequestHandler, Envía una acción de control al SCADA Server., Motor de estado HMI para consolidación P&ID, tendencias históricas y gestión de… (+2 more)
+### Community 54 - "HmiRequestHandler"
+Cohesion: 0.21
+Nodes (6): HmiRequestHandler, Any, BaseHTTPRequestHandler, Envía una acción de control al SCADA Server., Consulta el estado actual del servidor SCADA., Consulta series de tiempo históricas directamente a HistorianTSDB en SQLite WAL.
 
-### Community 55 - "TestScadaHistorianHTTPEndpoints"
-Cohesion: 0.16
-Nodes (8): Tests de integración HTTP para los endpoints /api/history del SCADA Server., Arrancar un servidor HTTP de test con el handler real del SCADA., Helper: realiza GET con Bearer token y retorna (status_code, json_body)., GET /api/history?sector=water retorna filas históricas del sector., GET /api/history?sector=water&field=pressure filtra por campo., GET /api/history sin sector retorna 400., GET /api/history/snapshot?sector=water retorna snapshots del sector., TestScadaHistorianHTTPEndpoints
+### Community 55 - "SCADAAPIHandler"
+Cohesion: 0.11
+Nodes (10): BaseHTTPRequestHandler, SCADAAPIHandler, Tests de integración HTTP para los endpoints /api/history del SCADA Server., Arrancar un servidor HTTP de test con el handler real del SCADA., Helper: realiza GET con Bearer token y retorna (status_code, json_body)., GET /api/history?sector=water retorna filas históricas del sector., GET /api/history?sector=water&field=pressure filtra por campo., GET /api/history sin sector retorna 400. (+2 more)
 
 ### Community 56 - "TestOpcUaNodeSpace"
 Cohesion: 0.13
@@ -377,8 +389,8 @@ Cohesion: 0.26
 Nodes (3): main(), OtHoneypotServer, TestHoneypotServer
 
 ### Community 64 - "attack_apt_sandworm_campaign.py"
-Cohesion: 0.08
-Nodes (21): AptSandwormCampaign, main(), Any, HistorianAntiForensicsAttack, main(), Any, KerberoastAttack, main() (+13 more)
+Cohesion: 0.20
+Nodes (8): AptSandwormCampaign, main(), Any, main(), OtPassiveRecon, Any, TestPassiveRecon, TestScenario26Apt
 
 ### Community 65 - "Escenario CTF 02: Inyección de Mensajes GOOSE IEC 61850 (Estilo Industroyer2 / Ucrania 2022)"
 Cohesion: 0.18
@@ -409,16 +421,16 @@ Cohesion: 0.36
 Nodes (4): HoneypotTouch, main(), Any, TestHoneypotTouch
 
 ### Community 72 - "InsiderRbacAttack"
-Cohesion: 0.43
+Cohesion: 0.36
 Nodes (4): InsiderRbacAttack, main(), Any, TestInsiderRbacAttack
 
 ### Community 73 - "NtpTimeSpoofingAttack"
 Cohesion: 0.36
 Nodes (4): main(), NtpTimeSpoofingAttack, Any, TestTimeSpoofingAttack
 
-### Community 74 - ".solve_network"
-Cohesion: 0.33
-Nodes (3): Calcula la pérdida de fricción en la tubería usando Hazen-Williams., Calcula la presión generada por la bomba según su curva TDH., Calcula el estado hidráulico de la red. Retorna (flow_m3_s, pressure_bar,…
+### Community 74 - "Iec61850Server"
+Cohesion: 0.23
+Nodes (5): Iec61850Server, main(), Servidor IED Subestación IEC 61850 con emisión GOOSE & SV y recepción de…, Publica un paquete GOOSE inmediatamente., Publica una muestra SV de voltaje y corriente.
 
 ### Community 75 - "PurpleTeamMttd"
 Cohesion: 0.36
@@ -452,9 +464,9 @@ Nodes (8): 1. Breve del Escenario (Storyline), 2. Diagrama de Flujo del Ataque, 
 Cohesion: 0.36
 Nodes (5): EcsEvent, Any, Ingiere y normaliza un registro de log Zeek (conn.log, notice.log, modbus.log)., Ingiere y normaliza un registro de alerta Suricata Eve JSON (eve.json)., Aplica reglas de correlación SOC sobre los eventos ingresados.
 
-### Community 83 - "._svc_write"
-Cohesion: 0.22
-Nodes (5): Any, Lee el valor actual de un nodo., Escribe el valor de un nodo. Retorna True si el nodo existe., Retorna snapshot completo del espacio de nodos por sector., Escribe un nuevo valor en el espacio de nodos OPC UA.
+### Community 83 - "running_modbus_server"
+Cohesion: 0.14
+Nodes (14): main(), Any, Ataque de manipulación progresiva con evasión de disparo de interlocks SIS., TritonLowSlowAttack, El entrypoint CLI main() ejecuta el vector replay contra el puerto de test sin…, Verifica manipulación de proceso vía Modbus manteniendo valores bajo umbral SIS…, Manipulación sobre el umbral de seguridad provoca disparo inmediato del SIS…, Si el PLC no está activo, el ataque activa el modo TABLETOP_FALLBACK… (+6 more)
 
 ### Community 84 - "CityLab - Product Overview"
 Cohesion: 0.25
@@ -594,55 +606,91 @@ Nodes (6): 1. Breve del Escenario (Storyline), 2. Cadena de Trabajo Paso a Paso,
 
 ### Community 119 - "CityLab — Guía de Operaciones (Fase 3 Ciudad Completa)"
 Cohesion: 0.33
-Nodes (6): 1. Ejecución de la Ciudad Completa (Fase 3), 2. Acceso al Servidor SCADA Central (DMZ), 3. Pruebas Automatizadas Locales (Smoke Test 7 Federados), 4. Escenarios CTF Disponibles, CityLab — Guía de Operaciones (Fase 3 Ciudad Completa), Modo Interactivo con Mininet + 7 Federados
+Nodes (6): 1. Ejecución de la Ciudad Completa (Fase 3), 2. Acceso al Servidor SCADA Central (DMZ), 3. Pruebas Automatizadas Locales (Smoke Test sin Mininet), 4. Escenarios CTF Disponibles, CityLab — Guía de Operaciones (Fase 3 Ciudad Completa), Modo Interactivo con Mininet + 7 Federados
 
-### Community 120 - "main"
-Cohesion: 0.33
-Nodes (3): main(), Arranca el servidor. Bloqueante — llamar desde un hilo., Punto de entrada standalone del emulador OPC UA.
+### Community 120 - "scada_server.py"
+Cohesion: 0.20
+Nodes (10): patch, Ejercita la lógica de producción poll_plcs_once() y verifica la transición real…, main(), poll_plcs(), poll_plcs_once(), Any, Hilo de fondo que consulta periódicamente los PLCs OT., Ejecuta una ronda individual de consulta a los PLCs OT. (+2 more)
 
 ### Community 121 - "🛡️ Arquitectura del Cyber Range CityLab (Fase 3 Ciudad Completa)"
 Cohesion: 0.25
 Nodes (5): 🛡️ Arquitectura del Cyber Range CityLab (Fase 3 Ciudad Completa), 📌 Contexto del Proyecto y Presupuesto de Recursos, ⚡ Matriz de Co-Simulación HELICS y Flujo Ciberfísico, 📐 Topología de Red y Microsegmentación (IEC 62443), 📂 Índice de Documentación Quirúrgica por Federado e Infraestructura
 
-### Community 122 - "TankPlant"
-Cohesion: 0.40
-Nodes (3): Advance plant state by dt seconds. Returns new level., Simple rule: if level below 1 m^3 or above 95% capacity, trip., TankPlant
+### Community 122 - "KerberoastAttack"
+Cohesion: 0.29
+Nodes (5): KerberoastAttack, main(), Any, Verifica si el servicio KDC Kerberos está respondiendo en la red., TestKerberoastAttack
 
-### Community 128 - "TwoStageWaterPlant"
+### Community 128 - "OtActiveScan"
 Cohesion: 0.16
-Nodes (8): ChemicalDosingAttack, main(), Any, TestChemicalDosingAttack, physical/water package, Avanza el estado de la planta 2 etapas con motor EPANET. Retorna (t1_level_m3,…, Regla de disparo de protección de planta: - T1 desborde (>95%) o seco (<0.5m³)…, TwoStageWaterPlant
+Nodes (12): main(), OtActiveScan, Any, Escáner activo de servicios y puertos OT., Realiza un probe TCP connect a un endpoint host:port con timeout corto., Ejecuta el escaneo activo TCP sobre la lista de objetivos dada o los defaults., Verifica que el escáner detecte empíricamente puertos abiertos y cerrados…, Si no hay objetivos alcanzables en localhost, aplica fallback TABLETOP_FALLBACK… (+4 more)
 
-### Community 130 - "RansomwareOtImpactAttack"
-Cohesion: 0.43
-Nodes (4): main(), Any, RansomwareOtImpactAttack, TestRansomwareAttack
+### Community 129 - "HistorianAntiForensicsAttack"
+Cohesion: 0.31
+Nodes (4): HistorianAntiForensicsAttack, main(), Any, TestAntiForensicsAttack
+
+### Community 130 - "SafetyInstrumentedLogic"
+Cohesion: 0.24
+Nodes (9): create_federate(), main(), Any, helics_sim/fed_sis.py — Safety Instrumented System (SIS / ESD Independiente)…, Lógica de interlocks SIL-3 independiente., Evalúa los interlocks de seguridad física. Retorna (must_trip, reason)., Aplica la regla de anulación SIS sobre comandos BPCS. Retorna (allowed_cmd,…, SafetyInstrumentedLogic (+1 more)
+
+### Community 131 - "PostIncidentRecovery"
+Cohesion: 0.31
+Nodes (4): main(), PostIncidentRecovery, Any, TestScenario29Recovery
 
 ### Community 132 - "smoke_test_phase7.sh"
 Cohesion: 0.25
 Nodes (7): ENABLE_SIS_FEDERATE, HELICS_BROKER_PORT, HELICS_MAX_STEPS, MOCK_PLC, PYTHONPATH, PYTHONUNBUFFERED, smoke_test_phase7.sh script
 
+### Community 133 - "IEC61850DataSet"
+Cohesion: 0.19
+Nodes (4): IEC61850DataSet, Any, Dataset IEC 61850 con modelos LNode standard (XCBR, MMXU, CSWI)., TestProtocolFidelityPhase3
+
 ### Community 134 - "smoke_test_phase4.sh"
 Cohesion: 0.29
 Nodes (6): HELICS_BROKER_PORT, HELICS_MAX_STEPS, MOCK_PLC, PYTHONPATH, PYTHONUNBUFFERED, smoke_test_phase4.sh script
 
+### Community 135 - "test_protocols_fidelity.py"
+Cohesion: 0.32
+Nodes (7): main(), Construye y transmite un paquete GOOSE malicioso de disparo de interruptor., spoof_goose_trip(), Iec61850GooseEncoder, Iec61850SvEncoder, Codificador/Decodificador binario simplificado para PDU GOOSE IEC 61850., Codificador/Decodificador binario para Sampled Values (SV).
+
+### Community 136 - "_emulator_harness.py"
+Cohesion: 0.24
+Nodes (8): Dnp3Server, main(), socket, Servidor TCP Outstation DNP3 para la subestación eléctrica., Inicia un Iec61850Server en puerto alto y asegura stop() en finally., Inicia un Dnp3Server en puerto alto y asegura stop() en finally., running_dnp3_server(), running_iec61850_server()
+
+### Community 137 - ".resolve"
+Cohesion: 0.50
+Nodes (3): Resuelve el rol asociado a una cabecera Authorization. Args: auth_header: Valor…, Intenta autenticar contra el AD LDAP emulado de h_dc (`ad_dc_emulator.py`).…, _try_ad_auth()
+
+### Community 140 - "ad_dc_emulator.py"
+Cohesion: 0.24
+Nodes (4): DomainControllerEmulator, main(), socket, Orquestador completo del controlador de dominio h_dc.
+
+### Community 141 - "FailoverExploitAttack"
+Cohesion: 0.36
+Nodes (4): FailoverExploitAttack, main(), Any, TestFailoverAttack
+
+### Community 144 - "TankPlant"
+Cohesion: 0.40
+Nodes (3): Advance plant state by dt seconds. Returns new level., Simple rule: if level below 1 m^3 or above 95% capacity, trip., TankPlant
+
 ## Knowledge Gaps
-- **383 isolated node(s):** `PYTHONPATH`, `smoke_test_local.sh script`, `PYTHONPATH`, `smoke_test_phase2.sh script`, `PYTHONUNBUFFERED` (+378 more)
+- **391 isolated node(s):** `PYTHONPATH`, `smoke_test_local.sh script`, `PYTHONPATH`, `smoke_test_phase2.sh script`, `PYTHONUNBUFFERED` (+386 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `HistorianTSDB` connect `HistorianTSDB` to `attack_apt_sandworm_campaign.py`, `SCADAAPIHandler`, `ThreadedHmiServer`, `scada_server.py`, `TestHistorianTSDB`, `._conn`, `IndustrialHmiEngine`, `TestScadaHistorianHTTPEndpoints`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
-- **Why does `TwoStageWaterPlant` connect `TwoStageWaterPlant` to `fed_icssim.py`, `RansomwareOtImpactAttack`, `SafetyInstrumentedLogic`, `EpanetHydraulicSolver`, `HistorianTSDB`, `attack_grid_heatwave_attribution.py`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **Why does `OpcUaClient` connect `OpcUaClient` to `Dnp3MasterClient`, `OpcUaServer`, `TestOpcUaServerClient`, `main`, `TestOpcUaNodeSpace`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `HistorianTSDB` connect `HistorianTSDB` to `HistorianAntiForensicsAttack`, `IndustrialHmiEngine`, `PostIncidentRecovery`, `TestHistorianTSDB`, `._conn`, `HmiRequestHandler`, `SCADAAPIHandler`, `scada_server.py`?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **Why does `SiemCorrelationEngine` connect `SiemCorrelationEngine` to `HoneypotTouch`, `NtpTimeSpoofingAttack`, `BacnetListener`, `PurpleTeamMttd`, `SiemRuleEvasion`, `EcsEvent`, `TestSiemPipeline`, `OtHoneypotServer`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `SCADAAPIHandler` connect `SCADAAPIHandler` to `TestRBACResolver`, `SCADAPrimarySecondaryCluster`, `TestHistorianTSDB`, `HistorianTSDB`, `TestScadaRBACHTTPEndpoints`, `RBACResolver`, `scada_server.py`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `HistorianTSDB` (e.g. with `HistorianAntiForensicsAttack` and `PostIncidentRecovery`) actually correct?**
   _`HistorianTSDB` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 10 inferred relationships involving `SiemCorrelationEngine` (e.g. with `HoneypotTouch` and `NtpTimeSpoofingAttack`) actually correct?**
   _`SiemCorrelationEngine` has 10 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 7 inferred relationships involving `TwoStageWaterPlant` (e.g. with `ChemicalDosingAttack` and `GridHeatwaveAttributionAttack`) actually correct?**
-  _`TwoStageWaterPlant` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `OpcUaServer` (e.g. with `TestScenario18ModbusWrite` and `TestOpcUaNodeSpace`) actually correct?**
   _`OpcUaServer` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 7 inferred relationships involving `TwoStageWaterPlant` (e.g. with `ChemicalDosingAttack` and `GridHeatwaveAttributionAttack`) actually correct?**
+  _`TwoStageWaterPlant` has 7 INFERRED edges - model-reasoned connections that need verification._
