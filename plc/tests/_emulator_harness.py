@@ -93,3 +93,55 @@ def running_modbus_server(
             bacnet.stop()
         thread.join(timeout=1.0)
 
+
+@contextlib.contextmanager
+def running_bacnet_server(
+    host: str = '127.0.0.1',
+    port: int = 14780
+) -> Iterator[Any]:
+    """Inicia un BacnetListener en puerto alto y asegura stop() en finally."""
+    from plc.modbus_emulator import BacnetListener
+    listener = BacnetListener(host=host, port=port)
+    listener.start()
+    time.sleep(0.05)
+    try:
+        yield listener
+    finally:
+        listener.stop()
+
+
+@contextlib.contextmanager
+def running_ntcip_server(
+    host: str = '127.0.0.1',
+    port: int = 14161
+) -> Iterator[Any]:
+    """Inicia un NtcipListener en puerto alto y asegura stop() en finally."""
+    from plc.modbus_emulator import NtcipListener
+    listener = NtcipListener(host=host, port=port)
+    listener.start()
+    time.sleep(0.05)
+    try:
+        yield listener
+    finally:
+        listener.stop()
+
+
+@contextlib.contextmanager
+def running_ad_dc(
+    host: str = '127.0.0.1',
+    kerberos_port: int = 14088,
+    ldap_port: int = 14389
+) -> Iterator[Any]:
+    """Inicia emulador AD DC con Kerberos y LDAP en puertos altos."""
+    from network.ad_dc_emulator import KerberosServerThread, LdapServerThread
+    krb_thread = KerberosServerThread(host=host, port=kerberos_port)
+    ldap_thread = LdapServerThread(host=host, port=ldap_port)
+    krb_thread.start()
+    ldap_thread.start()
+    time.sleep(0.08)
+    try:
+        yield krb_thread, ldap_thread
+    finally:
+        krb_thread.running = False
+        ldap_thread.running = False
+

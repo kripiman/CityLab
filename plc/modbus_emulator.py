@@ -192,6 +192,8 @@ class NtcipListener:
                 self._sock.close()
             except OSError:
                 pass
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=1.0)
 
 
 class BacnetListener:
@@ -277,6 +279,8 @@ class BacnetListener:
                 self._sock.close()
             except OSError:
                 pass
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=1.0)
 
 
 def build_server(

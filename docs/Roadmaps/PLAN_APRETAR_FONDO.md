@@ -59,18 +59,18 @@ Reutilizan `running_modbus_server` + readback exactamente como los pilotos `dosi
 
 Salida de Track A: fidelidad verificada **5 → 9 (31%)** [LOGRADO]. 174/174 suite PASS.
 
-### Track B — Nuevos objetivos de protocolo (extender harness, sin root)
+### Track B — Nuevos objetivos de protocolo [COMPLETADO]
 
-Requieren un context manager nuevo en `_emulator_harness.py`, pero el emulador destino ya existe (o casi).
+Se extendió el harness con `running_bacnet_server`, `running_ntcip_server` y `running_ad_dc` en `_emulator_harness.py`.
 
-| Script | Objetivo | Mutación a verificar | Harness | Esfuerzo |
-|---|---|---|---|---|
-| `attack_bacnet.py` | `BacnetListener` (dentro de `modbus_emulator.py`), puerto BACnet alto | present-value AV/BV HVAC muta | reusar `running_modbus_server` o `running_bacnet` fino | Medio |
-| `attack_ntcip.py` | Controlador de tráfico NTCIP/SNMP (Transport PLC `10.0.3.14`) | fase de semáforo / registro NTCIP muta | nuevo `running_ntcip_server` | Medio-Alto |
-| `attack_kerberoast_ad.py` | `ad_dc_emulator` Kerberos `:88` | request TGS llega y se emite ticket (log del KDC) | nuevo `running_ad_dc` | Medio |
-| *(nuevo)* ataque DNP3 breaker | `Dnp3Server` `:15200`, `trip_breaker` | binary input = tripped tras el comando | `running_dnp3_server` (ya existe) | Bajo |
+| Script | Objetivo | Mutación a verificar | Estado |
+|---|---|---|---|
+| `attack_bacnet.py` | `BacnetListener` `:14780` (UDP) | `listener.status == 'ALARM'` en datastore | **COMPLETADO** (`test_attack_bacnet_ntcip.py`, 3/3 PASS) |
+| `attack_ntcip.py` | `NtcipListener` `:14161` (TCP) | `listener.phase == 'FLASHING_YELLOW'` & `coord == 'OFF'` | **COMPLETADO** (`test_attack_bacnet_ntcip.py`, 3/3 PASS) |
+| `attack_kerberoast_ad.py` | `ad_dc_emulator` KDC `:14088` (TCP) | ticket TGS extraído vía socket TCP | **COMPLETADO** (`test_attack_kerberoast.py`, 3/3 PASS) |
+| Ataque DNP3 breaker | `Dnp3Server` `:20006` (TCP) | `breaker_closed == False` tras CROB TRIP | **COMPLETADO** (`test_protocols_fidelity.py`, CROB PASS) |
 
-Salida de Track B: fidelidad verificada **9 → 13 (45%)**.
+Salida de Track B: fidelidad verificada **9 → 13 (45%)** [LOGRADO]. 180/180 suite PASS.
 
 ### Track C — Integración con el stack defensivo in-process (sin root)
 
