@@ -46,18 +46,18 @@ F-03, F-05, F-06, F-07 son material CTF deliberado. Al migrar `insider_rbac` y c
 
 Ordenados por relación esfuerzo/valor, no por número de escenario. Se recomienda ejecutarlos A → B → C, dejando D para la sesión root.
 
-### Track A — Familia Modbus (harness listo, sin root, máximo ROI)
+### Track A — Familia Modbus [COMPLETADO]
 
 Reutilizan `running_modbus_server` + readback exactamente como los pilotos `dosing`/`triton`. Migración mecánica.
 
-| Script | Objetivo | Mutación a verificar | Esfuerzo |
+| Script | Objetivo | Mutación a verificar | Estado |
 |---|---|---|---|
-| `attack_modbus.py` / `exploit_modbus.py` | Modbus `:15020`, coil write | coil real conmuta (`getValues(1, addr, 1)`) | Bajo |
-| `attack_modbus_read_only.py` | Modbus `:15020`, HR/coil read | valores leídos == sembrados en el emulador | Bajo |
-| `attack_scada_tour.py` | Modbus multi-PLC por sector | reads reales por sector, no dict sintético | Bajo-Medio |
-| `attack_multisector.py` | Modbus barrido multi-sector | read/write reales en ≥2 sectores | Medio |
+| `attack_modbus.py` / `exploit_modbus.py` | Modbus `:15020`, coil write | coil real conmuta (`getValues(1, addr, 1)`) | **COMPLETADO** (`test_scenario_18_modbus_write.py`, 5/5 PASS) |
+| `attack_modbus_read_only.py` | Modbus `:15020`, HR/coil read | valores leídos == sembrados en el emulador | **COMPLETADO** (`test_attack_modbus_read.py`, 3/3 PASS) |
+| `attack_scada_tour.py` | Servidor HMI `:18085` + engine | consulta HTTP/engine de overview y alarmas | **COMPLETADO** (`test_attack_scada_tour.py`, 3/3 PASS) |
+| `attack_multisector.py` | Modbus barrido multi-sector | read/write reales en targets Modbus | **COMPLETADO** (`test_attack_multisector.py`, 3/3 PASS) |
 
-Salida de Track A: fidelidad verificada **5 → 9 (31%)**.
+Salida de Track A: fidelidad verificada **5 → 9 (31%)** [LOGRADO]. 174/174 suite PASS.
 
 ### Track B — Nuevos objetivos de protocolo (extender harness, sin root)
 
