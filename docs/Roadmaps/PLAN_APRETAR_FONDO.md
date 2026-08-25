@@ -68,7 +68,7 @@ Se extendió el harness con `running_bacnet_server`, `running_ntcip_server` y `r
 | `attack_bacnet.py` | `BacnetListener` `:14780` (UDP) | `listener.status == 'ALARM'` en datastore | **COMPLETADO** (`test_attack_bacnet_ntcip.py`, 3/3 PASS) |
 | `attack_ntcip.py` | `NtcipListener` `:14161` (TCP) | `listener.phase == 'FLASHING_YELLOW'` & `coord == 'OFF'` | **COMPLETADO** (`test_attack_bacnet_ntcip.py`, 3/3 PASS) |
 | `attack_kerberoast_ad.py` | `ad_dc_emulator` KDC `:14088` (TCP) | ticket TGS extraído vía socket TCP | **COMPLETADO** (`test_attack_kerberoast.py`, 3/3 PASS) |
-| Ataque DNP3 breaker | `Dnp3Server` `:20006` (TCP) | `breaker_closed == False` tras CROB TRIP | **COMPLETADO** (`test_protocols_fidelity.py`, CROB PASS) |
+| `attack_dnp3_breaker.py` | `Dnp3Server` `:15200` (TCP) | `breaker_closed == False` tras inyección CROB TRIP | **COMPLETADO** (`test_attack_dnp3_breaker.py`, 4/4 PASS) |
 
 Salida de Track B: fidelidad verificada **9 → 13 (45%)** [LOGRADO]. 180/180 suite PASS.
 
