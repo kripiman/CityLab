@@ -13,6 +13,9 @@ class TestScenario25Tabletop(unittest.TestCase):
         res = tt.run_crisis_simulation()
         self.assertEqual(res['status'], 'SUCCESS')
         self.assertTrue(res['tabletop_completed'])
+        self.assertIn('decisions', res)
+        self.assertTrue(res['decisions']['isolate_ot'])
+        self.assertTrue(res['decisions']['refuse_ransom'])
 
 
 if __name__ == '__main__':

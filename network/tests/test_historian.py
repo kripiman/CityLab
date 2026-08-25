@@ -158,6 +158,12 @@ class TestScadaHistorianHTTPEndpoints(unittest.TestCase):
         from http.server import HTTPServer
         import network.rbac as rbac_mod
 
+        cls._orig_env = {
+            k: os.environ.get(k)
+            for k in ['SCADA_API_TOKEN', 'SCADA_TOKEN_OPERATOR', 'SCADA_TOKEN_ENGINEER',
+                      'SCADA_TOKEN_AUDITOR', 'STRICT_AUTH', 'SCADA_AD_AUTH']
+        }
+
         # Configurar tokens de test para que el resolver RBAC los reconozca
         os.environ['SCADA_API_TOKEN']      = 'TEST_TOKEN_2026'
         os.environ['SCADA_TOKEN_OPERATOR'] = 'TEST_TOKEN_2026'
@@ -182,6 +188,14 @@ class TestScadaHistorianHTTPEndpoints(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls._server.shutdown()
+        cls._server.server_close()
+        import network.rbac as rbac_mod
+        for k, v in cls._orig_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        rbac_mod._rbac.reload()
 
     def _get(self, path: str, token: str = 'TEST_TOKEN_2026') -> tuple[int, dict]:
         """Helper: realiza GET con Bearer token y retorna (status_code, json_body)."""

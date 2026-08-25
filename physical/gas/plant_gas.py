@@ -12,6 +12,7 @@ Ecuaciones de estado:
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 
 LOGGER = logging.getLogger('plant_gas')
@@ -38,10 +39,15 @@ class GasPipelinePlant:
 
     def step(self, dt_s: float = 1.0) -> float:
         """Avanza la simulación física de gas dt_s segundos."""
+        if math.isnan(dt_s) or math.isinf(dt_s) or dt_s < 0:
+            dt_s = 1.0
         q_in = self.params.compressor_flow_m3h / 3600.0 if self.compressor_running else 0.0
         q_out = self.params.consumption_flow_m3h / 3600.0 if self.valve_open else 0.0
         k_leak = self.params.leak_coeff * 2.0 if self.leak_detected else self.params.leak_coeff
 
         dp_dt = ((q_in - q_out) * 0.1) - (k_leak * (self.pressure_bar - 1.0) * 0.01)
-        self.pressure_bar = max(0.0, self.pressure_bar + dp_dt * dt_s)
+        next_p = self.pressure_bar + dp_dt * dt_s
+        if math.isnan(next_p) or math.isinf(next_p):
+            next_p = self.params.nominal_pressure_bar
+        self.pressure_bar = max(0.0, min(200.0, next_p))
         return self.pressure_bar

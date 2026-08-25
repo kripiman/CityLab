@@ -12,8 +12,9 @@ from network.hmi_server import IndustrialHmiEngine
 
 class TestScenario21LossOfView(unittest.TestCase):
 
+    @patch('network.sdn_controller.apply_circuit_breaker')
     @patch('network.scada_server.ModbusTcpClient')
-    def test_loss_of_view_behavioral_polling_accumulation(self, mock_modbus_client: MagicMock) -> None:
+    def test_loss_of_view_behavioral_polling_accumulation(self, mock_modbus_client: MagicMock, mock_sdn: MagicMock) -> None:
         """Ejercita la lógica de producción poll_plcs_once() y verifica la transición real a LOSS_OF_VIEW."""
         mock_instance = MagicMock()
         mock_instance.connect.return_value = False
@@ -34,6 +35,13 @@ class TestScenario21LossOfView(unittest.TestCase):
         poll_plcs_once()
         self.assertGreaterEqual(_consecutive_failures['water'], LOSS_OF_VIEW_THRESHOLD)
         self.assertEqual(scada_state['sectors']['water']['status'], 'LOSS_OF_VIEW')
+
+        # Control F-06: Verificación de vulnerabilidad F-06 (no hay auto-aislamiento ni mitigación automática)
+        # 1. No se ejecuta regla SDN Circuit Breaker
+        mock_sdn.assert_not_called()
+        # 2. No se envían comandos Modbus de corte/escritura a las bobinas del PLC
+        mock_instance.write_coils.assert_not_called()
+        mock_instance.write_registers.assert_not_called()
 
     def test_hmi_detects_loss_of_view_alarm(self) -> None:
         """Verifica que el motor HMI registre alarma de LOSS_OF_VIEW y cambie a ALARM_CRITICAL."""

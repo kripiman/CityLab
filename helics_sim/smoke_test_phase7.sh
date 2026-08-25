@@ -31,34 +31,56 @@ if [ "$ENABLE_SIS_FEDERATE" = "1" ]; then
     TOTAL_FEDS=10
 fi
 
+PIDS=()
+
 echo "[*] Starting HELICS broker for Phase 7 Smoke Test ($TOTAL_FEDS federates, port 23700)..."
 helics_broker -f $TOTAL_FEDS --port=23700 --loglevel=warning > "$LOG_DIR/test_broker_p7.log" 2>&1 &
-BROKER_PID=$!
+PIDS+=($!)
 sleep 1
 
 echo "[*] Starting physics federates (mock PLC mode)..."
 python3 "$SCRIPT_DIR/fed_icssim.py" --plant-type water --mock-plc > "$LOG_DIR/test_water.log" 2>&1 &
+PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_icssim.py" --plant-type gas --mock-plc > "$LOG_DIR/test_gas.log" 2>&1 &
+PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_icssim.py" --plant-type elec --mock-plc > "$LOG_DIR/test_elec.log" 2>&1 &
+PIDS+=($!)
 
 echo "[*] Starting Transport and Hospital federates..."
 python3 "$SCRIPT_DIR/fed_transport.py" --mock-plc > "$LOG_DIR/test_transport.log" 2>&1 &
+PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_hospital.py" > "$LOG_DIR/test_hospital.log" 2>&1 &
+PIDS+=($!)
 
 echo "[*] Starting GridLAB-D and Logger federates..."
 python3 "$SCRIPT_DIR/gridlabd_federate.py" > "$LOG_DIR/test_gridlabd.log" 2>&1 &
+PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_logger.py" > "$LOG_DIR/test_logger.log" 2>&1 &
+PIDS+=($!)
 
 echo "[*] Starting Category A federates (Desal & Smart Lighting)..."
 python3 "$SCRIPT_DIR/fed_desal.py" > "$LOG_DIR/test_desal.log" 2>&1 &
+PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_lighting.py" > "$LOG_DIR/test_lighting.log" 2>&1 &
+PIDS+=($!)
 
 if [ "$ENABLE_SIS_FEDERATE" = "1" ]; then
     echo "[*] Starting Safety Instrumented System (SIS) federate (#10)..."
     python3 "$SCRIPT_DIR/fed_sis.py" > "$LOG_DIR/test_sis.log" 2>&1 &
+    PIDS+=($!)
 fi
 
-echo "[*] Waiting for $TOTAL_FEDS federates to complete..."
-wait $BROKER_PID 2>/dev/null || true
+echo "[*] Waiting for $TOTAL_FEDS federates and broker to complete..."
+FAIL=0
+for pid in "${PIDS[@]}"; do
+    if ! wait "$pid"; then
+        FAIL=1
+    fi
+done
+
+if [ "$FAIL" -ne 0 ]; then
+    echo "[FAIL] Smoke test Phase 7 failed (one or more processes exited with error)."
+    exit 1
+fi
 
 echo "[*] Smoke test Phase 7 complete ($TOTAL_FEDS/$TOTAL_FEDS federates)."

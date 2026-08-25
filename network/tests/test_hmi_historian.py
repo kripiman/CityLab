@@ -31,11 +31,13 @@ class TestHmiHistorianIntegration(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.historian.close()
-        if self.db_path.exists():
-            try:
-                self.db_path.unlink()
-            except OSError:
-                pass
+        for ext in ('', '-wal', '-shm'):
+            p = Path(str(self.db_path) + ext)
+            if p.exists():
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
 
     def test_engine_get_history(self) -> None:
         res_water = self.engine.get_history(sector='water')

@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import logging
 import time
-from typing import Optional, Any
+from typing import Optional, Any, Sequence
 import os
 
 import helics as h
@@ -77,14 +77,14 @@ def read_actuator_running(client: ModbusTcpClient) -> Optional[bool]:
     return None
 
 
-def main() -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="HELICS ICSSIM Federate")
     parser.add_argument("--plant-type", choices=["water", "gas", "elec"], default="water", help="Plant type")
     parser.add_argument("--plc-ip", default="", help="Target PLC Modbus IP")
     parser.add_argument("--plc-port", type=int, default=502, help="Target PLC Modbus port")
     parser.add_argument("--fed-name", default="", help="HELICS federate name")
     parser.add_argument("--mock-plc", action="store_true", help="Use mock PLC state instead of connecting to Modbus")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     default_ips = {"water": "10.0.3.10", "gas": "10.0.3.12", "elec": "10.0.3.13"}
     plc_ip = args.plc_ip or os.environ.get("PLC_IP", default_ips.get(args.plant_type, "10.0.3.10"))

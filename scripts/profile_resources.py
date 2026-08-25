@@ -102,7 +102,7 @@ def _iter_processes_psutil() -> List[Dict[str, Any]]:
                 'rss_mb': (mem.rss / (1024 * 1024)) if mem else 0.0,
                 'cpu_pct': info.get('cpu_percent') or 0.0,
             })
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
     return procs
 
@@ -142,13 +142,17 @@ def collect_sample() -> List[Sample]:
         component = classify(proc['cmdline'])
         if component is None:
             continue
+        # Retener cmdline suficiente para asegurar re-clasificación sin truncar patrones
+        full_cmd = proc['cmdline']
+        if classify(full_cmd[:1024]) is None:
+            continue
         samples.append(Sample(
             ts=ts,
             component=component,
             pid=proc['pid'],
             rss_mb=round(proc['rss_mb'], 2),
             cpu_pct=round(proc['cpu_pct'], 1),
-            cmdline=proc['cmdline'][:180],
+            cmdline=full_cmd[:1024],
         ))
     return samples
 

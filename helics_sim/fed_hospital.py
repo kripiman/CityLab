@@ -62,7 +62,7 @@ class HospitalPlant:
     ups_energy_kwh: float = 75.0         # energía actual del UPS
     generator_start_delay_s: float = 10.0
     state: PowerState = PowerState.GRID_NORMAL
-    _gen_start_ts: float = field(default=float('inf'), repr=False)
+    _gen_timer_s: float = field(default=0.0, repr=False)
 
     def update(self, voltage_pu: float, freq_hz: float, dt: float, suppress_generator: bool = False) -> tuple[float, int]:
         """Actualiza estado del hospital. Retorna (load_kw_on_grid, on_ups_flag)."""
@@ -72,14 +72,15 @@ class HospitalPlant:
             if not grid_ok:
                 LOGGER.warning('Grid fault detected (V=%.3fpu f=%.2fHz) → activating UPS', voltage_pu, freq_hz)
                 self.state = PowerState.UPS_ACTIVE
-                self._gen_start_ts = time.monotonic() + self.generator_start_delay_s
+                self._gen_timer_s = self.generator_start_delay_s
 
         elif self.state == PowerState.UPS_ACTIVE:
             # Descargar UPS
             self.ups_energy_kwh -= (self.base_load_kw * dt) / 3600.0
             self.ups_energy_kwh = max(0.0, self.ups_energy_kwh)
+            self._gen_timer_s -= dt
 
-            if not suppress_generator and time.monotonic() >= self._gen_start_ts:
+            if not suppress_generator and self._gen_timer_s <= 0.0:
                 LOGGER.warning('Generator online → hospital autonomous')
                 self.state = PowerState.GENERATOR_ONLINE
 

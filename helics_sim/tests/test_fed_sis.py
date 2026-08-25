@@ -43,7 +43,13 @@ class TestSisFederate(unittest.TestCase):
         self.assertIn('bajo-nivel crítico', reason)
 
     def test_over_gas_pressure_interlock(self) -> None:
-        high_gas = {'water_t1_level': 10.0, 'gas_pressure': 185.0, 'grid_freq': 60.0}
+        from physical.icssim.plant import GasPlant
+        plant = GasPlant()
+        # Simulate gas valve closed for 20s to increase pressure above 180 PSI
+        for _ in range(20):
+            plant.step(valve_open=False, dt=1.0)
+        self.assertGreater(plant.pressure_psi, 180.0)
+        high_gas = {'water_t1_level': 10.0, 'gas_pressure': plant.pressure_psi, 'grid_freq': 60.0}
         must_trip, reason = self.logic.evaluate_safety_state(high_gas)
         self.assertTrue(must_trip)
         self.assertIn('Sobre-presión crítica', reason)

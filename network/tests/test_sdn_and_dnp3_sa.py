@@ -41,7 +41,8 @@ class TestSdnAndDnp3Sa(unittest.TestCase):
 
     def test_sdn_circuit_breaker_helper(self) -> None:
         # Dry run circuit breaker execution helper
-        apply_circuit_breaker('10.0.1.99')
+        res = apply_circuit_breaker('10.0.1.99')
+        self.assertIsInstance(res, bool)
 
 
 if __name__ == '__main__':

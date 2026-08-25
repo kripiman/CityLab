@@ -67,6 +67,7 @@ class TestProfileResources(unittest.TestCase):
     def test_collect_sample_returns_only_citylab_processes(self) -> None:
         """El muestreo real no debe clasificar procesos ajenos al laboratorio."""
         for sample in collect_sample():
+            self.assertIsNotNone(sample.component)
             self.assertIsNotNone(classify(sample.cmdline))
             self.assertGreaterEqual(sample.rss_mb, 0.0)
 

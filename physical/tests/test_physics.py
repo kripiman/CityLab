@@ -40,6 +40,10 @@ class TestPhysicsEngine(unittest.TestCase):
         t1_next, t2_next = plant.step(p1_cmd=True, p2_cmd=True, power_available=True, dt=1.0)
         self.assertIsNotNone(t1_next)
         self.assertIsNotNone(t2_next)
+        self.assertIsInstance(t1_next, float)
+        self.assertIsInstance(t2_next, float)
+        self.assertGreater(t1_next, 0.0)
+        self.assertGreater(t2_next, 0.0)
 
         # Step without power — levels decay or stay constant minus demand
         t1_off, t2_off = plant.step(p1_cmd=True, p2_cmd=True, power_available=False, dt=1.0)

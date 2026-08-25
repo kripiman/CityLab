@@ -164,6 +164,7 @@ class TestScadaRBACHTTPEndpoints(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls._server.shutdown()
+        cls._server.server_close()
         import network.rbac as rbac_mod
         for k, v in cls._orig_env.items():
             if v is None:

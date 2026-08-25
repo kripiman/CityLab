@@ -11,6 +11,7 @@ Simula la física de una planta industrial de desalinización de agua de mar:
 from __future__ import annotations
 
 import logging
+import math
 import threading
 from typing import Dict, Any
 
@@ -44,6 +45,8 @@ class DesalinationPlant:
     def step(self, dt_seconds: float = 1.0, city_demand_m3h: float = 180.0) -> Dict[str, Any]:
         """Avanza la simulación física de la planta dt_seconds segundos."""
         with self._lock:
+            dt_seconds = 1.0 if (math.isnan(dt_seconds) or math.isinf(dt_seconds) or dt_seconds < 0) else dt_seconds
+            city_demand_m3h = 180.0 if (math.isnan(city_demand_m3h) or math.isinf(city_demand_m3h)) else max(0.0, float(city_demand_m3h))
             if self.hp_pump_on and self.intake_valve_open:
                 production_rate_m3h = self.capacity_m3h * self.recovery_rate
                 self.power_kw = 650.0

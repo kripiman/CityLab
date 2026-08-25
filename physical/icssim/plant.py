@@ -39,7 +39,7 @@ class TankPlant:
 class GasPlant:
     pressure_psi: float = 100.0
     min_pressure_psi: float = 0.0
-    max_pressure_psi: float = 150.0
+    max_pressure_psi: float = 200.0
     flow_rate_psi_s: float = 5.0
     leak_rate_psi_s: float = 0.1
 

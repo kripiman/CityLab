@@ -5,6 +5,7 @@ import socket
 import threading
 import time
 import unittest
+from unittest.mock import MagicMock, patch
 
 from network.modbus_proxy import ModbusDpiProxyServer, ModbusDpiEngine
 from network.scada_server import scada_state, poll_plcs, _consecutive_failures, LOSS_OF_VIEW_THRESHOLD
@@ -62,34 +63,31 @@ class TestDpiProxyAndScadaWatchdog(unittest.TestCase):
         ok4, reason4 = engine.inspect_and_filter('10.0.2.20', '10.0.3.14', read_uid4)
         self.assertTrue(ok4)
 
-    def test_scada_watchdog_loss_of_view(self) -> None:
-        # Verify that unreachable PLCs increment _consecutive_failures and trigger LOSS_OF_VIEW status
-        from network.scada_server import PLC_CONFIGS
-        try:
-            from pymodbus.client import ModbusTcpClient
-        except ImportError:
-            from pymodbus.client.sync import ModbusTcpClient
+    @patch('network.scada_server.ModbusTcpClient')
+    def test_scada_watchdog_loss_of_view(self, mock_modbus_client: MagicMock) -> None:
+        # Verify that unreachable PLCs increment _consecutive_failures and trigger LOSS_OF_VIEW status via poll_plcs_once()
+        from network.scada_server import poll_plcs_once
 
-        sector = 'water'
-        _consecutive_failures[sector] = 0
-        
-        # Point to unreachable port/host
-        orig_config = PLC_CONFIGS[sector]
-        PLC_CONFIGS[sector] = ('127.0.0.1', 59998)
+        mock_instance = MagicMock()
+        mock_instance.connect.return_value = False
+        mock_modbus_client.return_value = mock_instance
+
+        orig_failures = dict(_consecutive_failures)
+        orig_sectors = dict(scada_state['sectors'])
         try:
-            # Single iteration of failure
-            for i in range(1, LOSS_OF_VIEW_THRESHOLD + 1):
-                client = ModbusTcpClient(PLC_CONFIGS[sector][0], port=PLC_CONFIGS[sector][1], timeout=0.1)
-                if not client.connect():
-                    _consecutive_failures[sector] += 1
-                    status = 'LOSS_OF_VIEW' if _consecutive_failures[sector] >= LOSS_OF_VIEW_THRESHOLD else 'UNREACHABLE'
-                    scada_state['sectors'][sector] = {'status': status, 'consecutive_failures': _consecutive_failures[sector]}
+            for sector in _consecutive_failures:
+                _consecutive_failures[sector] = 0
+
+            for _ in range(LOSS_OF_VIEW_THRESHOLD):
+                poll_plcs_once()
             
-            self.assertEqual(_consecutive_failures[sector], LOSS_OF_VIEW_THRESHOLD)
-            self.assertEqual(scada_state['sectors'][sector]['status'], 'LOSS_OF_VIEW')
+            self.assertEqual(_consecutive_failures['water'], LOSS_OF_VIEW_THRESHOLD)
+            self.assertEqual(scada_state['sectors']['water']['status'], 'LOSS_OF_VIEW')
         finally:
-            PLC_CONFIGS[sector] = orig_config
-            _consecutive_failures[sector] = 0
+            _consecutive_failures.clear()
+            _consecutive_failures.update(orig_failures)
+            scada_state['sectors'].clear()
+            scada_state['sectors'].update(orig_sectors)
 
 
 if __name__ == '__main__':

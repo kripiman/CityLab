@@ -10,6 +10,7 @@ Simula la red de alumbrado LED urbano conectado:
 from __future__ import annotations
 
 import logging
+import math
 import threading
 from typing import Dict, Any
 
@@ -35,6 +36,8 @@ class SmartLightingSystem:
     def step(self, dt_seconds: float = 1.0, ambient_lux: float = 50.0) -> Dict[str, Any]:
         """Avanza el modelo de alumbrado ajustando fotocélulas o dimmer."""
         with self._lock:
+            dt_seconds = 1.0 if (math.isnan(dt_seconds) or math.isinf(dt_seconds) or dt_seconds < 0) else dt_seconds
+            ambient_lux = 50.0 if (math.isnan(ambient_lux) or math.isinf(ambient_lux)) else max(0.0, float(ambient_lux))
             self.ambient_lux = ambient_lux
 
             # Control automático por fotocélula si no hay override manual
