@@ -117,5 +117,112 @@ class TestSiemPipeline(unittest.TestCase):
         self.assertEqual(alert['attacker_ip'], '10.0.1.10')
 
 
+    def test_siem_http_server_endpoints(self) -> None:
+        from network.siem_pipeline import SiemRequestHandler, ThreadedSiemServer
+        import threading
+        import urllib.request
+
+        SiemRequestHandler.engine = self.siem
+        server = ThreadedSiemServer(('127.0.0.1', 0), SiemRequestHandler)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+
+        try:
+            # 1. GET /health
+            with urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                data = json.loads(resp.read().decode())
+                self.assertEqual(data['status'], 'ONLINE')
+
+            # 2. POST /api/siem/event
+            payload = json.dumps({
+                'event_category': 'network',
+                'event_type': 'alert',
+                'severity': 'HIGH',
+                'source_ip': '10.0.1.5',
+                'destination_ip': '10.0.3.10',
+                'service_name': 'test_daemon',
+                'message': 'Testing central daemon ingestion'
+            }).encode()
+            req = urllib.request.Request(
+                f'http://127.0.0.1:{port}/api/siem/event',
+                data=payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                res = json.loads(resp.read().decode())
+                self.assertEqual(res['status'], 'INGESTED')
+
+            # 3. GET /api/siem/events
+            with urllib.request.urlopen(f'http://127.0.0.1:{port}/api/siem/events', timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                events_data = json.loads(resp.read().decode())
+                self.assertGreaterEqual(events_data['count'], 1)
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_siem_cross_source_forwarding_and_cascade_rule(self) -> None:
+        """Verifica que el daemon central SIEM reciba eventos de honeypot y proxy, gatillando la Regla 1."""
+        import os
+        from network.siem_pipeline import SiemCorrelationEngine, SiemRequestHandler, ThreadedSiemServer
+        import threading
+        import time
+
+        central_engine = SiemCorrelationEngine()
+        SiemRequestHandler.engine = central_engine
+        server = ThreadedSiemServer(('127.0.0.1', 0), SiemRequestHandler)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+
+        old_url = os.environ.get('SIEM_HTTP_URL')
+        os.environ['SIEM_HTTP_URL'] = f'http://127.0.0.1:{port}'
+
+        try:
+            # 1. Honeypot touch from attacker 10.0.1.99
+            local_honeypot_siem = SiemCorrelationEngine()
+            local_honeypot_siem.ingest_raw_event(
+                event_category='honeypot',
+                event_type='alert',
+                severity='HIGH',
+                source_ip='10.0.1.99',
+                destination_ip='10.0.5.99',
+                service_name='ot_honeypot_s5',
+                message='Honeypot hit from attacker'
+            )
+
+            # 2. Modbus proxy DPI block from same attacker 10.0.1.99
+            local_proxy_siem = SiemCorrelationEngine()
+            local_proxy_siem.ingest_raw_event(
+                event_category='process_control',
+                event_type='denial',
+                severity='CRITICAL',
+                source_ip='10.0.1.99',
+                destination_ip='10.0.3.10',
+                service_name='modbus_proxy',
+                message='Unauthorized Modbus write attempt blocked'
+            )
+
+            time.sleep(0.3)
+
+            # Central SIEM should have correlated both events into Rule 1 Critical Cascade Alert
+            self.assertGreaterEqual(len(central_engine.active_alerts), 1)
+            cascade_alert = [a for a in central_engine.active_alerts if a['attacker_ip'] == '10.0.1.99']
+            self.assertEqual(len(cascade_alert), 1)
+            self.assertEqual(cascade_alert[0]['severity'], 'CRITICAL')
+            self.assertIn('Cascada', cascade_alert[0]['name'])
+        finally:
+            server.shutdown()
+            server.server_close()
+            if old_url is None:
+                os.environ.pop('SIEM_HTTP_URL', None)
+            else:
+                os.environ['SIEM_HTTP_URL'] = old_url
+
+
 if __name__ == '__main__':
     unittest.main()

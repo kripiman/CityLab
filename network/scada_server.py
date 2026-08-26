@@ -56,22 +56,41 @@ _historian: HistorianTSDB = HistorianTSDB()
 # Cluster de Alta Disponibilidad DCS HA (Fase 6)
 _ha_cluster: SCADAPrimarySecondaryCluster = SCADAPrimarySecondaryCluster(
     node_role=os.getenv('HA_ROLE', 'PRIMARY'),
-    peer_url=os.getenv('HA_PEER_URL', 'http://127.0.0.1:8081')
+    peer_url=os.getenv('HA_PEER_URL', 'http://127.0.0.1:8081' if os.getenv('ENABLE_HA_PEER', '0') == '1' else '')
 )
 
 LOSS_OF_VIEW_THRESHOLD = 3
 _consecutive_failures: Dict[str, int] = {sector: 0 for sector in PLC_CONFIGS}
 
+SECTOR_UNIT_IDS: Dict[str, int] = {
+    'water':     1,
+    'gas':       2,
+    'elec':      3,
+    'transport': 4,
+    'hospital':  5
+}
+
+USE_MODBUS_PROXY = os.getenv('USE_MODBUS_PROXY', '0') == '1'
+MODBUS_PROXY_HOST = os.getenv('MODBUS_PROXY_HOST', '10.0.2.20')
+MODBUS_PROXY_PORT = int(os.getenv('MODBUS_PROXY_PORT', '15020'))
+
+
 def poll_plcs_once() -> Dict[str, Any]:
-    """Ejecuta una ronda individual de consulta a los PLCs OT."""
+    """Ejecuta una ronda individual de consulta a los PLCs OT (directo o vía DPI proxy)."""
     timestamp = time.time()
     sector_data = {}
 
-    for sector, (ip, port) in PLC_CONFIGS.items():
+    for sector, (direct_ip, direct_port) in PLC_CONFIGS.items():
+        ip = MODBUS_PROXY_HOST if USE_MODBUS_PROXY else direct_ip
+        port = MODBUS_PROXY_PORT if USE_MODBUS_PROXY else direct_port
+        unit_id = SECTOR_UNIT_IDS.get(sector, 1)
         client = ModbusTcpClient(ip, port=port, timeout=1.0)
         try:
             if client.connect():
-                rr = client.read_coils(0, 4)
+                try:
+                    rr = client.read_coils(0, 4, unit=unit_id)
+                except TypeError:
+                    rr = client.read_coils(0, 4, slave=unit_id)
                 if rr and not rr.isError():
                     _consecutive_failures[sector] = 0
                     sector_data[sector] = {
@@ -244,6 +263,7 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             if state_snapshot:
                 scada_state['sectors'].update(state_snapshot)
                 scada_state['last_update'] = time.time()
+                _ha_cluster.sync_state(state_snapshot)
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()

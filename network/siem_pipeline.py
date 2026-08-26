@@ -15,11 +15,37 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import threading
 import time
+import urllib.request
+import urllib.error
 from dataclasses import dataclass, asdict
-from typing import Any, Dict, List, Optional
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+from typing import Any, Dict, List, Optional, Sequence
+from urllib.parse import urlparse
 
 LOGGER = logging.getLogger('siem_pipeline')
+
+
+def forward_event_to_central_siem(event_dict: Dict[str, Any], siem_url: Optional[str] = None) -> None:
+    """Reenvía asíncronamente un evento normalizado ECS hacia el daemon SIEM central."""
+    url = (siem_url or os.getenv('SIEM_HTTP_URL', '')).strip()
+    if not url:
+        return
+    try:
+        data = json.dumps(event_dict).encode('utf-8')
+        req = urllib.request.Request(
+            f"{url.rstrip('/')}/api/siem/event",
+            data=data,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        with urllib.request.urlopen(req, timeout=1.0) as _:
+            pass
+    except Exception as exc:
+        LOGGER.debug('[SIEM-FORWARD] No se pudo reenviar evento al SIEM central (%s): %s', url, exc)
 
 
 @dataclass
@@ -66,6 +92,16 @@ class SiemCorrelationEngine:
         )
         self.events_buffer.append(event)
         self._evaluate_correlation_rules(event)
+
+        # Si SIEM_HTTP_URL está configurado y no somos el propio servidor central recibiendo, reenviar
+        central_url = os.getenv('SIEM_HTTP_URL', '')
+        if central_url and not event.metadata.get('_from_central_forward'):
+            threading.Thread(
+                target=forward_event_to_central_siem,
+                args=(asdict(event), central_url),
+                daemon=True
+            ).start()
+
         return event
 
     def _evaluate_correlation_rules(self, event: EcsEvent) -> None:
@@ -185,3 +221,89 @@ class SiemCorrelationEngine:
             line = f"<{pri}>1 {e.timestamp} citylab-siem {e.service_name} - - - [{e.event_category} src={e.source_ip} dst={e.destination_ip}] {e.message}"
             lines.append(line)
         return lines
+
+
+class SiemRequestHandler(BaseHTTPRequestHandler):
+
+    engine = SiemCorrelationEngine()
+
+    def do_GET(self) -> None:
+        parsed = urlparse(self.path)
+        if parsed.path == '/api/siem/alerts':
+            self._send_json({'active_alerts': self.engine.active_alerts, 'count': len(self.engine.active_alerts)})
+        elif parsed.path == '/api/siem/events':
+            self._send_json({'events': [asdict(e) for e in self.engine.events_buffer], 'count': len(self.engine.events_buffer)})
+        elif parsed.path in ('/', '/health'):
+            self._send_json({'status': 'ONLINE', 'alerts_count': len(self.engine.active_alerts), 'events_count': len(self.engine.events_buffer)})
+        else:
+            self.send_error(404, 'Not Found')
+
+    def do_POST(self) -> None:
+        parsed = urlparse(self.path)
+        content_length = int(self.headers.get('Content-Length', 0))
+        body_bytes = self.rfile.read(content_length)
+        try:
+            body = json.loads(body_bytes.decode('utf-8')) if body_bytes else {}
+        except Exception:
+            body = {}
+
+        if parsed.path == '/api/siem/event':
+            meta = body.get('metadata', {})
+            meta['_from_central_forward'] = True
+            event = self.engine.ingest_raw_event(
+                event_category=body.get('event_category', 'network'),
+                event_type=body.get('event_type', 'alert'),
+                severity=body.get('severity', 'MEDIUM'),
+                source_ip=body.get('source_ip', '0.0.0.0'),
+                destination_ip=body.get('destination_ip', '0.0.0.0'),
+                service_name=body.get('service_name', 'external'),
+                message=body.get('message', ''),
+                metadata=meta
+            )
+            self._send_json({'status': 'INGESTED', 'event': asdict(event)})
+        elif parsed.path == '/api/siem/zeek':
+            event = self.engine.ingest_zeek_log(body)
+            self._send_json({'status': 'INGESTED', 'event': asdict(event)})
+        elif parsed.path == '/api/siem/suricata':
+            event = self.engine.ingest_suricata_eve(body)
+            self._send_json({'status': 'INGESTED', 'event': asdict(event)})
+        else:
+            self.send_error(404, 'Not Found')
+
+    def _send_json(self, data: Any, status: int = 200) -> None:
+        body = json.dumps(data).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format: str, *args: Any) -> None:
+        pass
+
+
+class ThreadedSiemServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    import argparse
+    parser = argparse.ArgumentParser(description="CityLab Central SOC / SIEM Enterprise Pipeline Daemon")
+    default_host = os.getenv('SIEM_HOST', '0.0.0.0')
+    default_port = int(os.getenv('SIEM_PORT', '8514'))
+    parser.add_argument("--host", default=default_host, help=f"Host / IP de escucha SIEM (default: {default_host})")
+    parser.add_argument("--port", type=int, default=default_port, help=f"Puerto HTTP de ingestión SIEM (default: {default_port})")
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s][SIEM] %(message)s')
+    server = ThreadedSiemServer((args.host, args.port), SiemRequestHandler)
+    LOGGER.info("Servidor SIEM Central escuchando en http://%s:%d", args.host, args.port)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        LOGGER.info("Apagando Servidor SIEM...")
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

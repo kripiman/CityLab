@@ -63,6 +63,12 @@ class ModbusDpiEngine:
 
     def __init__(self) -> None:
         self.rate_limiter = RateLimiter(MAX_WRITES_PER_SEC)
+        self.siem = None
+        try:
+            from network.siem_pipeline import SiemCorrelationEngine
+            self.siem = SiemCorrelationEngine()
+        except Exception:
+            self.siem = None
 
     def log_audit(self, src_ip: str, dst_ip: str, fc: int, addr: int, val: int, status: str, reason: str = "") -> None:
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -72,6 +78,21 @@ class ModbusDpiEngine:
                 f.write(log_line)
         except Exception as exc:
             LOGGER.error("Falló escritura en log de auditoría DPI: %s", exc)
+
+        if status == 'DENIED' and self.siem:
+            try:
+                self.siem.ingest_raw_event(
+                    event_category='process_control',
+                    event_type='denial',
+                    severity='CRITICAL' if 'UNAUTHORIZED' in reason or 'RATE_LIMIT' in reason else 'HIGH',
+                    source_ip=src_ip,
+                    destination_ip=dst_ip,
+                    service_name='modbus_proxy',
+                    message=f'Modbus DPI Denial [FC={fc} addr={addr} val={val}]: {reason}',
+                    metadata={'fc': fc, 'addr': addr, 'val': val, 'reason': reason}
+                )
+            except Exception as exc:
+                LOGGER.debug('[DPI-SIEM] Error enviando evento a SIEM: %s', exc)
 
     def inspect_and_filter(self, src_ip: str, dst_ip: str, packet: bytes) -> Tuple[bool, str]:
         """Inspecciona la trama Modbus/TCP en Capa 7.
@@ -226,8 +247,8 @@ class ModbusDpiProxyServer:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Proxy DPI Modbus/TCP Control Compensatorio COMP-01")
-    parser.add_argument("--bind-host", type=str, default="10.0.2.20", help="IP de escucha (default: 10.0.2.20)")
-    parser.add_argument("--listen-port", type=int, default=15020, help="Puerto de escucha (default: 15020)")
+    parser.add_argument("--bind-host", "--host", dest="bind_host", type=str, default=os.getenv("MODBUS_PROXY_HOST", "10.0.2.20"), help="IP de escucha (default: 10.0.2.20)")
+    parser.add_argument("--listen-port", "--port", dest="listen_port", type=int, default=int(os.getenv("MODBUS_PROXY_PORT", "15020")), help="Puerto de escucha (default: 15020)")
     args = parser.parse_args()
 
     proxy = ModbusDpiProxyServer(listen_host=args.bind_host, listen_port=args.listen_port)

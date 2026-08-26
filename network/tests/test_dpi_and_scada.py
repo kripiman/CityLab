@@ -89,6 +89,50 @@ class TestDpiProxyAndScadaWatchdog(unittest.TestCase):
             scada_state['sectors'].clear()
             scada_state['sectors'].update(orig_sectors)
 
+    @patch('network.scada_server.ModbusTcpClient')
+    def test_scada_proxy_polling_unit_ids(self, mock_modbus_client: MagicMock) -> None:
+        """Verifica que USE_MODBUS_PROXY=1 dirija las peticiones al proxy con Unit ID correspondiente por sector."""
+        import os
+        from network.scada_server import poll_plcs_once, SECTOR_UNIT_IDS
+        import network.scada_server as scada_mod
+
+        old_use_proxy = scada_mod.USE_MODBUS_PROXY
+        scada_mod.USE_MODBUS_PROXY = True
+        scada_mod.MODBUS_PROXY_HOST = '10.0.2.20'
+        scada_mod.MODBUS_PROXY_PORT = 15020
+
+        calls_made = []
+
+        def mock_client_factory(host, port, timeout=1.0):
+            mock_inst = MagicMock()
+            mock_inst.connect.return_value = True
+            
+            def mock_read_coils(addr, count, **kwargs):
+                uid = kwargs.get('unit', kwargs.get('slave', 1))
+                calls_made.append((host, port, uid))
+                resp = MagicMock()
+                resp.isError.return_value = False
+                resp.bits = [True, False, True, False]
+                return resp
+
+            mock_inst.read_coils = mock_read_coils
+            return mock_inst
+
+        mock_modbus_client.side_effect = mock_client_factory
+        try:
+            poll_plcs_once()
+            self.assertEqual(len(calls_made), 4)
+            # All 4 calls must go to proxy host/port
+            for host, port, uid in calls_made:
+                self.assertEqual(host, '10.0.2.20')
+                self.assertEqual(port, 15020)
+
+            # Each sector must have dispatched its assigned unit ID
+            dispatched_uids = {uid for _, _, uid in calls_made}
+            self.assertEqual(dispatched_uids, {1, 2, 3, 4})
+        finally:
+            scada_mod.USE_MODBUS_PROXY = old_use_proxy
+
 
 if __name__ == '__main__':
     unittest.main()
