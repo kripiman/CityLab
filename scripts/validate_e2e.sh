@@ -17,6 +17,28 @@ if [ "$EUID" -ne 0 ]; then
     exit 0
 fi
 
+# Definir cleanup trap para garantizar limpieza ante cualquier salida/fallo
+cleanup() {
+    local exit_code=$?
+    echo "[*] Limpiando procesos de emuladores y red Mininet (mn -c)..."
+    local patterns=(
+        modbus_emulator.py dnp3_emulator.py iec61850_emulator.py
+        opcua_emulator.py honeypot_server.py ad_dc_emulator.py
+        modbus_proxy.py scada_server.py hmi_server.py
+        viz_server.py siem_pipeline.py
+    )
+    for pat in "${patterns[@]}"; do
+        pkill -15 -f "$pat" 2>/dev/null || true
+    done
+    sleep 0.1
+    for pat in "${patterns[@]}"; do
+        pkill -9 -f "$pat" 2>/dev/null || true
+    done
+    mn -c >/dev/null 2>&1 || true
+    return $exit_code
+}
+trap cleanup EXIT
+
 echo "[*] Limpiando interfaces y switches residuarios de Mininet (mn -c)..."
 mn -c >/dev/null 2>&1 || true
 
@@ -24,7 +46,7 @@ echo "[1/2] Verificando conectividad base y reglas firewall OVS..."
 python3 network/topology.py --test
 
 echo "[2/2] Instanciando red Mininet completa y ejecutando flujo de ataque end-to-end..."
-python3 -c "
+python3 << 'EOF'
 import os
 import sys
 import time
@@ -38,7 +60,7 @@ from mininet.net import Mininet
 from mininet.node import OVSController, OVSKernelSwitch
 from mininet.link import TCLink
 
-from network.topology import Iec62443Topo, apply_fw_configuration, configure_host_routes
+from network.topology import Iec62443Topo, apply_fw_configuration, configure_host_routes, teardown_topology_and_daemons
 from network.siem_pipeline import SiemCorrelationEngine
 
 print('[*] 1. Levantando topología de red Mininet completa...')
@@ -75,11 +97,11 @@ try:
     time.sleep(2.0)
 
     print('[*] 2. Afirmando sockets estrictos en escucha en namespaces OT...')
-    s_ied = h_ied.cmd(\"ss -lun | grep ':10102' || true\").strip()
-    s_gw = h_gw.cmd(\"ss -ltn | grep ':4840' || true\").strip()
-    s_elec = h_elec.cmd(\"ss -ltn | grep ':20000' || true\").strip()
-    s_honey = h_honey.cmd(\"ss -ltn | grep ':502' || true\").strip()
-    s_dc = h_dc.cmd(\"ss -ltn | grep ':88' || true\").strip()
+    s_ied = h_ied.cmd("ss -lun | grep ':10102' || true").strip()
+    s_gw = h_gw.cmd("ss -ltn | grep ':4840' || true").strip()
+    s_elec = h_elec.cmd("ss -ltn | grep ':20000' || true").strip()
+    s_honey = h_honey.cmd("ss -ltn | grep ':502' || true").strip()
+    s_dc = h_dc.cmd("ss -ltn | grep ':88' || true").strip()
 
     assert s_ied, 'FAIL R0/R1: h_ied GOOSE server no esta escuchando en :10102'
     assert s_gw, 'FAIL R0/R1: h_gateway OPC UA server no esta escuchando en :4840'
@@ -139,19 +161,10 @@ try:
 
 finally:
     print('[*] Deteniendo red Mininet y eliminando procesos emuladores...')
-    net.stop()
-    for pat in (
-        'iec61850_emulator.py', 'opcua_emulator.py', 'dnp3_emulator.py',
-        'honeypot_server.py', 'ad_dc_emulator.py', 'modbus_emulator.py',
-        'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
-        'viz_server.py', 'siem_pipeline.py'
-    ):
-        os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
-"
-
-# Limpieza final de switches e interfaces
-mn -c >/dev/null 2>&1 || true
+    teardown_topology_and_daemons(net)
+EOF
 
 echo "=========================================================================="
 echo " [CityLab] ¡Validación End-to-End Mininet conectada completada EXITOSAMENTE!"
 echo "=========================================================================="
+

@@ -278,6 +278,27 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
     return results
 
 
+def teardown_topology_and_daemons(net: Optional[Mininet] = None) -> None:
+    """Detiene la red Mininet, termina emuladores y limpia estado OVS."""
+    if net is not None:
+        try:
+            net.stop()
+        except Exception:
+            pass
+    patterns = (
+        'modbus_emulator.py', 'dnp3_emulator.py', 'iec61850_emulator.py',
+        'opcua_emulator.py', 'honeypot_server.py', 'ad_dc_emulator.py',
+        'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
+        'viz_server.py', 'siem_pipeline.py'
+    )
+    for pat in patterns:
+        os.system(f"pkill -15 -f {pat} 2>/dev/null || true")
+    time.sleep(0.1)
+    for pat in patterns:
+        os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
+    os.system("mn -c >/dev/null 2>&1 || true")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='CityLab IEC 62443 Cyber Range Topology')
     parser.add_argument('--test', action='store_true', help='Run automated connectivity tests and exit')
@@ -289,169 +310,160 @@ def main() -> int:
     print('[*] Starting network... (requires root)')
     net.start()
 
-    # Configure OVS switches to standalone mode and add NORMAL fallback flow
-    for sw_name in ('s1', 's2', 's3', 's4', 's5'):
-        try:
-            sw_node = net.get(sw_name)
-            res1 = sw_node.cmd(f'ovs-vsctl set-fail-mode {sw_name} standalone')
-            res2 = sw_node.cmd(f'ovs-ofctl add-flow {sw_name} "priority=0,actions=NORMAL"')
-            if 'error' in res1.lower() or 'error' in res2.lower() or 'ovs-ofctl:' in res2.lower() or 'ovs-vsctl:' in res1.lower():
-                print(f'[WARN] OVS command emitted error on {sw_name}: {res1.strip()} {res2.strip()}')
-        except Exception as exc:
-            print(f'[WARN] Fallo al configurar switch OVS {sw_name}: {exc}')
-
-    # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
-    # to communicate with OT devices (like h_plc).
-    os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
-    os.system('ip link set s3 up')
-
-    fw = net.get('fw')
-    apply_fw_configuration(fw)
-    configure_host_routes(net)
-
-    # Optionally auto-start PLC runtime & OT emulators inside Mininet hosts.
     try:
-        auto_plc = os.environ.get('AUTO_START_PLC', '1')
-    except Exception:
-        auto_plc = '1'
-    if auto_plc == '1':
-        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        py_bin = sys.executable
-        emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
-        siem_url = os.getenv('SIEM_HTTP_URL', 'http://10.0.2.20:8514')
-        # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
-        plc_hosts = [
-            ('h_plc',        'water'),
-            ('h_plc_gas',    'gas'),
-            ('h_plc_elec',   'elec'),
-            ('h_plc_tr',     'transport'),
-            ('h_plc_hosp',   'hospital'),
-            ('h_desal',      'water'),
-            ('h_lighting',   'elec'),
-        ]
-        for host_name, plant_type in plc_hosts:
+        # Configure OVS switches to standalone mode and add NORMAL fallback flow
+        for sw_name in ('s1', 's2', 's3', 's4', 's5'):
             try:
-                h = net.get(host_name)
-                cmd = f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
-                h.cmd(cmd)
-                print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
-            except KeyError:
-                print(f'[WARN] {host_name} not present; skipping')
+                sw_node = net.get(sw_name)
+                res1 = sw_node.cmd(f'ovs-vsctl set-fail-mode {sw_name} standalone')
+                res2 = sw_node.cmd(f'ovs-ofctl add-flow {sw_name} "priority=0,actions=NORMAL"')
+                if 'error' in res1.lower() or 'error' in res2.lower() or 'ovs-ofctl:' in res2.lower() or 'ovs-vsctl:' in res1.lower():
+                    print(f'[WARN] OVS command emitted error on {sw_name}: {res1.strip()} {res2.strip()}')
             except Exception as exc:
-                print(f'[ERROR] {host_name}: {exc}')
+                print(f'[WARN] Fallo al configurar switch OVS {sw_name}: {exc}')
 
-        # Auto-start DNP3 Outstation en h_plc_elec (10.0.3.13:20000)
-        try:
-            dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
-            h_elec = net.get('h_plc_elec')
-            h_elec.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
-            print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
-        except Exception as exc:
-            print(f'[WARN] DNP3 auto-start skipped: {exc}')
+        # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
+        # to communicate with OT devices (like h_plc).
+        os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
+        os.system('ip link set s3 up')
 
-        # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102) con multicast GOOSE/SV (239.0.0.1 / 239.0.0.2)
-        try:
-            iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
-            h_ied_node = net.get('h_ied')
-            h_ied_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} ENABLE_MULTICAST=1 GOOSE_DEST=239.0.0.1 SV_DEST=239.0.0.2 {py_bin} {iec_script} --host 0.0.0.0 --goose-port 10102 --multicast > /tmp/h_ied.log 2>&1 &')
-            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102 (multicast 239.0.0.1/239.0.0.2)')
-        except Exception as exc:
-            print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
+        fw = net.get('fw')
+        apply_fw_configuration(fw)
+        configure_host_routes(net)
 
-        # Auto-start OPC UA Server en h_gateway (10.0.3.30:4840)
+        # Optionally auto-start PLC runtime & OT emulators inside Mininet hosts.
         try:
-            opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
-            h_gw_node = net.get('h_gateway')
-            h_gw_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {opcua_script} --host 0.0.0.0 --port 4840 > /tmp/h_gateway.log 2>&1 &')
-            print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
-        except Exception as exc:
-            print(f'[WARN] OPC UA auto-start skipped: {exc}')
+            auto_plc = os.environ.get('AUTO_START_PLC', '1')
+        except Exception:
+            auto_plc = '1'
+        if auto_plc == '1':
+            repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            py_bin = sys.executable
+            emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
+            siem_url = os.getenv('SIEM_HTTP_URL', 'http://10.0.2.20:8514')
+            # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
+            plc_hosts = [
+                ('h_plc',        'water'),
+                ('h_plc_gas',    'gas'),
+                ('h_plc_elec',   'elec'),
+                ('h_plc_tr',     'transport'),
+                ('h_plc_hosp',   'hospital'),
+                ('h_desal',      'water'),
+                ('h_lighting',   'elec'),
+            ]
+            for host_name, plant_type in plc_hosts:
+                try:
+                    h = net.get(host_name)
+                    cmd = f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
+                    h.cmd(cmd)
+                    print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
+                except KeyError:
+                    print(f'[WARN] {host_name} not present; skipping')
+                except Exception as exc:
+                    print(f'[ERROR] {host_name}: {exc}')
 
-        # Auto-start Honeypot en h_honey (10.0.5.99:502)
-        try:
-            honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
-            h_honey_node = net.get('h_honey')
-            h_honey_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_honey.log 2>&1 &')
-            print('[*] h_honey (10.0.5.99): honeypot_server daemon spawned on :502')
-        except Exception as exc:
-            print(f'[WARN] Honeypot auto-start skipped: {exc}')
+            # Auto-start DNP3 Outstation en h_plc_elec (10.0.3.13:20000)
+            try:
+                dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
+                h_elec = net.get('h_plc_elec')
+                h_elec.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
+                print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
+            except Exception as exc:
+                print(f'[WARN] DNP3 auto-start skipped: {exc}')
 
-        # Auto-start Samba AD DC Emulator en h_dc (10.0.1.20)
-        try:
-            dc_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
-            h_dc_node = net.get('h_dc')
-            h_dc_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {dc_script} --host 0.0.0.0 > /tmp/h_dc.log 2>&1 &')
-            print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on :88, :389, :445')
-        except Exception as exc:
-            print(f'[WARN] AD DC auto-start skipped: {exc}')
+            # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102) con multicast GOOSE/SV (239.0.0.1 / 239.0.0.2)
+            try:
+                iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
+                h_ied_node = net.get('h_ied')
+                h_ied_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} ENABLE_MULTICAST=1 GOOSE_DEST=239.0.0.1 SV_DEST=239.0.0.2 {py_bin} {iec_script} --host 0.0.0.0 --goose-port 10102 --multicast > /tmp/h_ied.log 2>&1 &')
+                print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102 (multicast 239.0.0.1/239.0.0.2)')
+            except Exception as exc:
+                print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
 
-        # Auto-start Modbus DPI Proxy en DMZ (h_scada @ 10.0.2.20:15020)
-        try:
-            scada = net.get('h_scada')
-            proxy_script = os.path.join(repo_root, 'network', 'modbus_proxy.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {proxy_script} --host 0.0.0.0 --port 15020 > /tmp/h_modbus_proxy.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): modbus_proxy spawned on :15020')
-        except Exception as exc:
-            print(f'[WARN] modbus_proxy auto-start skipped: {exc}')
+            # Auto-start OPC UA Server en h_gateway (10.0.3.30:4840)
+            try:
+                opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
+                h_gw_node = net.get('h_gateway')
+                h_gw_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {opcua_script} --host 0.0.0.0 --port 4840 > /tmp/h_gateway.log 2>&1 &')
+                print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
+            except Exception as exc:
+                print(f'[WARN] OPC UA auto-start skipped: {exc}')
 
-        # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080) con USE_MODBUS_PROXY=1
-        try:
-            use_proxy_env = os.getenv('USE_MODBUS_PROXY', '1')
-            scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} USE_MODBUS_PROXY={use_proxy_env} {py_bin} {scada_script} > /tmp/h_scada.log 2>&1 &')
-            print(f'[*] h_scada (10.0.2.20): scada_server spawned on :8080 (USE_MODBUS_PROXY={use_proxy_env})')
-        except Exception as exc:
-            print(f'[WARN] h_scada auto-start skipped: {exc}')
+            # Auto-start Honeypot en h_honey (10.0.5.99:502)
+            try:
+                honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
+                h_honey_node = net.get('h_honey')
+                h_honey_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_honey.log 2>&1 &')
+                print('[*] h_honey (10.0.5.99): honeypot_server daemon spawned on :502')
+            except Exception as exc:
+                print(f'[WARN] Honeypot auto-start skipped: {exc}')
 
-        # Auto-start HMI Server en DMZ (h_scada @ 10.0.2.20:8085)
-        try:
-            hmi_script = os.path.join(repo_root, 'network', 'hmi_server.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {hmi_script} --port 8085 > /tmp/h_hmi.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): hmi_server spawned on :8085')
-        except Exception as exc:
-            print(f'[WARN] hmi_server auto-start skipped: {exc}')
+            # Auto-start Samba AD DC Emulator en h_dc (10.0.1.20)
+            try:
+                dc_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
+                h_dc_node = net.get('h_dc')
+                h_dc_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {dc_script} --host 0.0.0.0 > /tmp/h_dc.log 2>&1 &')
+                print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on :88, :389, :445')
+            except Exception as exc:
+                print(f'[WARN] AD DC auto-start skipped: {exc}')
 
-        # Auto-start Viz Server en DMZ (h_scada @ 10.0.2.20:8090)
-        try:
-            viz_script = os.path.join(repo_root, 'network', 'viz_server.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {viz_script} --port 8090 > /tmp/h_viz.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): viz_server spawned on :8090')
-        except Exception as exc:
-            print(f'[WARN] viz_server auto-start skipped: {exc}')
+            # Auto-start Modbus DPI Proxy en DMZ (h_scada @ 10.0.2.20:15020)
+            try:
+                scada = net.get('h_scada')
+                proxy_script = os.path.join(repo_root, 'network', 'modbus_proxy.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {proxy_script} --host 0.0.0.0 --port 15020 > /tmp/h_modbus_proxy.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): modbus_proxy spawned on :15020')
+            except Exception as exc:
+                print(f'[WARN] modbus_proxy auto-start skipped: {exc}')
 
-        # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
-        try:
-            siem_script = os.path.join(repo_root, 'network', 'siem_pipeline.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): siem_pipeline daemon spawned on :8514')
-        except Exception as exc:
-            print(f'[WARN] siem_pipeline auto-start skipped: {exc}')
+            # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080) con USE_MODBUS_PROXY=1
+            try:
+                use_proxy_env = os.getenv('USE_MODBUS_PROXY', '1')
+                scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} USE_MODBUS_PROXY={use_proxy_env} {py_bin} {scada_script} > /tmp/h_scada.log 2>&1 &')
+                print(f'[*] h_scada (10.0.2.20): scada_server spawned on :8080 (USE_MODBUS_PROXY={use_proxy_env})')
+            except Exception as exc:
+                print(f'[WARN] h_scada auto-start skipped: {exc}')
 
-    if args.test:
-        try:
+            # Auto-start HMI Server en DMZ (h_scada @ 10.0.2.20:8085)
+            try:
+                hmi_script = os.path.join(repo_root, 'network', 'hmi_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {hmi_script} --port 8085 > /tmp/h_hmi.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): hmi_server spawned on :8085')
+            except Exception as exc:
+                print(f'[WARN] hmi_server auto-start skipped: {exc}')
+
+            # Auto-start Viz Server en DMZ (h_scada @ 10.0.2.20:8090)
+            try:
+                viz_script = os.path.join(repo_root, 'network', 'viz_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {viz_script} --port 8090 > /tmp/h_viz.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): viz_server spawned on :8090')
+            except Exception as exc:
+                print(f'[WARN] viz_server auto-start skipped: {exc}')
+
+            # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
+            try:
+                siem_script = os.path.join(repo_root, 'network', 'siem_pipeline.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): siem_pipeline daemon spawned on :8514')
+            except Exception as exc:
+                print(f'[WARN] siem_pipeline auto-start skipped: {exc}')
+
+        if args.test:
             results = run_connectivity_tests(net)
-        except KeyError as exc:
-            print(f'[ERROR] Test result key missing: {exc}')
-            net.stop()
-            return 1
-        for k, v in results.items():
-            print(f' - {k}: {"PASS" if v else "FAIL"}')
-        net.stop()
-        # Limpieza limpia de emuladores y daemons spawneados en modo test
-        for pat in (
-            'modbus_emulator.py', 'dnp3_emulator.py', 'iec61850_emulator.py',
-            'opcua_emulator.py', 'honeypot_server.py', 'ad_dc_emulator.py',
-            'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
-            'viz_server.py', 'siem_pipeline.py'
-        ):
-            os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
-        return 0 if all(results.values()) else 2
+            for k, v in results.items():
+                print(f' - {k}: {"PASS" if v else "FAIL"}')
+            return 0 if all(results.values()) else 2
 
-    print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
-    # Use CustomCLI to allow a shortened pingall via MININET_PING_TIMEOUT env var
-    CustomCLI(net)
-    net.stop()
-    return 0
+        print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
+        # Use CustomCLI to allow a shortened pingall via MININET_PING_TIMEOUT env var
+        CustomCLI(net)
+        return 0
+    except Exception as exc:
+        print(f'[ERROR] Error en ejecución de topología: {exc}')
+        return 1
+    finally:
+        teardown_topology_and_daemons(net)
 
 
 if __name__ == '__main__':
