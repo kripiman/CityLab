@@ -14,15 +14,19 @@ Los sistemas de alta disponibilidad (HA) reducen el tiempo de inactividad pero i
 
 ## 2. Cadena de Ataque y Ejecución Paso a Paso
 
-### Paso 1: Interrupción del Servidor SCADA Primario
-1. Ejecutar DoS o simular caída de servicio en `h_scada`.
+### Paso 1: Interrupción del Servidor SCADA Primario y Monitoreo HA
+1. Consultar el estado del cluster SCADA HA en `http://10.0.2.20:8080/api/ha/status`:
+   ```bash
+   curl -s http://10.0.2.20:8080/api/ha/status | jq .
+   ```
+2. Provocar la caída o interrupción de latidos (`/api/ha/heartbeat`) del nodo primario para disparar el timeout de 3 segundos en el nodo Standby (`network/scada_ha.py`).
 
-### Paso 2: Explotación de la Transición HA
+### Paso 2: Explotación de la Transición HA y Desincronización
 1. Ejecutar `attacker/attack_dcs_failover.py`:
    ```bash
    python3 attacker/attack_dcs_failover.py
    ```
-2. Verificar en los logs la detección de la condición `ACTIVE_STANDBY` y la inyección exitosa durante el estado transitorio.
+2. Verificar en los logs la conmutación a rol `PRIMARY` y la ventana de sincronización de instantáneas de proceso (`/api/ha/sync`).
 
 ---
 

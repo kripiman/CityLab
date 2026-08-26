@@ -14,9 +14,12 @@ Durante la operación normal, una interrupción maliciosa corta el enlace de com
 
 ## 2. Cadena de Trabajo Paso a Paso
 
-### Paso 1: Detección y Respuesta IR
-1. Observar la falla de temporizador Watchdog en la consola HMI.
-2. Ejecutar la acción de aislamiento manual de emergencia para contener la anomalía.
+### Paso 1: Detección de Pérdida de Visibilidad (Loss of View)
+1. Cortar la comunicación hacia el PLC o simular fallos de sondeo consecutivos.
+2. Observar en `http://10.0.2.20:8080/api/scada` que al alcanzar `_consecutive_failures[sector] >= 3` (`LOSS_OF_VIEW_THRESHOLD = 3`), el servidor SCADA etiqueta el sector como `LOSS_OF_VIEW` y genera la alerta operativa sin parada automática (vulnerabilidad pedagógica F-06).
+
+### Paso 2: Respuesta y Aislamiento Manual de Contingencia
+1. Como operador/ingeniero de planta, aplicar aislamiento manual o invocar la mitigación dinámica del controlador SDN (`apply_circuit_breaker`) para contener el vector de red.
 
 ---
 

@@ -14,12 +14,12 @@ Las redes industriales modernas dependen de la sincronización horaria mediante 
 
 ## 2. Cadena de Ataque y Ejecución Paso a Paso
 
-### Paso 1: Falsificación de Respuestas NTP
-1. Ejecutar `attacker/attack_ntp_time_spoofing.py`:
+### Paso 1: Falsificación de Estampas Temporales (Time Skewing)
+1. Ejecutar `attacker/attack_ntp_time_spoofing.py` para inyectar telemetría con marcas de tiempo desfasadas:
    ```bash
    python3 attacker/attack_ntp_time_spoofing.py --offset 3600
    ```
-2. Verificar en el SIEM la desvinculación temporal de los eventos correlacionados (`siem_blinded = True`).
+2. Verificar en el SIEM la desvinculación temporal de los eventos correlacionados (`siem_blinded = True`) y la fragmentación en el Historian.
 
 ---
 

@@ -34,22 +34,22 @@ Una célula adversaria ha ganado acceso inicial a la red corporativa de la munic
    ```
 2. Inspeccionar la API REST del Servidor SCADA Central:
    ```bash
-   curl http://10.0.2.20:8080/api/telemetry
+   curl -s http://10.0.2.20:8080/api/scada | jq .
    ```
-   *Obtener estado de bobinas Modbus de todos los sectores.*
+   *Obtener estado de bobinas Modbus y telemetría de todos los sectores.*
 
 ### Paso 2: Reconocimiento Modbus en la Zona OT (`10.0.3.0/24`)
-1. Probar acceso al puerto `TCP/502` de los PLCs desde la DMZ:
+1. Probar acceso al puerto `TCP/502` de los PLCs desde la DMZ (o vía Modbus Proxy en `10.0.2.20:15020` con Unit ID 3):
    ```bash
    nc -zv 10.0.3.13 502
    ```
-2. Leer el estado de la bobina de generación eléctrica (`Coil 2`):
+2. Leer el estado de la bobina de generación e interruptor eléctrico (`Coil 0: breaker_closed`, `Coil 1: generator_active`):
    ```bash
    python3 attacker/attack_multisector.py --sector elec --mode start
    ```
 
 ### Paso 3: Inyección de Disparo Eléctrico (Sabotaje Cinético)
-1. Forzar la detención de la generación eléctrica (`Coil 1 = 1` en `10.0.3.13`):
+1. Forzar la apertura del disyuntor y detención de generación eléctrica (`Coil 0 = 0`, `Coil 1 = 0` en `10.0.3.13`):
    ```bash
    python3 attacker/attack_multisector.py --sector elec --mode stop
    ```

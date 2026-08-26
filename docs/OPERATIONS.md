@@ -1,58 +1,114 @@
-# CityLab — Guía de Operaciones (Fase 3 Ciudad Completa)
+# 🛠️ CityLab — Guía de Operaciones y Validación (Runbook Integral)
 
-Instrucciones para desplegar y operar la co-simulación multisectorial de ciudad completa (7 federados).
+Manual operativo para despliegue, ejecución, pruebas automatizadas y validación de seguridad en el Cyber Range CityLab.
 
 ---
 
-## 1. Ejecución de la Ciudad Completa (Fase 3)
+## 1. Comandos de Ciclo de Vida del Cyber Range (`./citylab.sh`)
 
-`./citylab.sh` es el punto de entrada único. Los `run_phase*.sh` son implementación interna a la que delega `up`; no los invoques directamente.
+`./citylab.sh` es el punto de entrada unificado para administrar el laboratorio.
 
-### Modo Interactivo con Mininet + 7 Federados
+### 🚀 Despliegue Completo (Co-Simulación HELICS + Red Mininet)
+
 ```bash
-sudo ./citylab.sh up            # Fase 3 por defecto (equivale a --phase 3)
-sudo ./citylab.sh up --phase 1  # Nodo mínimo viable
-sudo ./citylab.sh up --phase 2  # Co-simulación multisectorial
+# Despliegue interactivo completo (Fase 3: 7 federados + Mininet + DMZ + OT + AD DC)
+sudo ./citylab.sh up
+
+# Despliegue por fases específicas
+sudo ./citylab.sh up --phase 1   # Nodo mínimo viable (Water SWaT)
+sudo ./citylab.sh up --phase 2   # Co-simulación multisectorial
+sudo ./citylab.sh up --phase 3   # Ciudad completa (por defecto)
 ```
 
-Desplegará:
-- Broker HELICS (7 federados en puerto `23404` / `23500`).
-- Simulaciones físicas: Agua SWaT 2 Etapas, Gas, Elec Swing, Transporte/Semáforos.
-- Federados de Infraestructura: GridLAB-D 13.8 kV, Hospital UPS, Servidor SCADA Central en DMZ (`10.0.2.20:8080`).
-- Observabilidad Centralizada CSV.
+### 🔍 Inspección de Estado
+```bash
+./citylab.sh status
+```
+Muestra todos los procesos activos (HELICS broker, federados físicos, emuladores Modbus/DNP3/IEC61850/OPCUA, SCADA, HMI, SIEM y proxy).
 
-Detener y limpiar (federados/emuladores/servicios + `mn -c`):
+### 🛑 Detención y Limpieza Completa
 ```bash
 sudo ./citylab.sh down
 ```
+Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmonta switches, enlaces e interfaces virtuales de Mininet (`mn -c`).
 
 ---
 
-## 2. Acceso al Servidor SCADA Central (DMZ)
+## 2. Acceso a Servicios y Dashboards de Supervisión
 
-Desde la máquina atacante o salto DMZ:
+| Servicio | URL / Socket | Método / Protocolo | Autenticación (`STRICT_AUTH=1`) |
+|---|---|---|---|
+| **SCADA REST API** | `http://10.0.2.20:8080/api/scada` | `GET` | `Authorization: Bearer operator:OP_TOKEN_2026` |
+| **Control SCADA** | `http://10.0.2.20:8080/api/control` | `POST` JSON | `Authorization: Bearer engineer:ENG_TOKEN_2026` |
+| **Cluster HA Status**| `http://10.0.2.20:8080/api/ha/status` | `GET` | Libre / Consulta de estado |
+| **HMI Web Dashboard** | `http://10.0.2.20:8085` | `GET` HTTP | Interfaz visual P&ID integrada |
+| **Viz 2D/3D Server** | `http://10.0.2.20:8090/api/viz/frame` | `GET` HTTP | Telemetría para renderizado visual |
+| **SIEM HTTP Ingest** | `http://10.0.2.20:8514` | `POST` JSON | Endpoint de ingesta de eventos |
+| **Modbus DPI Proxy** | `10.0.2.20:15020` | Modbus TCP | Demuxing transparente por Unit ID |
+
+### Ejemplos de Interacción por Consola
+
 ```bash
-curl http://10.0.2.20:8080/api/telemetry
+# Consultar telemetría consolidada de sectores
+curl -s http://10.0.2.20:8080/api/scada | jq .
+
+# Ejecutar conmutación de actuador con token de ingeniero
+curl -s -X POST http://10.0.2.20:8080/api/control \
+  -H "Authorization: Bearer engineer:ENG_TOKEN_2026" \
+  -H "Content-Type: application/json" \
+  -d '{"sector": "water", "action": "set_pump", "value": 1}' | jq .
 ```
 
 ---
 
-## 3. Pruebas Automatizadas Locales (Smoke Test sin Mininet)
+## 3. Pruebas y Validación Automatizada
 
-Co-simulación HELICS sin root. `smoke` usa fase 7 por defecto (10 federados, incluye SIS SIL-3):
+### 🧪 1. Suite de Pruebas Unitarias e Integración (Pytest)
+Ejecuta la suite completa de 200 pruebas unitarias y de integración:
 ```bash
-./citylab.sh smoke              # fase 7 (10 federados)
-./citylab.sh smoke --phase 4    # fase 4 (9 federados)
+pytest network/tests plc/tests physical helics_sim attacker/tests -q
+# Salida esperada: 200 passed in ~42s
 ```
 
-Suite de pruebas unitarias y medición de recursos:
+### 💨 2. Smoke Tests de Co-Simulación HELICS (Sin necesidad de root)
+Verifica la física acoplada y la sincronización de mensajes entre federados:
 ```bash
-./citylab.sh test               # 151 tests
-./citylab.sh profile            # RSS/CPU medidos -> logs/resource_profile_summary.txt
+# Smoke test Fase 4 (9 federados)
+./citylab.sh smoke --phase 4     # 9/9 federates EXIT=0
+
+# Smoke test Fase 7 (10 federados, incluye SIS SIL-3 y Desalinizadora)
+./citylab.sh smoke --phase 7     # 10/10 federates EXIT=0
+```
+
+### 🌐 3. Arnés de Validación End-to-End en Mininet Real (Requiere sudo)
+Ejecuta el ciclo de vida completo: firewall OVS, sockets OT reales, ataque GOOSE, alerta SIEM y mitigación SDN Circuit Breaker:
+```bash
+sudo ./scripts/validate_e2e.sh
+```
+
+### 🛡️ 4. Test Rápido de Conduits de Red Mininet
+Valida exclusivamente las 7 reglas de firewall y conduits de microsegmentación:
+```bash
+sudo python3 network/topology.py --test
+```
+
+### 📊 5. Profiling y Medición de Memoria / CPU
+Mide el consumo real de RAM (RSS) y procesador:
+```bash
+./citylab.sh profile
+cat logs/resource_profile_summary.txt
 ```
 
 ---
 
-## 4. Escenarios CTF Disponibles
+## 4. Matriz de Escenarios CTF / Ataques Industriales
 
-- [Escenario 01: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)
+Los escenarios formativos y pruebas de intrusión se encuentran documentados en [`docs/scenarios/`](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios):
+- [⚡ **Escenario 01**: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)
+- [🛡️ **Escenario 02**: Inyección y Spoofing de Mensajes GOOSE IEC 61850](scenarios/scenario_02_goose_spoofing.md)
+- [📉 **Escenario 03**: Ataque Low and Slow al Sistema SIS SIL-3](scenarios/scenario_03_triton_low_slow.md)
+- [🔄 **Escenario 04**: Replay Attack Modbus Tipo Stuxnet](scenarios/scenario_04_stuxnet_replay.md)
+- [🔄 **Escenario 05**: Conmutación y Failover en Cluster SCADA HA](scenarios/scenario_05_dcs_failover.md)
+- [🔑 **Escenario 06**: Kerberoasting y Abuso de Samba Active Directory](scenarios/scenario_06_kerberoast_ad.md)
+- [🧱 **Escenario 23**: Defensa Dinámica con Controlador SDN y Circuit Breaker](scenarios/scenario_23_live_sdn_defense_under_fire.md)
+
