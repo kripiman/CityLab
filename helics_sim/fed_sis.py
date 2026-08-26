@@ -93,13 +93,14 @@ def create_federate() -> tuple[Any, Any, Any, Any, Any]:
     fed = h.helicsCreateValueFederate("SIS_fed", fi)
 
     pub_sis_trip = h.helicsFederateRegisterGlobalPublication(fed, "sis/trip", h.HELICS_DATA_TYPE_INT, "")
+    pub_desal_trip = h.helicsFederateRegisterGlobalPublication(fed, "desal/pump_trip", h.HELICS_DATA_TYPE_INT, "")
     sub_t1 = h.helicsFederateRegisterSubscription(fed, "water/t1_level", "")
     sub_gas = h.helicsFederateRegisterSubscription(fed, "gas/pressure", "")
     sub_freq = h.helicsFederateRegisterSubscription(fed, "grid/frequency", "")
 
     h.helicsFederateEnterExecutingMode(fed)
     LOGGER.info("HELICS federate SIS_fed ready (broker=%s:%d)", BROKER_ADDRESS, BROKER_PORT)
-    return fed, pub_sis_trip, sub_t1, sub_gas, sub_freq
+    return fed, pub_sis_trip, pub_desal_trip, sub_t1, sub_gas, sub_freq
 
 
 def main() -> int:
@@ -116,7 +117,7 @@ def main() -> int:
         return 0
 
     try:
-        fed, pub_sis_trip, sub_t1, sub_gas, sub_freq = create_federate()
+        fed, pub_sis_trip, pub_desal_trip, sub_t1, sub_gas, sub_freq = create_federate()
         current_time = 0.0
         max_steps = int(os.environ.get('HELICS_MAX_STEPS', '0'))
         steps = 0
@@ -139,6 +140,7 @@ def main() -> int:
             must_trip, reason = logic.evaluate_safety_state(process_data)
             trip_val = 1 if must_trip else 0
             h.helicsPublicationPublishInteger(pub_sis_trip, trip_val)
+            h.helicsPublicationPublishInteger(pub_desal_trip, trip_val)
             LOGGER.info('[SIS] t=%.1f trip=%d reason=%s', current_time, trip_val, reason or 'NORMAL')
 
             if max_steps > 0 and steps >= max_steps:

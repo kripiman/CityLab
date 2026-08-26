@@ -125,6 +125,7 @@ graph TD
   |---|---|---|---|---|
   | `10.0.1.0/24` (Corporate) | `10.0.2.0/24` (DMZ Jump) | `TCP/22` (SSH) | Gestión administrativa DMZ | Firewall `fw` (`fw-eth0` $\to$ `fw-eth1`) |
   | `10.0.1.0/24` (Corporate) | `10.0.1.20` (`h_dc`) | `TCP/389`, `TCP/88`, `TCP/445` | LDAP, Kerberos, SMB (AD DC) | Switch `s1` L2 Standalone |
+  | `10.0.2.20` (`h_scada`) | `10.0.1.20` (`h_dc`) | `TCP/389` | Autenticación LDAP AD SCADA (`SCADA_AD_AUTH`) | Firewall `fw` (`fw-eth1` $\to$ `fw-eth0`) |
   | `10.0.2.20` (`h_scada`) | `10.0.3.0/24` (OT Cell) | `TCP/502`, `161`, `20000`, `10102`, `4840`, `UDP/47808` | Polling Modbus/NTCIP/DNP3/IEC61850/OPCUA/BACnet | Firewall `fw` (`fw-eth1` $\leftrightarrow$ `fw-eth2`) |
   | `10.0.4.30` (`h_ews` PAW) | `10.0.3.0/24` (OT Cell) | Todos los puertos OT | Ingeniería y mantenimiento PAW | Firewall `fw` (`fw-eth3` $\leftrightarrow$ `fw-eth2`) |
   | Cualquier Zona | `10.0.5.99` (`h_honey`) | `TCP/502` | Captura de escaneos honeypot | Firewall `fw` (`fw-eth4` ACCEPT) |

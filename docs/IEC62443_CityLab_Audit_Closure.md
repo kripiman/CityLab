@@ -37,8 +37,8 @@
 | **F-02** | h_ews como SPOF (Kerberoastable, sin zona aislada) | SL1 | **SL2** | ✅ MITIGADO |
 | **F-03** | h_attacker y h_dc en mismo L2 sin microsegmentación | SL0 | **SL1†** | ⚠️ ACEPTADO |
 | **F-04** | Cadena ciberfísica sin Safe State (hospital blackout) | SL0 | **SL2** | ✅ MITIGADO |
-| **F-05** | Sin protocolo Loss of View / Loss of Control | SL0 | **SL2** | ✅ MITIGADO |
-| **F-06** | Modbus/DNP3 sin autenticación ni integridad | SL0 | **SL1** | ✅ MITIGADO PARCIAL |
+| **F-05** | Modbus/DNP3 sin autenticación ni integridad (Nivel 1 Plano) | SL0 | **SL1** | ✅ MITIGADO PARCIAL |
+| **F-06** | Sin protocolo / aislamiento Loss of View / Loss of Control | SL0 | **SL2** | ✅ MITIGADO |
 
 †  SL1 aceptado formalmente para F-03 (debilidad pedagógica CTF — RF-10.3 en ERS.md).
 
@@ -56,11 +56,11 @@
 ### Semana 2 — Controles Sustantivos
 - **CONTROL-COMP-01**: Proxy DPI Modbus/TCP (`network/modbus_proxy.py`) con FC Allowlist, validación de registros, Rate Limiting y Audit Log inmutable.
 - **F-02**: Zona EWS PAW Aislada `s4` (`10.0.4.0/24`) con reglas iptables PAW (solo SSH desde Corporate, REJECT desde DMZ).
-- **F-05**: Watchdog Continuous Monitoring & Loss of View Alarm en `network/scada_server.py`.
+- **F-06**: Watchdog Continuous Monitoring & Loss of View Alarm en `network/scada_server.py`.
 
 ### Semana 3 — Controles Avanzados
 - **CONTROL-COMP-02**: Controlador SDN OpenFlow (`network/sdn_controller.py`) para microsegmentación en OVS `s3` y Circuit Breaker dinámico DoS (>50 pkt/s).
-- **F-06 Parcial**: DNP3 Secure Authentication Level 1 (IEEE 1815-2012 §7) con firmas HMAC-SHA256 en `plc/dnp3_emulator.py`.
+- **F-05 Parcial**: DNP3 Secure Authentication Level 1 (IEEE 1815-2012 §7) con firmas HMAC-SHA256 en `plc/dnp3_emulator.py`.
 - **F-03**: Documentación formal de Riesgo Aceptado L2 Corporate en `docs/ERS.md` (RF-10.3 & RF-10.4).
 
 ---

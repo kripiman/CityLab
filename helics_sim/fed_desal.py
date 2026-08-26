@@ -46,7 +46,8 @@ def main() -> int:
         h.helicsFederateInfoSetTimeProperty(fi, h.helics_property_time_delta, POLL_INTERVAL)
 
         fed = h.helicsCreateValueFederate(fed_name, fi)
-        sub_trip = h.helicsFederateRegisterSubscription(fed, "desal/pump_trip", "")
+        sub_sis_trip = h.helicsFederateRegisterSubscription(fed, "sis/trip", "")
+        sub_desal_trip = h.helicsFederateRegisterSubscription(fed, "desal/pump_trip", "")
         pub_kw = h.helicsFederateRegisterGlobalPublication(
             fed, "desal/power_kw", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_level = h.helicsFederateRegisterGlobalPublication(
@@ -64,8 +65,9 @@ def main() -> int:
 
         if has_helics:
             h.helicsFederateRequestTime(fed, current_time)
-            trip_cmd = h.helicsInputGetInteger(sub_trip)
-            if trip_cmd == 1:
+            trip_sis = h.helicsInputGetInteger(sub_sis_trip)
+            trip_desal = h.helicsInputGetInteger(sub_desal_trip)
+            if trip_sis == 1 or trip_desal == 1:
                 desal.set_hp_pump(False)
 
         state = desal.step(dt_seconds=POLL_INTERVAL)
