@@ -138,9 +138,19 @@ try:
     print('    ↳ ✅ Aislamiento dataplane demostrado: Ping de h_attacker (10.0.1.10) a PLC OT (10.0.3.10) bloqueado en s3 (100% packet loss).')
 
 finally:
-    print('[*] Deteniendo red Mininet...')
+    print('[*] Deteniendo red Mininet y eliminando procesos emuladores...')
     net.stop()
+    for pat in (
+        'iec61850_emulator.py', 'opcua_emulator.py', 'dnp3_emulator.py',
+        'honeypot_server.py', 'ad_dc_emulator.py', 'modbus_emulator.py',
+        'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
+        'viz_server.py', 'siem_pipeline.py'
+    ):
+        os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
 "
+
+# Limpieza final de switches e interfaces
+mn -c >/dev/null 2>&1 || true
 
 echo "=========================================================================="
 echo " [CityLab] ¡Validación End-to-End Mininet conectada completada EXITOSAMENTE!"

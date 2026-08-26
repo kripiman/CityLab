@@ -437,6 +437,14 @@ def main() -> int:
         for k, v in results.items():
             print(f' - {k}: {"PASS" if v else "FAIL"}')
         net.stop()
+        # Limpieza limpia de emuladores y daemons spawneados en modo test
+        for pat in (
+            'modbus_emulator.py', 'dnp3_emulator.py', 'iec61850_emulator.py',
+            'opcua_emulator.py', 'honeypot_server.py', 'ad_dc_emulator.py',
+            'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
+            'viz_server.py', 'siem_pipeline.py'
+        ):
+            os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
         return 0 if all(results.values()) else 2
 
     print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
