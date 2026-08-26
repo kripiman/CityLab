@@ -24,7 +24,7 @@ Formato de credencial RBAC (Fase 2):
 
 Integración AD (opcional, vía SCADA_AD_AUTH=1):
   Cuando SCADA_AD_AUTH=1, el módulo intenta verificar credenciales contra el
-  LDAP emulado de `h_dc` (127.0.0.1:10389). Si el DC no está disponible, cae
+  LDAP emulado de `h_dc` (10.0.1.20:389). Si el DC no está disponible, cae
   al almacén local de tokens (graceful degradation).
 """
 from __future__ import annotations
@@ -91,8 +91,8 @@ def _try_ad_auth(username: str, password: str) -> Optional[str]:
     """
     try:
         import socket
-        ad_host = os.getenv('SCADA_AD_HOST', '127.0.0.1')
-        ad_port = int(os.getenv('SCADA_AD_PORT', '10389'))
+        ad_host = os.getenv('SCADA_AD_HOST', '10.0.1.20')
+        ad_port = int(os.getenv('SCADA_AD_PORT', '389'))
         # Test de conectividad rápido (timeout 0.5s)
         s = socket.create_connection((ad_host, ad_port), timeout=0.5)
         s.close()

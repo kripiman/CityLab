@@ -51,6 +51,19 @@ class TestSCADAHighAvailability(unittest.TestCase):
         self.assertFalse(standby.is_failover_active)
         self.assertEqual(standby.active_role, 'STANDBY')
 
+    def test_state_sync_and_persistence(self) -> None:
+        cluster = SCADAPrimarySecondaryCluster(node_role='STANDBY')
+        test_state = {
+            'water': {'status': 'ONLINE', 'p1_state': True},
+            'gas': {'status': 'ONLINE', 'pressure_psi': 140.0}
+        }
+        cluster.sync_state(test_state)
+        
+        status = cluster.get_cluster_status()
+        self.assertEqual(status['synced_sectors_count'], 2)
+        self.assertGreater(status['last_state_sync'], 0.0)
+        self.assertEqual(cluster.get_synced_state(), test_state)
+
 
 if __name__ == '__main__':
     unittest.main()

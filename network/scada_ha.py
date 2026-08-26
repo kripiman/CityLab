@@ -47,6 +47,8 @@ class SCADAPrimarySecondaryCluster:
         self.peer_status = 'UNKNOWN'
         self.last_peer_heartbeat = time.time()
         self.is_failover_active = False
+        self.synced_state: Dict[str, Any] = {}
+        self.last_state_sync: float = 0.0
         
         self._lock = threading.Lock()
         self._running = False
@@ -63,11 +65,25 @@ class SCADAPrimarySecondaryCluster:
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=1.0)
 
+    def sync_state(self, state: Dict[str, Any]) -> None:
+        """Registra y actualiza el snapshot sincronizado del cluster."""
+        with self._lock:
+            self.synced_state = dict(state)
+            self.last_state_sync = time.time()
+
+    def get_synced_state(self) -> Dict[str, Any]:
+        """Obtiene el último estado sincronizado almacenado."""
+        with self._lock:
+            return dict(self.synced_state)
+
     def receive_heartbeat(self, sender_role: str, state_snapshot: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Procesa un heartbeat recibido del peer."""
         with self._lock:
             self.last_peer_heartbeat = time.time()
             self.peer_status = 'ONLINE'
+            if state_snapshot:
+                self.synced_state = dict(state_snapshot)
+                self.last_state_sync = time.time()
             if self.node_role == 'STANDBY' and self.is_failover_active and sender_role == 'PRIMARY':
                 # Primario recuperado — failback a modo standby pasivo
                 LOGGER.info('[SCADA-HA] Primario recuperado — devolviendo control activo')
@@ -78,10 +94,13 @@ class SCADAPrimarySecondaryCluster:
             'status': 'OK',
             'my_role': self.node_role,
             'active_role': self.active_role,
-            'timestamp': time.time()
+            'timestamp': time.time(),
+            'synced_sectors_count': len(self.synced_state)
         }
 
     def _send_peer_heartbeat(self) -> bool:
+        if not self.peer_url or self.node_role == 'STANDALONE':
+            return False
         try:
             payload = json.dumps({'role': self.node_role, 'timestamp': time.time()}).encode('utf-8')
             req = urllib.request.Request(
@@ -125,5 +144,7 @@ class SCADAPrimarySecondaryCluster:
                 'active_role': self.active_role,
                 'peer_status': self.peer_status,
                 'failover_active': self.is_failover_active,
-                'last_peer_heartbeat_ago': round(time.time() - self.last_peer_heartbeat, 2)
+                'last_peer_heartbeat_ago': round(time.time() - self.last_peer_heartbeat, 2),
+                'last_state_sync': self.last_state_sync,
+                'synced_sectors_count': len(self.synced_state)
             }
