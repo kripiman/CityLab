@@ -60,8 +60,8 @@ cmd_down() {
         helics_broker fed_icssim.py fed_transport.py fed_hospital.py fed_logger.py
         fed_desal.py fed_lighting.py fed_sis.py fed_gridmock.py gridlabd_federate.py
         modbus_emulator.py dnp3_emulator.py iec61850_emulator.py opcua_emulator.py
-        honeypot_server.py ad_dc_emulator.py scada_server.py hmi_server.py
-        viz_server.py sdn_controller.py
+        honeypot_server.py ad_dc_emulator.py modbus_proxy.py scada_server.py hmi_server.py
+        viz_server.py siem_pipeline.py sdn_controller.py
     )
     for pat in "${patterns[@]}"; do
         pkill -9 -f "$pat" 2>/dev/null || true
@@ -113,7 +113,7 @@ cmd_status() {
         helics_broker fed_icssim fed_transport fed_hospital fed_logger fed_desal
         fed_lighting fed_sis gridlabd_federate modbus_emulator dnp3_emulator
         iec61850_emulator opcua_emulator honeypot_server ad_dc_emulator
-        scada_server hmi_server viz_server sdn_controller
+        modbus_proxy scada_server hmi_server viz_server siem_pipeline sdn_controller
     )
     for pat in "${patterns[@]}"; do
         local n

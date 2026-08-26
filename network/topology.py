@@ -169,6 +169,9 @@ def apply_fw_configuration(fw: Node) -> None:
     fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth0 -p tcp --sport 22 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -s 10.0.2.0/24 -d 10.0.1.0/24 -p icmp -j ACCEPT")
     fw.cmd("iptables -A FORWARD -s 10.0.1.0/24 -d 10.0.2.0/24 -p icmp -j ACCEPT")
+    # Allow DMZ SCADA (10.0.2.20) -> Corporate AD DC (10.0.1.20:389 TCP) for SCADA_AD_AUTH
+    fw.cmd("iptables -A FORWARD -s 10.0.2.20 -d 10.0.1.20 -p tcp --dport 389 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.1.20 -d 10.0.2.20 -p tcp --sport 389 -j ACCEPT")
 
     # 4. Allow traffic to honeypot from anywhere to detect scanning
     fw.cmd("iptables -A FORWARD -d 10.0.5.99 -j ACCEPT")
@@ -235,31 +238,42 @@ def configure_host_routes(net: Mininet) -> None:
 
 
 def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
-    """Run minimal L3 firewall connectivity checks and return statuses.
-
-    Tests:
-    - Attacker -> PLC (ICMP) should be BLOCKED (Corporate -> OT segmentation)
-    - DMZ SCADA -> PLC (ICMP) should be ALLOWED (DMZ -> OT routing allowed)
-    - DMZ Jump -> Attacker (ICMP) should be ALLOWED (DMZ -> Corporate management allowed)
-    """
-    time.sleep(1.0)
+    """Run L3/L4 firewall connectivity and conduit checks across all zones."""
+    time.sleep(1.5)
     results: Dict[str, bool] = {}
     h_attacker = net.get('h_attacker')
     h_dmz = net.get('h_dmz')
     h_scada = net.get('h_scada')
+    h_dc = net.get('h_dc')
 
     print('[*] Testing: Attacker -> PLC (ping) - expected: BLOCKED')
     out_ping = h_attacker.cmd('ping -c 1 -W 1 10.0.3.10')
     attacker_blocked = '100% packet loss' in out_ping or 'Destination Port Unreachable' in out_ping or '0 received' in out_ping or 'reject' in out_ping.lower()
-    results['attacker_ping_plc'] = attacker_blocked
+    results['attacker_ping_plc_blocked'] = attacker_blocked
 
     print('[*] Testing: h_scada (DMZ) -> PLC (ping) - expected: ALLOWED')
     out_dmz_ot = h_scada.cmd('ping -c 1 -W 1 10.0.3.10')
-    results['dmz_ping_plc'] = ('1 received' in out_dmz_ot or ('0% packet loss' in out_dmz_ot and '100% packet loss' not in out_dmz_ot))
+    results['dmz_ping_plc_allowed'] = ('1 received' in out_dmz_ot or ('0% packet loss' in out_dmz_ot and '100% packet loss' not in out_dmz_ot))
 
     print('[*] Testing: DMZ -> Attacker (ping) - expected: ALLOWED')
     out2 = h_dmz.cmd('ping -c 1 -W 1 10.0.1.10')
-    results['dmz_ping_attacker'] = ('1 received' in out2 or ('0% packet loss' in out2 and '100% packet loss' not in out2))
+    results['dmz_ping_attacker_allowed'] = ('1 received' in out2 or ('0% packet loss' in out2 and '100% packet loss' not in out2))
+
+    print('[*] Testing: h_scada (10.0.2.20) -> h_dc (10.0.1.20:389 TCP LDAP) - expected: ALLOWED')
+    out_ldap = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.1.20\', 389)); s.close(); print(\'LDAP_OK\')\nexcept Exception:\n print(\'LDAP_FAIL\')"')
+    results['scada_to_dc_ldap_tcp389_allowed'] = 'LDAP_OK' in out_ldap
+
+    print('[*] Testing: Attacker (10.0.1.10) -> PLC (10.0.3.10:502 Modbus) - expected: BLOCKED')
+    out_atk_modbus = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(1.5); s.connect((\'10.0.3.10\', 502)); s.close(); print(\'MODBUS_LEAK\')\nexcept Exception:\n print(\'MODBUS_BLOCKED_OK\')"')
+    results['attacker_to_plc_modbus_blocked'] = 'MODBUS_BLOCKED_OK' in out_atk_modbus
+
+    print('[*] Testing: h_scada (10.0.2.20) -> PLC (10.0.3.10:502 Modbus) - expected: ALLOWED')
+    out_scada_modbus = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.10\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['scada_to_plc_modbus_allowed'] = 'MODBUS_OK' in out_scada_modbus
+
+    print('[*] Testing: Attacker (10.0.1.10) -> Honeypot (10.0.5.99:502) - expected: ALLOWED')
+    out_honey = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.5.99\', 502)); s.close(); print(\'HONEY_OK\')\nexcept Exception:\n print(\'HONEY_FAIL\')"')
+    results['attacker_to_honeypot_allowed'] = 'HONEY_OK' in out_honey
 
     return results
 
@@ -304,6 +318,7 @@ def main() -> int:
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         py_bin = sys.executable
         emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
+        siem_url = os.getenv('SIEM_HTTP_URL', 'http://10.0.2.20:8514')
         # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
         plc_hosts = [
             ('h_plc',        'water'),
@@ -317,7 +332,7 @@ def main() -> int:
         for host_name, plant_type in plc_hosts:
             try:
                 h = net.get(host_name)
-                cmd = f'nohup env PYTHONPATH={repo_root} {py_bin} {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
+                cmd = f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
                 h.cmd(cmd)
                 print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
             except KeyError:
@@ -329,17 +344,17 @@ def main() -> int:
         try:
             dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
             h_elec = net.get('h_plc_elec')
-            h_elec.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
+            h_elec.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
             print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
         except Exception as exc:
             print(f'[WARN] DNP3 auto-start skipped: {exc}')
 
-        # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102)
+        # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102) con multicast GOOSE/SV (239.0.0.1 / 239.0.0.2)
         try:
             iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
             h_ied_node = net.get('h_ied')
-            h_ied_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {iec_script} --host 0.0.0.0 --goose-port 10102 > /tmp/h_ied.log 2>&1 &')
-            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102')
+            h_ied_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} ENABLE_MULTICAST=1 GOOSE_DEST=239.0.0.1 SV_DEST=239.0.0.2 {py_bin} {iec_script} --host 0.0.0.0 --goose-port 10102 --multicast > /tmp/h_ied.log 2>&1 &')
+            print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102 (multicast 239.0.0.1/239.0.0.2)')
         except Exception as exc:
             print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
 
@@ -347,7 +362,7 @@ def main() -> int:
         try:
             opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
             h_gw_node = net.get('h_gateway')
-            h_gw_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {opcua_script} --host 0.0.0.0 --port 4840 > /tmp/h_gateway.log 2>&1 &')
+            h_gw_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {opcua_script} --host 0.0.0.0 --port 4840 > /tmp/h_gateway.log 2>&1 &')
             print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
         except Exception as exc:
             print(f'[WARN] OPC UA auto-start skipped: {exc}')
@@ -356,7 +371,7 @@ def main() -> int:
         try:
             honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
             h_honey_node = net.get('h_honey')
-            h_honey_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_honey.log 2>&1 &')
+            h_honey_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_honey.log 2>&1 &')
             print('[*] h_honey (10.0.5.99): honeypot_server daemon spawned on :502')
         except Exception as exc:
             print(f'[WARN] Honeypot auto-start skipped: {exc}')
@@ -370,14 +385,47 @@ def main() -> int:
         except Exception as exc:
             print(f'[WARN] AD DC auto-start skipped: {exc}')
 
-        # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080)
+        # Auto-start Modbus DPI Proxy en DMZ (h_scada @ 10.0.2.20:15020)
         try:
             scada = net.get('h_scada')
+            proxy_script = os.path.join(repo_root, 'network', 'modbus_proxy.py')
+            scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {proxy_script} --host 0.0.0.0 --port 15020 > /tmp/h_modbus_proxy.log 2>&1 &')
+            print('[*] h_scada (10.0.2.20): modbus_proxy spawned on :15020')
+        except Exception as exc:
+            print(f'[WARN] modbus_proxy auto-start skipped: {exc}')
+
+        # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080) con USE_MODBUS_PROXY=1
+        try:
+            use_proxy_env = os.getenv('USE_MODBUS_PROXY', '1')
             scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
-            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {scada_script} > /tmp/h_scada.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): scada_server spawned on :8080')
+            scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} USE_MODBUS_PROXY={use_proxy_env} {py_bin} {scada_script} > /tmp/h_scada.log 2>&1 &')
+            print(f'[*] h_scada (10.0.2.20): scada_server spawned on :8080 (USE_MODBUS_PROXY={use_proxy_env})')
         except Exception as exc:
             print(f'[WARN] h_scada auto-start skipped: {exc}')
+
+        # Auto-start HMI Server en DMZ (h_scada @ 10.0.2.20:8085)
+        try:
+            hmi_script = os.path.join(repo_root, 'network', 'hmi_server.py')
+            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {hmi_script} --port 8085 > /tmp/h_hmi.log 2>&1 &')
+            print('[*] h_scada (10.0.2.20): hmi_server spawned on :8085')
+        except Exception as exc:
+            print(f'[WARN] hmi_server auto-start skipped: {exc}')
+
+        # Auto-start Viz Server en DMZ (h_scada @ 10.0.2.20:8090)
+        try:
+            viz_script = os.path.join(repo_root, 'network', 'viz_server.py')
+            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {viz_script} --port 8090 > /tmp/h_viz.log 2>&1 &')
+            print('[*] h_scada (10.0.2.20): viz_server spawned on :8090')
+        except Exception as exc:
+            print(f'[WARN] viz_server auto-start skipped: {exc}')
+
+        # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
+        try:
+            siem_script = os.path.join(repo_root, 'network', 'siem_pipeline.py')
+            scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 &')
+            print('[*] h_scada (10.0.2.20): siem_pipeline daemon spawned on :8514')
+        except Exception as exc:
+            print(f'[WARN] siem_pipeline auto-start skipped: {exc}')
 
     if args.test:
         try:
