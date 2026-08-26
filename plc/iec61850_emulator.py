@@ -212,13 +212,34 @@ class Iec61850SvEncoder:
             return None
 
 
+def is_multicast_addr(addr: Optional[str]) -> bool:
+    if not addr:
+        return False
+    try:
+        first_octet = int(addr.split('.')[0])
+        return 224 <= first_octet <= 239
+    except Exception:
+        return False
+
+
 class Iec61850Server:
     """Servidor IED Subestación IEC 61850 con emisión GOOSE & SV y recepción de comandos."""
 
-    def __init__(self, host: str = '127.0.0.1', goose_port: int = DEFAULT_GOOSE_PORT, sv_port: int = DEFAULT_SV_PORT) -> None:
+    def __init__(
+        self,
+        host: str = '127.0.0.1',
+        goose_port: int = DEFAULT_GOOSE_PORT,
+        sv_port: int = DEFAULT_SV_PORT,
+        goose_dest: Optional[str] = None,
+        sv_dest: Optional[str] = None
+    ) -> None:
         self.host = host
         self.goose_port = goose_port
         self.sv_port = sv_port
+        default_goose = MULTICAST_GOOSE_ADDR if os.getenv('ENABLE_MULTICAST', '0') == '1' else (self.host if self.host != '0.0.0.0' else '127.0.0.1')
+        default_sv = MULTICAST_SV_ADDR if os.getenv('ENABLE_MULTICAST', '0') == '1' else (self.host if self.host != '0.0.0.0' else '127.0.0.1')
+        self.goose_dest = goose_dest or os.getenv('GOOSE_DEST', default_goose)
+        self.sv_dest = sv_dest or os.getenv('SV_DEST', default_sv)
         self.dataset = IEC61850DataSet()
         self._running = False
         self._goose_sock: Optional[socket.socket] = None
@@ -229,25 +250,69 @@ class Iec61850Server:
     def start(self) -> None:
         self._goose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._goose_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if is_multicast_addr(self.goose_dest):
+            try:
+                self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+                self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+            except OSError:
+                pass
+
         self._listen_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._listen_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        
+        bind_host = '0.0.0.0' if (is_multicast_addr(self.host) or is_multicast_addr(self.goose_dest)) else self.host
         try:
-            self._listen_sock.bind((self.host, self.goose_port))
+            self._listen_sock.bind((bind_host, self.goose_port))
         except OSError:
             pass
+
+        # Unirse a grupos multicast para recepción de mensajes GOOSE
+        candidates_goose = [self.host, self.goose_dest]
+        if is_multicast_addr(self.host) or is_multicast_addr(self.goose_dest):
+            candidates_goose.append(MULTICAST_GOOSE_ADDR)
+        for mcast_addr in set(filter(is_multicast_addr, candidates_goose)):
+            try:
+                mreq = struct.pack("4s4s", socket.inet_aton(mcast_addr), socket.inet_aton("0.0.0.0"))
+                self._listen_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+                LOGGER.info("[IEC61850] Receptor unido a grupo multicast GOOSE %s:%d", mcast_addr, self.goose_port)
+            except OSError as exc:
+                LOGGER.debug("[IEC61850] No se pudo unir a grupo multicast GOOSE %s: %s", mcast_addr, exc)
             
         self._sv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if is_multicast_addr(self.sv_dest):
+            try:
+                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+            except OSError:
+                pass
+
+        bind_sv_host = '0.0.0.0' if (is_multicast_addr(self.host) or is_multicast_addr(self.sv_dest)) else self.host
         try:
-            self._sv_sock.bind((self.host, self.sv_port))
+            self._sv_sock.bind((bind_sv_host, self.sv_port))
         except OSError:
             pass
+
+        candidates_sv = [self.host, self.sv_dest]
+        if is_multicast_addr(self.host) or is_multicast_addr(self.sv_dest):
+            candidates_sv.append(MULTICAST_SV_ADDR)
+        for mcast_addr in set(filter(is_multicast_addr, candidates_sv)):
+            try:
+                mreq = struct.pack("4s4s", socket.inet_aton(mcast_addr), socket.inet_aton("0.0.0.0"))
+                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+                LOGGER.info("[IEC61850] Receptor unido a grupo multicast SV %s:%d", mcast_addr, self.sv_port)
+            except OSError as exc:
+                LOGGER.debug("[IEC61850] No se pudo unir a grupo multicast SV %s: %s", mcast_addr, exc)
+
         self._running = True
         self._thread = threading.Thread(target=self._publish_loop, daemon=True)
         self._thread.start()
         self._listen_thread = threading.Thread(target=self._listen_loop, daemon=True)
         self._listen_thread.start()
-        LOGGER.info('[IEC61850] Servidor IED subestación activo en %s (GOOSE:%d, SV:%d)', self.host, self.goose_port, self.sv_port)
+        LOGGER.info(
+            '[IEC61850] Servidor IED subestación activo en %s (GOOSE:%d->%s, SV:%d->%s)',
+            self.host, self.goose_port, self.goose_dest, self.sv_port, self.sv_dest
+        )
 
     def stop(self) -> None:
         self._running = False
@@ -263,7 +328,7 @@ class Iec61850Server:
             self._sv_sock.close()
 
     def publish_goose_event(self) -> bytes:
-        """Publica un paquete GOOSE inmediatamente."""
+        """Publica un paquete GOOSE inmediatamente hacia goose_dest."""
         state = self.dataset.get_state()
         breaker_pos = state['data']['XCBR1.Pos.stVal']
         pdu = Iec61850GooseEncoder.encode(
@@ -275,13 +340,13 @@ class Iec61850Server:
         )
         if self._goose_sock:
             try:
-                self._goose_sock.sendto(pdu, ('127.0.0.1', self.goose_port))
+                self._goose_sock.sendto(pdu, (self.goose_dest, self.goose_port))
             except OSError:
                 pass
         return pdu
 
     def publish_sv_sample(self) -> bytes:
-        """Publica una muestra SV de voltaje y corriente."""
+        """Publica una muestra SV de voltaje y corriente hacia sv_dest."""
         state = self.dataset.get_state()
         v_a = float(state['data']['MMXU1.PhV.phsA.cVal.mag'])
         i_a = float(state['data']['MMXU1.Amp.phsA.cVal.mag'])
@@ -294,7 +359,7 @@ class Iec61850Server:
         )
         if self._sv_sock:
             try:
-                self._sv_sock.sendto(pdu, ('127.0.0.1', self.sv_port))
+                self._sv_sock.sendto(pdu, (self.sv_dest, self.sv_port))
             except OSError:
                 pass
         return pdu
@@ -335,11 +400,23 @@ def main() -> None:
     parser.add_argument("--host", default=default_host, help=f"Dirección IP de bind (default: {default_host})")
     parser.add_argument("--goose-port", type=int, default=DEFAULT_GOOSE_PORT, help="Puerto GOOSE UDP (default: 10102)")
     parser.add_argument("--sv-port", type=int, default=DEFAULT_SV_PORT, help="Puerto SV UDP (default: 10103)")
+    parser.add_argument("--goose-dest", default=None, help=f"Destino GOOSE (default: {MULTICAST_GOOSE_ADDR} o host)")
+    parser.add_argument("--sv-dest", default=None, help=f"Destino SV (default: {MULTICAST_SV_ADDR} o host)")
+    parser.add_argument("--multicast", action="store_true", help="Usa direcciones multicast estándar (239.0.0.1 / 239.0.0.2)")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(name)s] %(message)s')
 
-    server = Iec61850Server(host=args.host, goose_port=args.goose_port, sv_port=args.sv_port)
+    goose_dst = MULTICAST_GOOSE_ADDR if args.multicast else args.goose_dest
+    sv_dst = MULTICAST_SV_ADDR if args.multicast else args.sv_dest
+
+    server = Iec61850Server(
+        host=args.host,
+        goose_port=args.goose_port,
+        sv_port=args.sv_port,
+        goose_dest=goose_dst,
+        sv_dest=sv_dst
+    )
     server.start()
     try:
         while True:

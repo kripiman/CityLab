@@ -76,5 +76,40 @@ class TestIEC61850Emulator(unittest.TestCase):
         self.assertIsNotNone(decoded_sv)
 
 
+    def test_multicast_goose_and_sv_reception(self) -> None:
+        import time
+        from attacker.attack_goose_spoofing import spoof_goose_trip
+        from plc.iec61850_emulator import MULTICAST_GOOSE_ADDR, MULTICAST_SV_ADDR
+
+        # Server listens on multicast group 239.0.0.1 / 239.0.0.2
+        mcast_server = Iec61850Server(
+            host='0.0.0.0',
+            goose_port=15104,
+            sv_port=15105,
+            goose_dest=MULTICAST_GOOSE_ADDR,
+            sv_dest=MULTICAST_SV_ADDR
+        )
+        mcast_server.start()
+        time.sleep(0.1)
+
+        try:
+            self.assertTrue(mcast_server.dataset.get('XCBR1.Pos.stVal'))
+
+            # Send spoofed trip to multicast address 239.0.0.1
+            spoof_goose_trip(
+                target_host=MULTICAST_GOOSE_ADDR,
+                target_port=15104,
+                ied_name='CITYLAB_IED1',
+                st_num=888,
+                breaker_pos=False
+            )
+            time.sleep(0.2)
+
+            # Multicast listener received packet via IP_ADD_MEMBERSHIP and updated state
+            self.assertFalse(mcast_server.dataset.get('XCBR1.Pos.stVal'))
+        finally:
+            mcast_server.stop()
+
+
 if __name__ == '__main__':
     unittest.main()

