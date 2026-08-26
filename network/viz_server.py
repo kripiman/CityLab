@@ -13,7 +13,7 @@ import logging
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Sequence
 
 LOGGER = logging.getLogger('viz_server')
 
@@ -126,3 +126,24 @@ class VizRequestHandler(BaseHTTPRequestHandler):
 
 class ThreadedVizServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    import argparse
+    parser = argparse.ArgumentParser(description="CityLab 2D/3D City Visualizer Server")
+    parser.add_argument("--host", default="0.0.0.0", help="Host / IP de escucha (default: 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=DEFAULT_VIZ_PORT, help=f"Puerto HTTP (default: {DEFAULT_VIZ_PORT})")
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s][VIZ] %(message)s')
+    server = ThreadedVizServer((args.host, args.port), VizRequestHandler)
+    LOGGER.info("Servidor Visualizador Urbano escuchando en http://%s:%d", args.host, args.port)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        LOGGER.info("Apagando Servidor Visualizador...")
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

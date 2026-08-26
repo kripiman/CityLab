@@ -16,12 +16,13 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import urllib.request
 import urllib.error
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from network.historian import HistorianTSDB
 
@@ -31,18 +32,40 @@ DEFAULT_HMI_PORT = 8085
 DEFAULT_SCADA_URL = 'http://127.0.0.1:8080'
 
 
+def format_rbac_token(token: Optional[str], default_role: str = 'engineer') -> str:
+    """Asegura que el token posea el formato <role>:<token> para compatibilidad STRICT_AUTH=1."""
+    raw = (token or '').strip()
+    if raw.startswith('Bearer '):
+        raw = raw[len('Bearer '):].strip()
+    if not raw:
+        raw = 'ENG_TOKEN_2026'
+    if ':' not in raw:
+        raw = f"{default_role}:{raw}"
+    return raw
+
+
 class IndustrialHmiEngine:
     """Motor de estado HMI para consolidación P&ID, tendencias históricas y gestión de alarmas."""
 
-    def __init__(self, scada_url: str = DEFAULT_SCADA_URL, historian: Optional[HistorianTSDB] = None) -> None:
+    def __init__(
+        self,
+        scada_url: str = DEFAULT_SCADA_URL,
+        historian: Optional[HistorianTSDB] = None,
+        auth_token: Optional[str] = None
+    ) -> None:
         self.scada_url = scada_url
         self.historian = historian if historian is not None else HistorianTSDB()
+        raw_token = auth_token or os.getenv('SCADA_API_TOKEN', os.getenv('SCADA_TOKEN_ENGINEER', 'ENG_TOKEN_2026'))
+        self.auth_token = format_rbac_token(raw_token, default_role='engineer')
         self.alarms: List[Dict[str, Any]] = []
 
     def fetch_scada_status(self) -> Dict[str, Any]:
-        """Consulta el estado actual del servidor SCADA."""
+        """Consulta el estado actual del servidor SCADA con cabecera de autenticación RBAC."""
         try:
-            req = urllib.request.Request(f"{self.scada_url}/api/telemetry")
+            req = urllib.request.Request(
+                f"{self.scada_url}/api/telemetry",
+                headers={'Authorization': f'Bearer {self.auth_token}'}
+            )
             with urllib.request.urlopen(req, timeout=2.0) as resp:
                 if resp.status == 200:
                     return json.loads(resp.read().decode('utf-8'))
@@ -101,8 +124,9 @@ class IndustrialHmiEngine:
             'history': history_points
         }
 
-    def trigger_control_action(self, action: str, target: str, role_token: str = 'engineer:secret') -> Dict[str, Any]:
-        """Envía una acción de control al SCADA Server."""
+    def trigger_control_action(self, action: str, target: str, role_token: Optional[str] = None) -> Dict[str, Any]:
+        """Envía una acción de control al SCADA Server con token RBAC."""
+        token = format_rbac_token(role_token or self.auth_token, default_role='engineer')
         try:
             payload = json.dumps({'action': action, 'target': target}).encode('utf-8')
             req = urllib.request.Request(
@@ -110,7 +134,7 @@ class IndustrialHmiEngine:
                 data=payload,
                 headers={
                     'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {role_token}'
+                    'Authorization': f'Bearer {token}'
                 },
                 method='POST'
             )
@@ -170,8 +194,8 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
             body_bytes = self.rfile.read(content_length)
             try:
                 data = json.loads(body_bytes.decode('utf-8'))
-                auth_hdr = self.headers.get('Authorization', 'Bearer engineer:secret')
-                token = auth_hdr.replace('Bearer ', '').strip()
+                auth_hdr = self.headers.get('Authorization', f'Bearer {self.engine.auth_token}')
+                token = format_rbac_token(auth_hdr, default_role='engineer')
                 res = self.engine.trigger_control_action(
                     action=data.get('action', ''),
                     target=data.get('target', ''),
@@ -205,3 +229,27 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
 
 class ThreadedHmiServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    import argparse
+    parser = argparse.ArgumentParser(description="CityLab Industrial HMI Server (OpenSCADA / Ignition Edge)")
+    parser.add_argument("--host", default="0.0.0.0", help="Host / IP de escucha (default: 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=DEFAULT_HMI_PORT, help=f"Puerto HTTP (default: {DEFAULT_HMI_PORT})")
+    parser.add_argument("--scada-url", default=DEFAULT_SCADA_URL, help=f"URL del SCADA Server (default: {DEFAULT_SCADA_URL})")
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s][HMI] %(message)s')
+    engine = IndustrialHmiEngine(scada_url=args.scada_url)
+    HmiRequestHandler.engine = engine
+    server = ThreadedHmiServer((args.host, args.port), HmiRequestHandler)
+    LOGGER.info("Servidor HMI Industrial escuchando en http://%s:%d (SCADA: %s)", args.host, args.port, args.scada_url)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        LOGGER.info("Apagando Servidor HMI...")
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
