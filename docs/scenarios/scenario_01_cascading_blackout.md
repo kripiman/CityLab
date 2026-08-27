@@ -20,7 +20,7 @@ Una célula adversaria ha ganado acceso inicial a la red corporativa de la munic
 - **PLC Agua OT**: `10.0.3.10:502` (`h_plc`)
 - **PLC Gas OT**: `10.0.3.12:502` (`h_plc_gas`)
 - **PLC Eléctrico OT**: `10.0.3.13:502` (`h_plc_elec`)
-- **PLC Transporte OT**: `10.0.3.14:502` (`h_plc_trans`)
+- **PLC Transporte OT**: `10.0.3.14:502` (`h_plc_tr`)
 
 ---
 
@@ -34,7 +34,7 @@ Una célula adversaria ha ganado acceso inicial a la red corporativa de la munic
    ```
 2. Inspeccionar la API REST del Servidor SCADA Central:
    ```bash
-   curl -s http://10.0.2.20:8080/api/scada | jq .
+   curl -s http://10.0.2.20:8080/api/telemetry | jq .
    ```
    *Obtener estado de bobinas Modbus y telemetría de todos los sectores.*
 
@@ -43,13 +43,13 @@ Una célula adversaria ha ganado acceso inicial a la red corporativa de la munic
    ```bash
    nc -zv 10.0.3.13 502
    ```
-2. Leer el estado de la bobina de generación e interruptor eléctrico (`Coil 0: breaker_closed`, `Coil 1: generator_active`):
+2. Enviar comando de encendido / habilitación al PLC eléctrico (`Coil 0: start_cmd`, `Coil 2: actuator_running`):
    ```bash
    python3 attacker/attack_multisector.py --sector elec --mode start
    ```
 
 ### Paso 3: Inyección de Disparo Eléctrico (Sabotaje Cinético)
-1. Forzar la apertura del disyuntor y detención de generación eléctrica (`Coil 0 = 0`, `Coil 1 = 0` en `10.0.3.13`):
+1. Forzar la detención de generación eléctrica mediante comando de parada (`Coil 1 = 1` / `stop_cmd` en `10.0.3.13`):
    ```bash
    python3 attacker/attack_multisector.py --sector elec --mode stop
    ```

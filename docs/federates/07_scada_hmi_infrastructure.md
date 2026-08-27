@@ -38,7 +38,7 @@ sequenceDiagram
         SCADA->>HIST: write_snapshot() en SQLite WAL
     end
 
-    HMI->>SCADA: GET /api/scada (Overview & Alarmas)
+    HMI->>SCADA: GET /api/telemetry (Overview & Alarmas)
     SCADA-->>HMI: JSON Estado de Sectores + Alertas Loss-of-View
     HMI->>HIST: query() / GET /api/history (Series Temporales)
 ```
@@ -49,15 +49,15 @@ sequenceDiagram
 
 El proxy inverso opera en la DMZ (`10.0.2.20:15020`) y filtra todo el tráfico Modbus TCP antes de alcanzar los PLCs:
 
-| Unit ID (Byte 6) | Sector Destino | IP Destino | Puerto | Funciones Permitidas (DPI) |
+| Unit ID (Byte 6) | Sector Destino | IP Destino | Puerto | Política de Filtrado DPI (`network/modbus_proxy.py`) |
 |---|---|---|---|---|
-| `1` | Agua SWaT | `10.0.3.10` | `502` | FC 1, 2, 3, 4, 5 (Coils 0..3, Holding 0..10) |
-| `2` | Gas Natural | `10.0.3.12` | `502` | FC 1, 2, 3, 4, 5 (Coils 0..3, Holding 0..10) |
-| `3` | Red Eléctrica | `10.0.3.13` | `502` | FC 1, 2, 3, 4, 5 (Coils 0..3, Holding 0..10) |
-| `4` | Transporte | `10.0.3.14` | `502` | FC 1, 2, 3, 4, 5 (Coils 0..3, Holding 0..10) |
-| `5` | Hospital ATS | `10.0.3.15` | `502` | FC 1, 2, 3, 4, 5 (Coils 0..3, Holding 0..10) |
+| `1` | Agua SWaT | `10.0.3.10` | `502` | Reads (FC 1..4) desde SCADA/EWS; Writes (FC 5,6,15,16) solo EWS (`10.0.4.30`) |
+| `2` | Gas Natural | `10.0.3.12` | `502` | Reads (FC 1..4) desde SCADA/EWS; Writes (FC 5,6,15,16) solo EWS (`10.0.4.30`) |
+| `3` | Red Eléctrica | `10.0.3.13` | `502` | Reads (FC 1..4) desde SCADA/EWS; Writes (FC 5,6,15,16) solo EWS (`10.0.4.30`) |
+| `4` | Transporte | `10.0.3.14` | `502` | Reads (FC 1..4) desde SCADA/EWS; Writes (FC 5,6,15,16) solo EWS (`10.0.4.30`) |
+| `5` | Hospital ATS | `10.0.3.15` | `502` | Reads (FC 1..4) desde SCADA/EWS; Writes (FC 5,6,15,16) solo EWS (`10.0.4.30`) |
 
-- **Rechazo DPI**: Si un atacante intenta escribir fuera de rango o ejecutar funciones no autorizadas (ej. FC 16 sobre holding de calibración bloqueados), el proxy corta la conexión y reenvía una alerta de auditoría al colector central SIEM (`SIEM_HTTP_URL`).
+- **Rechazo DPI**: Si un origen no autorizado intenta escribir o se envían comandos a direcciones no permitidas (`address > 3`), el proxy corta la conexión y reenvía un evento de seguridad al colector central SIEM (`SIEM_HTTP_URL`).
 
 ---
 
@@ -79,14 +79,14 @@ El cluster SCADA HA implementa arquitectura Primary/Standby:
 
 | Método | Endpoint | Componente | Descripción |
 |---|---|---|---|
-| `GET` | `/api/scada` | SCADA Server (`:8080`) | Retorna telemetría consolidada de los 5 sectores y alarmas activo |
+| `GET` | `/api/telemetry` | SCADA Server (`:8080`) | Retorna telemetría consolidada de los sectores y alarmas activas |
 | `GET` | `/api/whoami` | SCADA Server (`:8080`) | Introspección de identidad de usuario y permisos |
 | `POST` | `/api/control` | SCADA Server (`:8080`) | Ejecuta mandos de conmutación de bombas, válvulas o interruptores |
 | `POST` | `/api/control/write` | SCADA Server (`:8080`) | Modificación estricta de parámetros de calibración de PLC |
 | `GET` | `/api/ha/status` | SCADA HA (`:8080`) | Estado de cluster HA (PRIMARY/STANDBY, timestamp último heartbeat, sync count) |
 | `POST` | `/api/ha/heartbeat` | SCADA HA (`:8080`) | Recepción de latido entre nodos SCADA |
 | `POST` | `/api/ha/sync` | SCADA HA (`:8080`) | Sincronización de estado entre SCADA Primario y Standby |
-| `GET` | `/api/history` | HMI Historian (`:8085`) | Consulta de series temporales históricas almacenadas en SQLite WAL |
+| `GET` | `/api/history` | SCADA / Historian (`:8080`) | Consulta de series temporales históricas almacenadas en SQLite WAL |
 | `GET` | `/api/viz/frame` | Viz Server (`:8090`) | Cuadro de renderizado en tiempo real para visualizador 2D/3D |
 | `GET` | `/api/viz/history` | Viz Server (`:8090`) | Histórico de cuadros para reproductor de tendencias 2D/3D |
 | `POST` | `/api/viz/update` | Viz Server (`:8090`) | Actualización de estado sectorial desde HELICS o SCADA |

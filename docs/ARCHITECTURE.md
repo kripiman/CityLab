@@ -242,8 +242,8 @@ graph LR
 Los emuladores corren en namespaces aislados de Mininet y simulan el comportamiento estricto de PLCs, RTUs e IEDs industriales:
 
 ### 1. Modbus TCP Server (`plc/modbus_emulator.py`)
-- Emula registros para 7 perfiles de planta (`water`, `gas`, `elec`, `transport`, `hospital`, `desal`, `lighting`).
-- Mapeo de Coils: `Coil 0` (Interruptor / Breaker principal), `Coil 1` (Bomba / Válvula principal), `Coil 2` (Actuador auxiliar).
+- Emula registros y temporizadores diferenciales basados en 5 perfiles de planta (`water`, `gas`, `elec`, `transport`, `hospital`). Las instancias `desal` y `lighting` ejecutan perfiles derivados (`water` y `elec` respectivamente).
+- Mapeo de Coils: `Coil 0` (Comando Start), `Coil 1` (Comando Stop), `Coil 2` (Estado de Telemetría `actuator_running`).
 - Mapeo de Holding Registers (`0..10`): Almacenan telemetría física en coma flotante empaquetada en formato entero escalado (nivel de tanques, presión en PSI, potencia activa en kW, estado de semáforos).
 
 ### 2. DNP3 Outstation (`plc/dnp3_emulator.py`)
@@ -279,11 +279,11 @@ flowchart TD
         SIEM_Daemon["SIEM Pipeline (:8514)"]
     end
 
-    SCADA_Engine -->|Sondeo Unit IDs 1..5| Proxy
-    Proxy -->|10.0.3.10..15:502| OT_PLCs["PLCs en Zona OT (10.0.3.0/24)"]
+    SCADA_Engine -->|Sondeo Unit IDs 1..4| Proxy
+    Proxy -->|10.0.3.10..14:502| OT_PLCs["PLCs en Zona OT (10.0.3.0/24)"]
     SCADA_Engine --> Historian_DB
     SCADA_Engine <--> HA_Cluster
-    HMI_App -->|REST API /api/scada| SCADA_Engine
+    HMI_App -->|REST API /api/telemetry| SCADA_Engine
     HMI_App -->|Series Temporales| Historian_DB
     Viz_App -->|Frame Updates| SCADA_Engine
     Proxy -.->|Audit Denial Logs| SIEM_Daemon
@@ -299,11 +299,11 @@ El proxy escucha en `10.0.2.20:15020` y realiza inspección profunda de paquetes
    - `Unit ID 3` $\to$ Red Eléctrica (`10.0.3.13:502`)
    - `Unit ID 4` $\to$ Transporte (`10.0.3.14:502`)
    - `Unit ID 5` $\to$ Hospital (`10.0.3.15:502`)
-3. **DPI Enforcement**: Si la función Modbus de escritura está restringida o el rango de registros es inválido, el paquete es rechazado y se reenvía una alerta de auditoría al SIEM central.
+3. **DPI Enforcement**: Lecturas (FC 1..4) permitidas desde SCADA (`10.0.2.20`) y EWS (`10.0.4.30`). Escrituras (FC 5, 6, 15, 16) reservadas a la estación EWS (`10.0.4.30`); peticiones no autorizadas o fuera de rango (`address > 3`) se descartan y generan alerta de auditoría hacia el SIEM central (`SIEM_HTTP_URL`).
 
 ### SCADA Server y Alta Disponibilidad (`network/scada_server.py`, `network/scada_ha.py`)
-- **Polling Loop**: Ejecuta lecturas periódicas a los PLCs (directas o a través del proxy cuando `USE_MODBUS_PROXY=1`).
-- **Detección Loss-of-View (F-06)**: Mantiene un contador `_consecutive_failures[sector]`. Si se alcanzan 3 fallos consecutivos, el estado del sector pasa a `LOSS_OF_VIEW` y se generan alertas operativas.
+- **Polling Loop**: Ejecuta sondeo periódico a 4 sectores activos (`water`, `gas`, `elec`, `transport`) a través del proxy cuando `USE_MODBUS_PROXY=1` (o directo a los PLCs en `:502` si `USE_MODBUS_PROXY=0`). Hospital (`10.0.3.15`) permanece como sector de campo disponible pero no sondeado por defecto (brecha educativa F-06 / ERS:95).
+- **Detección Loss-of-View (F-06)**: Mantiene un contador `_consecutive_failures[sector]`. Si se alcanzan 3 fallos consecutivos (`LOSS_OF_VIEW_THRESHOLD = 3`), el estado del sector pasa a `LOSS_OF_VIEW` y se generan alertas operativas en el dashboard HMI.
 - **Sincronización HA**: Sincroniza instantáneas de estado mediante `sync_state(state)` y expone el estado de conmutación en `/api/ha/status`.
 
 ---
@@ -311,16 +311,16 @@ El proxy escucha en `10.0.2.20:15020` y realiza inspección profunda de paquetes
 ## 7. Pipeline de Seguridad: SIEM Central y Defensa Dinámica SDN
 
 ### Motor de Correlación SIEM (`network/siem_pipeline.py`)
-Escucha eventos HTTP POST en `10.0.2.20:8514` y correlaciona incidentes en tiempo real mediante reglas heurísticas:
-- **Regla 1 (Ataque en Cascada Multisectorial)**: Detecta eventos de desconexión o fallo en más de 2 sectores diferentes en una ventana de 10 segundos. Genera alerta crítica `SOC-ALT-0002`.
-- **Regla 2 (Spoofing IEC 61850 GOOSE - Patrón Industroyer2)**: Detecta inyección de paquetes GOOSE con disparos no autorizados en subestaciones eléctricas (`SOC-ALT-0001`).
-- **Regla 3 (Ataque de Fuerza Bruta / Denegación Modbus)**: Detecta más de 10 escrituras anómalas o denegadas por el DPI proxy en una ventana de 5 segundos.
+Escucha eventos HTTP POST en `10.0.2.20:8514` y correlaciona incidentes en tiempo real sobre una ventana de buffer circular de 10 eventos, generando identificadores secuenciales de alerta `SOC-ALT-%04d`:
+- **Regla 1 (Ataque Ciberfísico en Cascada IT $\to$ OT)**: Detecta eventos de categoría `honeypot` seguidos de alertas de severidad `HIGH`/`CRITICAL` de categoría `process_control` provenientes de la misma IP de origen (`source_ip`) en el buffer.
+- **Regla 2 (Inyección / Spoofing GOOSE IEC 61850 - Patrón Industroyer2)**: Detecta eventos de categoría `process_control` con mención de mensajes `GOOSE` o emitidos por el servicio `iec61850_emulator` con severidad `CRITICAL`.
+- **Regla 3 (Alerta de Inspección Pasiva Network Bridge)**: Detecta eventos originados en sondas `zeek` o `suricata` con severidad `HIGH` o `CRITICAL`.
 
 ### Controlador SDN y Circuit Breaker (`network/sdn_controller.py`)
 Implementa defensa activa a nivel de plano de datos (Data Plane Enforcement):
-- Cuando el SIEM o el operador detecta un nodo hostil (ej. atacante `10.0.1.10`), se invoca `apply_circuit_breaker(ip)`.
-- El controlador inyecta dinámicamente una regla OpenFlow de alta prioridad en el switch OVS `s3` (`priority=1000, ip, nw_src=10.0.1.10, actions=drop`).
-- Aislamiento inmediato a nivel de conmutación (100% packet loss), impidiendo el acceso a cualquier PLC de la red OT.
+- Cuando el operador o los arneses de respuesta invocan `apply_circuit_breaker(offending_ip)`:
+- El controlador inyecta dinámicamente una regla OpenFlow en el switch OVS `s3` de la zona OT (`priority=500, dl_type=0x0800, nw_src={ip}, actions=drop`).
+- Aislamiento inmediato a nivel de conmutación (100% packet loss), impidiendo el acceso del atacante a cualquier PLC de la red OT.
 
 ---
 

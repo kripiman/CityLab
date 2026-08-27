@@ -38,7 +38,7 @@ Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmon
 
 | Servicio | URL / Socket | Método / Protocolo | Autenticación (`STRICT_AUTH=1`) |
 |---|---|---|---|
-| **SCADA REST API** | `http://10.0.2.20:8080/api/scada` | `GET` | `Authorization: Bearer operator:OP_TOKEN_2026` |
+| **SCADA REST API** | `http://10.0.2.20:8080/api/telemetry` | `GET` | `Authorization: Bearer operator:OP_TOKEN_2026` |
 | **Control SCADA** | `http://10.0.2.20:8080/api/control` | `POST` JSON | `Authorization: Bearer engineer:ENG_TOKEN_2026` |
 | **Cluster HA Status**| `http://10.0.2.20:8080/api/ha/status` | `GET` | Libre / Consulta de estado |
 | **HMI Web Dashboard** | `http://10.0.2.20:8085` | `GET` HTTP | Interfaz visual P&ID integrada |
@@ -50,7 +50,7 @@ Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmon
 
 ```bash
 # Consultar telemetría consolidada de sectores
-curl -s http://10.0.2.20:8080/api/scada | jq .
+curl -s http://10.0.2.20:8080/api/telemetry | jq .
 
 # Ejecutar conmutación de actuador con token de ingeniero
 curl -s -X POST http://10.0.2.20:8080/api/control \
@@ -103,12 +103,15 @@ cat logs/resource_profile_summary.txt
 
 ## 4. Matriz de Escenarios CTF / Ataques Industriales
 
-Los escenarios formativos y pruebas de intrusión se encuentran documentados en [`docs/scenarios/`](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios):
+El Cyber Range incluye un currículo formativo completo de **29 escenarios CTF** documentados en [`docs/scenarios/`](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios) (`scenario_01_*.md` a `scenario_29_*.md`). Destacan entre ellos:
 - [⚡ **Escenario 01**: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)
 - [🛡️ **Escenario 02**: Inyección y Spoofing de Mensajes GOOSE IEC 61850](scenarios/scenario_02_goose_spoofing.md)
 - [📉 **Escenario 03**: Ataque Low and Slow al Sistema SIS SIL-3](scenarios/scenario_03_triton_low_slow.md)
 - [🔄 **Escenario 04**: Replay Attack Modbus Tipo Stuxnet](scenarios/scenario_04_stuxnet_replay.md)
 - [🔄 **Escenario 05**: Conmutación y Failover en Cluster SCADA HA](scenarios/scenario_05_dcs_failover.md)
 - [🔑 **Escenario 06**: Kerberoasting y Abuso de Samba Active Directory](scenarios/scenario_06_kerberoast_ad.md)
+- [🌐 **Escenario 17**: Exploración y Tour de la API HMI/SCADA](scenarios/scenario_17_scada_tour_api.md)
+- [🔀 **Escenario 19**: Cadena de Pivoteo Attacker $\to$ DMZ $\to$ OT](scenarios/scenario_19_guided_pivoting_chain.md)
+- [👁️ **Escenario 21**: Pérdida de Visibilidad (*Loss of View*) y Aislamiento](scenarios/scenario_21_loss_of_view_manual_isolation.md)
 - [🧱 **Escenario 23**: Defensa Dinámica con Controlador SDN y Circuit Breaker](scenarios/scenario_23_live_sdn_defense_under_fire.md)
 

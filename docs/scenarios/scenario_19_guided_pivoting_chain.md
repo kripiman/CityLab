@@ -16,9 +16,9 @@ Demuestra el salto secuencial entre zonas de red IEC 62443: desde la zona corpor
 
 ### Paso 1: Salto Secuencial de Pivoteo
 1. Probar conectividad desde la zona corporativa `h_attacker` (`10.0.1.10`) hacia el bastión DMZ (`10.0.2.10`) y el host SCADA (`10.0.2.20`).
-2. Desde la DMZ, canalizar peticiones Modbus hacia la celda OT (`10.0.3.10:502`) directamente o a través del Modbus DPI Proxy (`10.0.2.20:15020` con Unit ID 1):
+2. Desde la DMZ, ejecutar el script de ataque multisectorial apuntando al sector de agua (conectando por defecto a `10.0.3.10:502` o vía proxy):
    ```bash
-   python3 attacker/attack_multisector.py --sector water --mode start --host 10.0.3.10
+   python3 attacker/attack_multisector.py --sector water --mode start
    ```
 3. Documentar la brecha de aislamiento detectada (F-03).
 
