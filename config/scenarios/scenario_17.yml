@@ -1,0 +1,15 @@
+id: '17'
+title: Exploración y Tour de la API HMI/SCADA
+difficulty: Básico
+category: SCADA Web Interface / REST API / Telemetry Exploration
+seed_scope:
+- endpoints
+- flags
+objectives:
+- id: FLAG_1
+  desc: Inspección de endpoints /api/telemetry y /api/history
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/telemetry
+    expect: 200

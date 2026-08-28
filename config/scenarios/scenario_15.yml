@@ -1,0 +1,15 @@
+id: '15'
+title: Lectura de Telemetría Modbus TCP sin Autenticación
+difficulty: Básico
+category: Industrial Protocols / Modbus TCP / Unauthenticated Telemetry
+seed_scope:
+- register_offsets
+- flags
+objectives:
+- id: FLAG_1
+  desc: Lectura de Holding Registers de sector agua vía Modbus TCP
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/telemetry
+    expect: 200

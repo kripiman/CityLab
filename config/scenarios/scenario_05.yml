@@ -1,0 +1,22 @@
+id: '05'
+title: Conmutación y Failover en Cluster SCADA HA
+difficulty: Intermedio
+category: High Availability / SCADA Resilience
+seed_scope:
+- heartbeat_interval
+- flags
+objectives:
+- id: FLAG_1
+  desc: Inspección de estado de cluster SCADA HA
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/ha/status
+    expect: 200
+- id: FLAG_2
+  desc: Failover ejecutado exitosamente manteniendo visibilidad
+  points: 200
+  check:
+    type: scada_sector_status
+    sector: elec
+    expect: NORMAL

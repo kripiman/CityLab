@@ -1,0 +1,22 @@
+id: '28'
+title: Entorno Ciego Anti-Memorización
+difficulty: Avanzado
+category: Anti-Memorization / Dynamic Target Obfuscation / Seeded Range
+seed_scope:
+- all
+- flags
+objectives:
+- id: FLAG_1
+  desc: Descubrimiento de parámetros dinámicos de sesión
+  points: 150
+  check:
+    type: http_status
+    url: http://10.0.2.20:8570/health
+    expect: 200
+- id: FLAG_2
+  desc: Resolución de objetivo con offsets aleatorizados
+  points: 250
+  check:
+    type: scada_sector_status
+    sector: water
+    expect: NORMAL

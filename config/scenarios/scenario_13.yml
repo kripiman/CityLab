@@ -1,0 +1,15 @@
+id: '13'
+title: Reconocimiento Pasivo en Red OT
+difficulty: Básico
+category: Network Reconnaissance / Passive Sniffing / Industrial Asset Discovery
+seed_scope:
+- mac_prefixes
+- flags
+objectives:
+- id: FLAG_1
+  desc: Descubrimiento de hosts y controladores en segmento OT
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/telemetry
+    expect: 200
