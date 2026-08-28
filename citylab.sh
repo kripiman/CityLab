@@ -44,6 +44,10 @@ cmd_up() {
     done
     require_root up
 
+    # Generar e inyectar semilla de sesión única e inmemorizable si no existe
+    export CITYLAB_SESSION_SEED="${CITYLAB_SESSION_SEED:-$(python3 -c 'import secrets; print(secrets.token_hex(16))' 2>/dev/null || date +%s%N)}"
+    c_info "Semilla de sesión generada: ${CITYLAB_SESSION_SEED:0:8}..."
+
     local script="$BASE_DIR/run_phase${phase}.sh"
     if [ ! -x "$script" ]; then
         c_err "No existe la fase $phase ($script). Fases disponibles: 1, 2, 3."
@@ -55,17 +59,19 @@ cmd_up() {
 
 cmd_down() {
     require_root down
-    c_info "Deteniendo federados, emuladores y servicios..."
-    local patterns=(
-        helics_broker fed_icssim.py fed_transport.py fed_hospital.py fed_logger.py
-        fed_desal.py fed_lighting.py fed_sis.py fed_gridmock.py gridlabd_federate.py
-        modbus_emulator.py dnp3_emulator.py iec61850_emulator.py opcua_emulator.py
-        honeypot_server.py ad_dc_emulator.py modbus_proxy.py scada_server.py hmi_server.py
-        viz_server.py siem_pipeline.py sdn_controller.py
-    )
-    for pat in "${patterns[@]}"; do
-        pkill -9 -f "$pat" 2>/dev/null || true
-    done
+    c_info "Deteniendo federados, emuladores y servicios de forma segura..."
+    if [ -f "/tmp/citylab_daemons.pids" ]; then
+        while read -r pid; do
+            [ -n "$pid" ] && kill -15 "$pid" 2>/dev/null || true
+        done < "/tmp/citylab_daemons.pids"
+        sleep 0.1
+        while read -r pid; do
+            [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null || true
+        done < "/tmp/citylab_daemons.pids"
+        rm -f "/tmp/citylab_daemons.pids"
+    fi
+    # Cleanup topology & egress iptables rules
+    python3 -c 'import sys; sys.path.insert(0, "."); from network.topology import teardown_topology_and_daemons; teardown_topology_and_daemons()' 2>/dev/null || true
     c_info "Limpiando estado de Mininet / Open vSwitch (mn -c)..."
     mn -c >/dev/null 2>&1 || true
     c_info "Laboratorio detenido."

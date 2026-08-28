@@ -20,20 +20,17 @@ fi
 # Definir cleanup trap para garantizar limpieza ante cualquier salida/fallo
 cleanup() {
     local exit_code=$?
-    echo "[*] Limpiando procesos de emuladores y red Mininet (mn -c)..."
-    local patterns=(
-        modbus_emulator.py dnp3_emulator.py iec61850_emulator.py
-        opcua_emulator.py honeypot_server.py ad_dc_emulator.py
-        modbus_proxy.py scada_server.py hmi_server.py
-        viz_server.py siem_pipeline.py
-    )
-    for pat in "${patterns[@]}"; do
-        pkill -15 -f "$pat" 2>/dev/null || true
-    done
-    sleep 0.1
-    for pat in "${patterns[@]}"; do
-        pkill -9 -f "$pat" 2>/dev/null || true
-    done
+    echo "[*] Limpiando procesos de emuladores y red Mininet de forma segura..."
+    if [ -f "/tmp/citylab_daemons.pids" ]; then
+        while read -r pid; do
+            [ -n "$pid" ] && kill -15 "$pid" 2>/dev/null || true
+        done < "/tmp/citylab_daemons.pids"
+        sleep 0.1
+        while read -r pid; do
+            [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null || true
+        done < "/tmp/citylab_daemons.pids"
+        rm -f "/tmp/citylab_daemons.pids"
+    fi
     mn -c >/dev/null 2>&1 || true
     return $exit_code
 }
@@ -158,6 +155,12 @@ try:
     ping_post_cb = h_attacker.cmd('ping -c 1 -W 1 10.0.3.10')
     assert ('100% packet loss' in ping_post_cb or '0 received' in ping_post_cb), f'FAIL R5/SDN: Dataplane no aislo al atacante! Output: {ping_post_cb}'
     print('    ↳ ✅ Aislamiento dataplane demostrado: Ping de h_attacker (10.0.1.10) a PLC OT (10.0.3.10) bloqueado en s3 (100% packet loss).')
+
+    print('[*] 7. Verificando contención anti-escape (jaula de red y aislamiento egress)...')
+    # Validar que el atacante no puede alcanzar IPs públicas / router físico
+    ping_ext = h_attacker.cmd('ping -c 1 -W 1 8.8.8.8 2>&1 || true')
+    assert ('100% packet loss' in ping_ext or 'Network is unreachable' in ping_ext or '0 received' in ping_ext or 'Destination Port Unreachable' in ping_ext), f'FAIL JAULA: Tráfico de h_attacker escapó a Internet: {ping_ext}'
+    print('    ↳ ✅ Contención egress verificada: Tráfico saliente a 8.8.8.8 bloqueado 100%.')
 
 finally:
     print('[*] Deteniendo red Mininet y eliminando procesos emuladores...')

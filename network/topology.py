@@ -23,16 +23,19 @@ Usage (run as root):
 from __future__ import annotations
 
 import argparse
+import os
+import re
+import subprocess
 import sys
 import time
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Optional
 
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.net import Mininet
 from mininet.node import Node, OVSKernelSwitch, OVSController
 from mininet.topo import Topo
-import os
 
 # Custom CLI that shortens pingall duration using MININET_PING_TIMEOUT (seconds)
 class CustomCLI(CLI):
@@ -184,6 +187,9 @@ def apply_fw_configuration(fw: Node) -> None:
     # Allow local loopback on fw
     fw.cmd("iptables -A INPUT -i lo -j ACCEPT")
 
+    # Apply root namespace egress filtering to prevent leaking 10.0.0.0/8 & multicast
+    apply_egress_containment()
+
     print('[*] Firewall configured (fw IPs: 10.0.1.1, 10.0.2.1, 10.0.3.1)')
 
 
@@ -278,24 +284,77 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
     return results
 
 
+def apply_egress_containment() -> None:
+    """Aplica reglas de contención anti-escape en el namespace raíz.
+
+    Impide que tráfico originado en 10.0.0.0/8 o multicast 239.0.0.0/8
+    salga a través de la interfaz física / de salida default del host.
+    """
+    try:
+        res = subprocess.run(["ip", "route", "show", "default"], capture_output=True, text=True)
+        m = re.search(r"dev\s+([^\s]+)", res.stdout)
+        if m:
+            phys_iface = m.group(1).strip()
+            os.system(f"iptables -C OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP")
+            os.system(f"iptables -C FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP")
+            os.system(f"iptables -C OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP")
+            print(f"[*] Egress containment applied: blocking 10.0.0.0/8 & 239.0.0.0/8 out on {phys_iface}")
+    except Exception as exc:
+        print(f"[WARN] No se pudo configurar egress filtering: {exc}")
+
+
+def cleanup_egress_containment() -> None:
+    """Elimina las reglas de contención anti-escape aplicadas al host."""
+    try:
+        res = subprocess.run(["ip", "route", "show", "default"], capture_output=True, text=True)
+        m = re.search(r"dev\s+([^\s]+)", res.stdout)
+        if m:
+            phys_iface = m.group(1).strip()
+            os.system(f"iptables -D OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+            os.system(f"iptables -D FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+            os.system(f"iptables -D OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+    except Exception:
+        pass
+
+
 def teardown_topology_and_daemons(net: Optional[Mininet] = None) -> None:
-    """Detiene la red Mininet, termina emuladores y limpia estado OVS."""
+    """Detiene la red Mininet, termina emuladores de forma segura y limpia estado OVS."""
+    cleanup_egress_containment()
     if net is not None:
         try:
             net.stop()
         except Exception:
             pass
-    patterns = (
-        'modbus_emulator.py', 'dnp3_emulator.py', 'iec61850_emulator.py',
-        'opcua_emulator.py', 'honeypot_server.py', 'ad_dc_emulator.py',
-        'modbus_proxy.py', 'scada_server.py', 'hmi_server.py',
-        'viz_server.py', 'siem_pipeline.py'
-    )
-    for pat in patterns:
-        os.system(f"pkill -15 -f {pat} 2>/dev/null || true")
-    time.sleep(0.1)
-    for pat in patterns:
-        os.system(f"pkill -9 -f {pat} 2>/dev/null || true")
+
+    pid_file = Path("/tmp/citylab_daemons.pids")
+    if pid_file.exists():
+        try:
+            pids = [line.strip() for line in pid_file.read_text().splitlines() if line.strip()]
+            for pid_str in pids:
+                try:
+                    pid = int(pid_str)
+                    cmdline_path = Path(f"/proc/{pid}/cmdline")
+                    if cmdline_path.exists():
+                        cmdline = cmdline_path.read_text()
+                        if "citylab" in cmdline.lower() or any(k in cmdline for k in ("emulator", "server", "pipeline", "proxy", "flag_service")):
+                            os.kill(pid, 15)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    continue
+            time.sleep(0.1)
+            for pid_str in pids:
+                try:
+                    pid = int(pid_str)
+                    cmdline_path = Path(f"/proc/{pid}/cmdline")
+                    if cmdline_path.exists():
+                        cmdline = cmdline_path.read_text()
+                        if "citylab" in cmdline.lower() or any(k in cmdline for k in ("emulator", "server", "pipeline", "proxy", "flag_service")):
+                            os.kill(pid, 9)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    continue
+            pid_file.unlink(missing_ok=True)
+        except Exception:
+            pass
+
     os.system("mn -c >/dev/null 2>&1 || true")
 
 
@@ -444,10 +503,19 @@ def main() -> int:
             # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
             try:
                 siem_script = os.path.join(repo_root, 'network', 'siem_pipeline.py')
-                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 &')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
                 print('[*] h_scada (10.0.2.20): siem_pipeline daemon spawned on :8514')
             except Exception as exc:
                 print(f'[WARN] siem_pipeline auto-start skipped: {exc}')
+
+            # Auto-start Flag & Scoring Service en DMZ (h_scada @ 10.0.2.20:8570)
+            try:
+                flag_script = os.path.join(repo_root, 'network', 'flag_service.py')
+                session_seed = os.getenv('CITYLAB_SESSION_SEED', 'citylab_default_session_seed_2026')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} CITYLAB_SESSION_SEED={session_seed} SIEM_HTTP_URL={siem_url} {py_bin} {flag_script} --host 0.0.0.0 --port 8570 > /tmp/h_flag_service.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+                print('[*] h_scada (10.0.2.20): flag_service daemon spawned on :8570')
+            except Exception as exc:
+                print(f'[WARN] flag_service auto-start skipped: {exc}')
 
         if args.test:
             results = run_connectivity_tests(net)

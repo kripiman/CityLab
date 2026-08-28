@@ -252,8 +252,10 @@ class Iec61850Server:
         self._goose_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if is_multicast_addr(self.goose_dest):
             try:
-                self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+                self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
                 self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+                mcast_if = os.getenv('MULTICAST_IF', '0.0.0.0')
+                self._goose_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(mcast_if))
             except OSError:
                 pass
 
@@ -282,8 +284,10 @@ class Iec61850Server:
         self._sv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if is_multicast_addr(self.sv_dest):
             try:
-                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
                 self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+                mcast_if = os.getenv('MULTICAST_IF', '0.0.0.0')
+                self._sv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(mcast_if))
             except OSError:
                 pass
 

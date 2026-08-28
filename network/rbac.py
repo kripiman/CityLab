@@ -51,12 +51,28 @@ ROLE_PERMISSIONS: Dict[str, set] = {
 # Wildcard: si el endpoint no está en ningún conjunto pero el rol es 'engineer', permite.
 WILDCARD_ROLES = {'engineer'}
 
-# ------------------------------------------------------------------ #
-#  Almacén de tokens por rol (configurable vía env vars)              #
-# ------------------------------------------------------------------ #
+from pathlib import Path
+
+def _load_env_file() -> None:
+    """Carga variables desde archivo .env local si existe (para secretos fuera del repo)."""
+    for candidate in (Path('.env'), Path(__file__).resolve().parent.parent / '.env'):
+        if candidate.exists():
+            try:
+                for line in candidate.read_text(encoding='utf-8').splitlines():
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        k = k.strip()
+                        v = v.strip().strip("'\"")
+                        if k not in os.environ:
+                            os.environ[k] = v
+            except Exception:
+                pass
+            break
+
 
 def _load_token_store() -> Dict[str, str]:
-    """Carga el mapa de tokens a roles desde variables de entorno.
+    """Carga el mapa de tokens a roles desde variables de entorno y .env.
 
     Variables de entorno:
         SCADA_TOKEN_OPERATOR (default: SCADA_TOKEN_2026 / SCADA_API_TOKEN)
@@ -66,6 +82,7 @@ def _load_token_store() -> Dict[str, str]:
     Returns:
         Dict mapeando token → rol.
     """
+    _load_env_file()
     operator_token = (
         os.getenv('SCADA_TOKEN_OPERATOR')
         or os.getenv('SCADA_API_TOKEN')
