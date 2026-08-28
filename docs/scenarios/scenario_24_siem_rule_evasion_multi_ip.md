@@ -31,4 +31,16 @@ Enseña las **limitaciones de las reglas de detección basadas en firmas estáti
 
 ## 4. Flags CTF
 
-- **FLAG 1 (SIEM Evasion Successful)**: `FLAG_1{siem_correlation_rules_evaded_multi_ip_9901}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 24 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/24/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 24 --submit "FLAG_1{...}" --team "tu_equipo"
+```

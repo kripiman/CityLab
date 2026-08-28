@@ -44,6 +44,7 @@ Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmon
 | **HMI Web Dashboard** | `http://10.0.2.20:8085` | `GET` HTTP | Interfaz visual P&ID integrada |
 | **Viz 2D/3D Server** | `http://10.0.2.20:8090/api/viz/frame` | `GET` HTTP | Telemetría para renderizado visual |
 | **SIEM HTTP Ingest** | `http://10.0.2.20:8514` | `POST` JSON | Endpoint de ingesta de eventos |
+| **Flag & Scoreboard**| `http://10.0.2.20:8570` | `GET`/`POST` REST | Flags dinámicas HMAC + Scoreboard MTTD/MTTR |
 | **Modbus DPI Proxy** | `10.0.2.20:15020` | Modbus TCP | Demuxing transparente por Unit ID |
 
 ### Ejemplos de Interacción por Consola
@@ -114,4 +115,32 @@ El Cyber Range incluye un currículo formativo completo de **29 escenarios CTF**
 - [🔀 **Escenario 19**: Cadena de Pivoteo Attacker $\to$ DMZ $\to$ OT](scenarios/scenario_19_guided_pivoting_chain.md)
 - [👁️ **Escenario 21**: Pérdida de Visibilidad (*Loss of View*) y Aislamiento](scenarios/scenario_21_loss_of_view_manual_isolation.md)
 - [🧱 **Escenario 23**: Defensa Dinámica con Controlador SDN y Circuit Breaker](scenarios/scenario_23_live_sdn_defense_under_fire.md)
+
+---
+
+## 5. Evaluación de Objetivos, Flags Dinámicas y Métricas SOC
+
+CityLab utiliza un motor de evaluación server-side basado en manifiestos YAML (`config/scenarios/scenario_NN.yml`) y flags HMAC generadas dinámicamente a partir de la semilla de sesión `CITYLAB_SESSION_SEED`.
+
+### 🏁 Evaluación y Emisión de Flags por Estado Real
+```bash
+# Validar el cumplimiento de objetivos de un escenario (ej. 01)
+python3 scripts/run_scenario.py --id 01 --check
+
+# Validar el manifiesto YAML contra schema.json
+python3 scripts/run_scenario.py --id 01 --validate-manifest
+
+# Enviar una flag para validación oficial
+python3 scripts/run_scenario.py --id 01 --submit "FLAG_1{4f8a9b2c1d3e}" --team "estudiante_1"
+```
+
+### 🏆 Scoreboard y Métricas SOC Automatizadas (MTTD / MTTR)
+```bash
+# Consultar métricas de tiempo medio de detección y mitigación
+python3 network/scoreboard.py
+
+# Ver el Scoreboard consolidado de la sesión
+python3 scripts/run_scenario.py --scorecard
+```
+
 

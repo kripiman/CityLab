@@ -31,4 +31,16 @@ Muestra la ausencia de controles de integridad y autorización en Modbus/TCP leg
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Modbus Single Coil Forced)**: `FLAG_1{modbus_single_coil_write_actuated_7712}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 18 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/18/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 18 --submit "FLAG_1{...}" --team "tu_equipo"
+```

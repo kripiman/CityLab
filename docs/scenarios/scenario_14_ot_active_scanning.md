@@ -31,4 +31,16 @@ Permite entender la **efectividad de las políticas de cortafuegos en la DMZ** y
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Active Network Discovery)**: `FLAG_1{active_ot_nmap_scan_discovered_hosts_3309}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 14 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/14/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 14 --submit "FLAG_1{...}" --team "tu_equipo"
+```

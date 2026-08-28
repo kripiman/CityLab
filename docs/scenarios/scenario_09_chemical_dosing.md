@@ -31,5 +31,16 @@ Demuestra cómo los ataques ciberfísicos no solo buscan la destrucción de acti
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Dosing System Access)**: `FLAG_1{chemical_dosing_plc_accessed_6620}`
-- **FLAG 2 (Water Contamination Achieved)**: `FLAG_2{swat_water_chemical_contamination_success_9918}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 09 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/09/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 09 --submit "FLAG_1{...}" --team "tu_equipo"
+```

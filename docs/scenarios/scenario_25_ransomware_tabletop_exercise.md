@@ -31,4 +31,16 @@ Fomenta el entendimiento de la **gestión de crisis directiva**, comunicación c
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Tabletop Decisions Executed)**: `FLAG_1{tabletop_crisis_decisions_executed_7710}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 25 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/25/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 25 --submit "FLAG_1{...}" --team "tu_equipo"
+```

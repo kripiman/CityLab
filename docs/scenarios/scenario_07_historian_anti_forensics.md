@@ -31,5 +31,16 @@ Demuestra que los **logs locales son vulnerables al borrado por el atacante** y 
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Historian Database Compromise)**: `FLAG_1{historian_tsdb_compromised_3310}`
-- **FLAG 2 (Anti-Forensics Log Wiping)**: `FLAG_2{anti_forensics_log_wiping_success_9912}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 07 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/07/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 07 --submit "FLAG_1{...}" --team "tu_equipo"
+```

@@ -34,5 +34,16 @@ Demuestra la importancia de la **protección de cuentas de servicio en Active Di
 
 ## 4. Flags CTF
 
-- **FLAG 1 (Kerberoast TGS Extraction)**: `FLAG_1{kerberoast_tgs_ticket_extracted_5521}`
-- **FLAG 2 (AD Privilege Escalation to Engineer)**: `FLAG_2{ad_privilege_escalation_engineer_8830}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 06 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/06/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 06 --submit "FLAG_1{...}" --team "tu_equipo"
+```

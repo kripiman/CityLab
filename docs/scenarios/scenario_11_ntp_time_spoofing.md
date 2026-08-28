@@ -31,5 +31,16 @@ Resalta que la **sincronización de tiempo es una dependencia de seguridad crít
 
 ## 4. Flags CTF
 
-- **FLAG 1 (NTP Clock Drift Attack)**: `FLAG_1{ntp_clock_drift_injected_4418}`
-- **FLAG 2 (SIEM Time Correlation Blinded)**: `FLAG_2{siem_time_correlation_blinded_9903}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 11 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/11/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 11 --submit "FLAG_1{...}" --team "tu_equipo"
+```
