@@ -57,13 +57,23 @@ def main() -> int:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            water_trip = h.helicsInputGetInteger(sub_trip)
-            gas_trip   = h.helicsInputGetInteger(sub_gas_trip)
-            grid_trip  = h.helicsInputGetInteger(sub_grid_trip)
-            trans_trip = h.helicsInputGetInteger(sub_trans_trip)
-            hospital_kw = h.helicsInputGetDouble(sub_hospital_load)
+            # Sanitización de sentinels pre-publicación HELICS
+            raw_w = h.helicsInputGetInteger(sub_trip)
+            raw_g = h.helicsInputGetInteger(sub_gas_trip)
+            raw_e = h.helicsInputGetInteger(sub_grid_trip)
+            raw_t = h.helicsInputGetInteger(sub_trans_trip)
+            raw_h = h.helicsInputGetDouble(sub_hospital_load)
 
-            any_trip = any([water_trip, gas_trip, grid_trip, trans_trip])
+            water_trip = 1 if raw_w == 1 else 0
+            gas_trip   = 1 if raw_g == 1 else 0
+            grid_trip  = 1 if raw_e == 1 else 0
+            trans_trip = 1 if raw_t == 1 else 0
+            hospital_kw = 0.0 if raw_h < -1e20 else max(0.0, raw_h)
+
+            any_trip = (water_trip == 1 or gas_trip == 1 or grid_trip == 1 or trans_trip == 1)
+            if any_trip:
+                LOGGER.warning('Received breaker trip signal [w=%d g=%d e=%d t=%d] -> switching to TRIPPED state',
+                               water_trip, gas_trip, grid_trip, trans_trip)
             voltage_pu = 0.0 if any_trip else 1.0
             h.helicsPublicationPublishDouble(pub_voltage, voltage_pu)
 

@@ -111,17 +111,22 @@ def main() -> int:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            trips = [h.helicsInputGetInteger(sub) for sub in sub_trips]
-            trip = any(t != 0 for t in trips)
+            # Sanitización de enteros de disparo HELICS:
+            # Valores pre-publicación retornan -9223372036854775808 (INT64_MIN).
+            # Solo t == 1 constituye un disparo válido.
+            raw_trips = [h.helicsInputGetInteger(sub) for sub in sub_trips]
+            trips = [1 if t == 1 else 0 for t in raw_trips]
+            trip = any(t == 1 for t in trips)
 
             voltage_pu = 0.0 if current_tripped else 1.0
             h.helicsPublicationPublishDouble(pub_voltage, voltage_pu)
-            hospital_load_kw = h.helicsInputGetDouble(sub_hospital_load)
+            raw_hospital_load = h.helicsInputGetDouble(sub_hospital_load)
+            hospital_load_kw = 0.0 if raw_hospital_load < -1e20 else max(0.0, raw_hospital_load)
             LOGGER.info('t=%.1f trips=%s V=%.2fpu hospital_load=%.1fkW',
                         current_time, trips, voltage_pu, hospital_load_kw)
 
             if trip and not current_tripped:
-                LOGGER.warning('Sector trip detected %s -> switching to TRIPPED state', trips)
+                LOGGER.warning('Sector Trip detected %s -> switching to TRIPPED state', trips)
                 if use_native_gridlabd:
                     stop_gridlabd(proc, logf)
                     proc, logf = start_gridlabd(TRIPPED_GLM)

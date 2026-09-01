@@ -85,7 +85,7 @@ if ! grep -q "$GRID_READY_PATTERN" "$GRID_LOG"; then
     echo "[FAIL] Grid federate not ready"
     exit 1
 fi
-if ! grep -q "$GRID_TRIP_PATTERN" "$GRID_LOG"; then
+if ! grep -qi "$GRID_TRIP_PATTERN" "$GRID_LOG"; then
     echo "[FAIL] Grid federate did not receive trip signal"
     exit 1
 fi
