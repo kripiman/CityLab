@@ -34,14 +34,13 @@ la colisión y propón un toggle, no la eliminación.
 2. Suite de tests (sin root):
    `PYTHONPATH=. python3 -m pytest network/tests plc/tests physical helics_sim attacker/tests -q`
    o el arnés equivalente `python3 scripts/validate_localhost.py`.
-   Baseline verificado por ejecución en HEAD 07f59dc: **151 PASS** (network 65, plc 30, physical 11,
-   helics_sim 12, attacker 33). El viejo baseline de **115** (network 51, plc 23, physical 7,
-   helics_sim 4, attacker 30) quedó obsoleto tras Fases 4–9; si un informe cita 115 o ese desglose,
-   está regurgitando un conteo muerto. Los informes de la línea Fases 0–9 reclamaron progresiones
-   intermedias (118→…→145) que **nunca se confirmaron por ejecución** (ver defecto #20: entorno
-   inestable, agravado por flota de procesos huérfanos root-owned). Trata cualquier conteo como no
-   verificado hasta ejecutarlo tú, en entorno limpio de huérfanos. `PYTHONPATH=.` es obligatorio
-   (imports absolutos, no hay pyproject/setup).
+   Baseline verificado por ejecución en HEAD ff3b437 (+ remediación sentinels): **245 PASS** (network 112,
+   plc 31, physical 11, helics_sim 16, attacker 75). Los viejos baselines de **115** (network 51, plc 23,
+   physical 7, helics_sim 4, attacker 30) y **151** (HEAD 07f59dc: 65/30/11/12/33) quedaron superados tras
+   las Fases 4–14 (scoring dinámico, contención egress, scoreboard MTTD/MTTR) y la suite de sanitización
+   HELICS (+4 tests en `test_sentinel_sanitization.py`). Si un informe cita 115 o 151, está regurgitando
+   conteos desactualizados. Trata cualquier conteo como no verificado hasta ejecutarlo tú en entorno
+   limpio de huérfanos. `PYTHONPATH=.` es obligatorio (imports absolutos, no hay pyproject/setup).
 3. **Sudo está autorizado para esta auditoría.** Ejecuta el end-to-end de root en lugar de declararlo
    BLOQUEADO: `sudo python3 network/topology.py --test` (conectividad/segmentación con asserts sobre
    las IPs realmente agregadas, no solo `h_plc`) y `sudo ./scripts/validate_e2e.sh` (o

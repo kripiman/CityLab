@@ -17,12 +17,11 @@ cyber range IT/OT convergente: co-simulación HELICS (proceso físico) + red SDN
    (ver "Estado actual" abajo, verificado por lectura directa, no por este prompt). Confirma tú
    mismo qué existe antes de planear qué construir.
 2. `PYTHONPATH=. python3 -m pytest network/tests plc/tests physical helics_sim attacker/tests -q`
-   — baseline esperado: **115 PASS** (network 51, plc 23, physical 7, helics_sim 4, attacker 30).
-   Alternativa equivalente: `python3 scripts/validate_localhost.py`.
+   — baseline esperado: **245 PASS** (network 112, plc 31, physical 11, helics_sim 16, attacker 75).
+   Alternativa equivalente: `python3 scripts/validate_localhost.py` (204 tests).
    `PYTHONPATH=.` es obligatorio — no hay `pyproject.toml`/`setup.py`, los imports son absolutos
-   (`from network.x import ...`). El comando `unittest discover` sin `PYTHONPATH` y el baseline
-   "7/7" de versiones previas de este prompt están obsoletos — si tu conteo real difiere de 115,
-   repórtalo, no lo fuerces a coincidir.
+   (`from network.x import ...`). Los baselines previos de 115 y 151 están obsoletos tras las
+   Fases 4–14 y la suite de sanitización HELICS. Si tu conteo real difiere de 245, repórtalo.
    Si falla algún test, PARA y reporta.
 3. Lee en este orden: `docs/Roadmaps/ROADMAP.md` (nota: la ruta correcta es `docs/Roadmaps/`, NO
    `docs/ROADMAP.md`), `docs/Roadmaps/PLAN_REMEDIACION.md`, `docs/ERS.md` (sección RF-11),

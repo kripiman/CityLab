@@ -17,7 +17,7 @@ F-03、F-05、F-06、F-07 乃蓄意 CTF 之料（見 docs/ERS.md RF-11）。永�
 2. 五套之全跑，親計：
    `PYTHONPATH=. python3 -m pytest network/tests plc/tests physical helics_sim attacker/tests -q`
    或 CI 之孿 `python3 scripts/validate_localhost.py`。`PYTHONPATH=.` 必備——絕對 import，無 pyproject/setup；忘之則 import 敗而似 test 敗，勿混二者。
-   於 HEAD 07f59dc 親跑驗之基準：**151 PASS**（network 65、plc 30、physical 11、helics_sim 12、attacker 33）。報若引舊 **115**（51/23/7/4/30）或中途進階（118→…→145），乃死數，皆未親跑證（缺陷 #13）。凡數視為未驗，待爾親跑於淨環而後定。
+   於 HEAD ff3b437（+ sentinels 治）親跑驗之基準：**245 PASS**（network 112、plc 31、physical 11、helics_sim 16、attacker 75）。舊基準 **115**（51/23/7/4/30）與 **151**（07f59dc: 65/30/11/12/33）或中途進階（118→…→241）於 Fases 4–14 與 sentinel 補完後已廢。凡數視為未驗，待爾親跑於淨環而後定。
 3. **淨環先於計數**：repo 遺 root-owned 之孤兒 process（`modbus_emulator.py`、`scada_server.py`、`fed_icssim.py`、`helics_broker` 等，前次 `sudo` 之殘），污 profiling 與間歇敗 test（如 `test_collect_sample_returns_only_citylab_processes`）。跑前清之：`sudo ./citylab.sh down` 或 `sudo pkill -9 -f "modbus_emulator.py|scada_server.py|fed_icssim.py|helics_broker"`。無 root 之 `pkill` 殺不得 root-owned 者（`Operación no permitida`），須 sudo。診環境：`uptime`、`free -h`、`ps -eo pid,pcpu,etime,args | grep python3`。
 4. **穩定性之判**：一次綠非決定性之證。疑之 test 連跑數次（`pytest <test> --count=5`，或手動循環）辨間歇敗。exit 124/143 = 懸/逾時，非過；常因 threading deadlock（見缺陷 #10）或孤兒污染，非碼邏輯之錯。
 5. sudo 已授（若情境需）：root-only 之 e2e（`sudo python3 network/topology.py --test`、`sudo ./scripts/validate_e2e.sh`）可跑。密由操作者於 session 自入（`! sudo …`），**永勿**書密於報/檔/史。無 root 者，`net.start()` 之網 test 為 BLOQUEADO，然模型/emulador/federado 之單元 test 皆無 root 可驗。

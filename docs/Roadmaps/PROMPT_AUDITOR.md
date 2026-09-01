@@ -17,7 +17,7 @@ F-03、F-05、F-06、F-07 乃蓄意 CTF 之料（見 docs/ERS.md RF-11 及 docs/
 2. tests 之套（無 root）：
    `PYTHONPATH=. python3 -m pytest network/tests plc/tests physical helics_sim attacker/tests -q`
    或等效之 `python3 scripts/validate_localhost.py`。
-   於 HEAD 07f59dc 親跑驗之基準：**151 PASS**（network 65、plc 30、physical 11、helics_sim 12、attacker 33）。舊基準 **115**（network 51、plc 23、physical 7、helics_sim 4、attacker 30）於 Fases 4–9 後已廢；報若引 115 或此分，乃反芻死數。Fases 0–9 線之報稱中途進階（118→…→145），**皆未親跑證**（見缺陷 #20：環境不穩，root-owned 孤兒 process 之群益之）。凡數視為未驗，待爾親跑於無孤兒之淨環而後定。`PYTHONPATH=.` 必備（絕對 import，無 pyproject/setup）。
+   於 HEAD ff3b437（+ sentinels 治）親跑驗之基準：**245 PASS**（network 112、plc 31、physical 11、helics_sim 16、attacker 75）。舊基準 **115**（51/23/7/4/30）與 **151**（07f59dc: 65/30/11/12/33）於 Fases 4–14 與 sentinel 補完後已廢；報若引 115 或 151，乃反芻死數。Fases 0–9 線之報稱中途進階（118→…→241），皆未親跑證。凡數視為未驗，待爾親跑於無孤兒之淨環而後定。`PYTHONPATH=.` 必備（絕對 import，無 pyproject/setup）。
 3. **本稽已授 sudo。** 跑 root 之 end-to-end，勿宣 BLOQUEADO：`sudo python3 network/topology.py --test`（通連/分段，須 assert 於實加之 IP，勿獨 `h_plc`）與 `sudo ./scripts/validate_e2e.sh`（或 `sudo ./citylab.sh up` 加 live 情境）。報 Mininet 層為**親跑驗**，附實出，勿列待決。
    - **sudo 密之理（必守）**：操作者於命需時自入於 session（前綴 `! sudo …`，或於 `sudo` 之 prompt）。**永勿**書密於報、於 `PLAN_REMEDIACION.md`、於 repo 任一檔，勿以 echo 露於命；勿留於 git 史或 logs。若當下不能得之，則——惟此時——宣該 e2e 為 BLOQUEADO。
    - 跑 root 前，清前次之孤兒 process（或 root-owned 而存活於無權之 `pkill`）：`sudo ./citylab.sh down` 或 `sudo pkill -9 -f "modbus_emulator.py|scada_server.py|fed_icssim.py|helics_broker"`，否則積群污 profiling 與計數。
