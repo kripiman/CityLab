@@ -6,6 +6,7 @@ Este documento describe la arquitectura integral de software, topología de red,
 
 ## 📑 Tabla de Contenidos
 1. [Visión General del Sistema y Filosofía de Diseño](#1-visión-general-del-sistema-y-filosofía-de-diseño)
+   - [Límites de Fidelidad y Evaluación de Realidad Operativa](#límites-de-fidelidad-y-evaluación-de-realidad-operativa)
 2. [Estructura del Proyecto y Módulos de Código](#2-estructura-del-proyecto-y-módulos-de-código)
 3. [Topología de Red y Microsegmentación (IEC 62443)](#3-topología-de-red-y-microsegmentación-iec-62443)
 4. [Capa Ciberfísica y Co-Simulación HELICS](#4-capa-ciberfísica-y-co-simulación-helics)
@@ -77,6 +78,32 @@ flowchart TB
     HMI --> SCADA
     Viz --> SCADA
 ```
+
+### Límites de Fidelidad y Evaluación de Realidad Operativa
+
+Evaluación técnica honesta y anclada en la verificación directa de la base de código sobre el equilibrio entre realismo operacional, simplificaciones pedagógicas y límites de simulación:
+
+#### Dónde SÍ es fiel a la realidad
+- **La red es real, no simulada**: Mininet + Open vSwitch (OVS) con networking de kernel Linux, `iptables` y segmentación por zonas IEC 62443 que se verifican en caliente: atacante $\to$ PLC bloqueado, DMZ $\to$ PLC permitido, egress a `8.8.8.8` cortado al 100%. Son reglas reales en un dataplane real.
+- **La cadena causal ciber $\to$ física es genuina**: El spoof GOOSE inyecta paquetes por socket real y el readback confirma `XCBR1.Pos.stVal=False` en el daemon del IED; el SIEM correlaciona el evento real (`SOC-ALT-0001`); el SDN instala una regla OpenFlow de aislamiento que se demuestra con 100% packet loss. Nada de eso es un print decorativo — corre en caliente y tiene readback verificable.
+- **El sector eléctrico usa simulación de verdad**: `helics_sim/gridlabd_federate.py` lanza el binario real de GridLAB-D con `.glm` reales y conmuta `substation_normal.glm` $\to$ `substation_tripped.glm` al disparo. Eso es power flow de verdad (cuando `gridlabd` está instalado).
+- **La co-simulación HELICS es real**: 10 federados con acoplamiento multisectorial, y los smoke tests verifican exit codes honestamente.
+
+#### Dónde NO es fiel (simplificaciones conscientes)
+- **GOOSE/SV van sobre UDP, no sobre capa 2**: `attacker/attack_goose_spoofing.py:66` usa `SOCK_DGRAM`; `plc/iec61850_emulator.py:33` declara `ETHERTYPE_GOOSE = 0x88B8` pero los sockets UDP están en `:251`, `:262`, `:283` y jamás abre un socket raw/`AF_PACKET`. Un IED real no escucha GOOSE por UDP, y un ataque real requiere inyección Ethernet L2. La semántica (pub/sub, stNum, sqNum, trip) es correcta; el transporte no.
+- **El Kerberos/AD es emulado**: Protocolo propio sobre socket, no ASN.1/TGS criptográfico real — por eso existe `TABLETOP_FALLBACK` y la separación `ticket_received`/`ticket_simulated`.
+- **La física es de parámetros concentrados**: Modelos deterministas con `step()` de $dt$ fijo y clamps (`ElecPlant`, `GasPlant`, RO de desaladora). Capturan causalidad y acoplamiento (ataque $\to$ presión $\to$ cascada), no dinámica de proceso real. Sirven para enseñar consecuencias, no para validar ingeniería.
+- **Los dispositivos son emuladores Python, no firmware**: No hay PLC real ejecutando ladder/ST en la topología (`plc/st_programs/poc_pump.st` y `plc/openplc_config/` existen como PoC, pero ningún componente del despliegue los instancia).
+- **Cobertura de ataque parcial**: De 29 módulos `attack_*.py`, 15 no declaran maquinaria `SOCKET_LIVE`/`TABLETOP_FALLBACK`. Algunos son tabletop por diseño (`attack_ransomware_tabletop.py`), otros genuinamente live (recon pasivo), pero la franja "ataque real con cambio de estado verificable" cubre hoy una minoría de los vectores.
+- **Las vulnerabilidades F-03/05/06/07 son deliberadas (CTF)**: Eso es fidelidad pedagógica, no un defecto.
+
+#### Qué tan maduro es
+- **Como ingeniería de software**: Maduro para su clase. 250 tests deterministas verificados en vivo, smokes con exit codes honestos, e2e con readbacks reales, cero huérfanos tras teardown, ERS/arquitectura documentados, SemVer disciplinado. Superó una auditoría QA con evidencia, no con afirmaciones.
+- **Como cyber range docente / plataforma de ejercicios red-blue**: Maduro (TRL 4–5 — validado en laboratorio, con jaula de egress que lo hace seguro de operar).
+- **Como gemelo digital de alta fidelidad**: No lo es ni lo pretende. Nadie debería dimensionar protecciones de una planta real con estos modelos.
+- **Como software de producción**: No, por diseño — lleva vulnerabilidades intencionales y exige root para Mininet.
+
+> **Veredicto en una línea:** Fiel en la red y en la cadena de consecuencias ciber $\to$ física (que es lo que un cyber range debe enseñar); simplificado en dispositivo, transporte L2 y física de proceso. La deuda honesta es: GOOSE a L2 real, Kerberos real, y extender la maquinaria live-socket a los ~15 módulos de ataque que aún no la declaran (referencia: [`docs/Audits/PLAN_ALTA_FIDELIDAD_DIGITAL_TWIN.md`](Audits/PLAN_ALTA_FIDELIDAD_DIGITAL_TWIN.md)).
 
 ---
 
