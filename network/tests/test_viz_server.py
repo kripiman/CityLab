@@ -64,9 +64,56 @@ class TestVizServer(unittest.TestCase):
                 hist = json.loads(resp.read().decode('utf-8'))
                 self.assertIn('frames', hist)
                 self.assertGreaterEqual(len(hist['frames']), 1)
+
+            # 4. POST /api/viz/update con sector desconocido -> 400 Bad Request
+            bad_payload = json.dumps({'sector': 'space_station', 'payload': {'alien': True}}).encode('utf-8')
+            req_bad = urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/viz/update",
+                data=bad_payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                urllib.request.urlopen(req_bad, timeout=2.0)
+            self.assertEqual(ctx.exception.code, 400)
+
+            # 5. POST /api/viz/update por lotes {"sectors": {...}}
+            batch_payload = json.dumps({
+                'sectors': {
+                    'desal': {'power_kw': 60.0, 'pump_trip': True},
+                    'safety': {'sis_trip': True}
+                }
+            }).encode('utf-8')
+            req_batch = urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/viz/update",
+                data=batch_payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req_batch, timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                batch_res = json.loads(resp.read().decode('utf-8'))
+                self.assertEqual(batch_res['status'], 'UPDATED')
+                self.assertIn('desal', batch_res['sectors'])
+
+            # 6. Verificar actualización reflejada en frame
+            with urllib.request.urlopen(req_frame, timeout=2.0) as resp:
+                frame_after = json.loads(resp.read().decode('utf-8'))
+                self.assertTrue(frame_after['city_sectors']['desal']['pump_trip'])
+                self.assertTrue(frame_after['city_sectors']['safety']['sis_trip'])
         finally:
             server.shutdown()
             server.server_close()
+
+    def test_extended_sectors_exist_in_initial_state(self) -> None:
+        initial = self.engine.get_render_frame()
+        self.assertIn('desal', initial['city_sectors'])
+        self.assertIn('lighting', initial['city_sectors'])
+        self.assertIn('safety', initial['city_sectors'])
+        # Garantizar que los 5 sectores originales no se alteraron
+        self.assertEqual(initial['city_sectors']['water']['tank_level'], 10.0)
+        self.assertEqual(initial['city_sectors']['gas']['pressure_psi'], 145.0)
+        self.assertEqual(initial['city_sectors']['elec']['grid_voltage'], 230.0)
 
 
 if __name__ == '__main__':
