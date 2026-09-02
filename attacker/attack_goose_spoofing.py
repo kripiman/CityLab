@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import socket
 import sys
 import time
@@ -67,8 +68,11 @@ def spoof_goose_trip(
         try:
             sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
             sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
-        except OSError:
-            pass
+            mcast_if = os.getenv("GOOSE_MULTICAST_IF")
+            if mcast_if:
+                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(mcast_if))
+        except OSError as exc:
+            LOGGER.warning("Error configurando opciones multicast en socket GOOSE: %s", exc)
     try:
         sock.sendto(pdu, (target_host, target_port))
         LOGGER.info(

@@ -57,9 +57,20 @@ PIDS+=($!)
 python3 "$SCRIPT_DIR/fed_lighting.py" > "$LOG_DIR/test_lighting.log" 2>&1 &
 PIDS+=($!)
 
-echo "[*] Waiting for 9 federates and broker to complete..."
+echo "[*] Waiting for 9 federates and broker to complete (timeout: 120s)..."
+WAIT_TIMEOUT=120
+START_TIME=$(date +%s)
 FAIL=0
 for pid in "${PIDS[@]}"; do
+    while kill -0 "$pid" 2>/dev/null; do
+        NOW=$(date +%s)
+        if [ $((NOW - START_TIME)) -ge "$WAIT_TIMEOUT" ]; then
+            echo "[FAIL] Smoke test Phase 4 excedió el presupuesto global de ${WAIT_TIMEOUT}s. Matando procesos..."
+            kill -9 "${PIDS[@]}" 2>/dev/null || true
+            exit 1
+        fi
+        sleep 0.5
+    done
     if ! wait "$pid"; then
         FAIL=1
     fi

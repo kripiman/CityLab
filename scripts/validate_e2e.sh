@@ -31,6 +31,10 @@ cleanup() {
         done < "/tmp/citylab_daemons.pids"
         rm -f "/tmp/citylab_daemons.pids"
     fi
+    local citylab_procs="modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
+    pkill -15 -f "$citylab_procs" 2>/dev/null || true
+    sleep 0.2
+    pkill -9 -f "$citylab_procs" 2>/dev/null || true
     mn -c >/dev/null 2>&1 || true
     return $exit_code
 }
@@ -85,11 +89,11 @@ try:
 
     repo_root = str(ROOT)
     py_bin = sys.executable
-    h_ied.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/iec61850_emulator.py --host 10.0.3.20 --goose-port 10102 > /tmp/h_ied_e2e.log 2>&1 &')
-    h_gw.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/opcua_emulator.py --host 10.0.3.30 --port 4840 > /tmp/h_gw_e2e.log 2>&1 &')
-    h_elec.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/dnp3_emulator.py --host 10.0.3.13 --port 20000 > /tmp/h_elec_e2e.log 2>&1 &')
-    h_honey.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/honeypot_server.py --host 10.0.5.99 --port 502 > /tmp/h_honey_e2e.log 2>&1 &')
-    h_dc.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/network/ad_dc_emulator.py --host 10.0.1.20 > /tmp/h_dc_e2e.log 2>&1 &')
+    h_ied.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/iec61850_emulator.py --host 10.0.3.20 --goose-port 10102 > /tmp/h_ied_e2e.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+    h_gw.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/opcua_emulator.py --host 10.0.3.30 --port 4840 > /tmp/h_gw_e2e.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+    h_elec.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/dnp3_emulator.py --host 10.0.3.13 --port 20000 > /tmp/h_elec_e2e.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+    h_honey.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/plc/honeypot_server.py --host 10.0.5.99 --port 502 > /tmp/h_honey_e2e.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+    h_dc.cmd(f'nohup env PYTHONUNBUFFERED=1 PYTHONPATH={repo_root} {py_bin} {repo_root}/network/ad_dc_emulator.py --host 10.0.1.20 > /tmp/h_dc_e2e.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
 
     time.sleep(2.0)
 
@@ -164,6 +168,12 @@ try:
 
 finally:
     print('[*] Deteniendo red Mininet y eliminando procesos emuladores...')
+    CITYLAB_PROC_PATTERN = "modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
+    for node_name in ('h_ied', 'h_gateway', 'h_plc_elec', 'h_honey', 'h_dc', 'h_attacker', 'h_scada'):
+        try:
+            net.get(node_name).cmd(f"pkill -9 -f '{CITYLAB_PROC_PATTERN}' 2>/dev/null || true")
+        except Exception:
+            pass
     teardown_topology_and_daemons(net)
 EOF
 

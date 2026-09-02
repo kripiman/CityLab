@@ -75,3 +75,17 @@ The system is three layers that only fully connect when the lab is running under
 - Unit tests never touch Mininet; the lab-dependent scenarios cannot be validated without `sudo` + Mininet + an OVS/HELICS runtime.
 - Scenario docs sometimes describe higher-fidelity mechanisms than the code implements (real Kerberos vs. in-process RBAC, multicast GOOSE vs. loopback UDP). Check the code before trusting a doc step's ports/commands/endpoints.
 - Deeper design docs live in `docs/ERS.md`, `docs/ARCHITECTURE.md`, and `docs/OPERATIONS.md`.
+
+## Git Commits and SemVer Tagging Rule (MANDATORY)
+
+- **Always tag every commit**: Whenever generating a git commit, **always** generate its respective annotated git tag on that exact commit.
+- **Format**: `vX.Y.Z` adhering to Semantic Versioning (SemVerTag):
+  - **X (Major)**: Breaking / incompatible changes or major architecture shifts.
+  - **Y (Minor)**: New backward-compatible features, scenarios, federates, or enhancements.
+  - **Z (Patch)**: Bug fixes, test stabilization, documentation fixes, anti-trampa corrections.
+- **Command pattern**:
+  ```bash
+  git commit -m "<type>(<scope>): <clear description>"
+  git tag -a vX.Y.Z -m "vX.Y.Z: <summary of changes>"
+  ```
+

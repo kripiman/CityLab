@@ -94,7 +94,8 @@ class KerberoastAttack:
             'mode': mode,
             'account': account,
             'kdc_reachable': kdc_reachable,
-            'ticket_received': ticket_raw is not None or mode == 'TABLETOP_FALLBACK',
+            'ticket_received': ticket_raw is not None,
+            'ticket_simulated': mode == 'TABLETOP_FALLBACK',
             'extracted_role': role,
             'http_status': status,
             'is_engineer': role == 'engineer',
@@ -113,6 +114,10 @@ def main(argv: list[str] | None = None) -> int:
 
     attacker = KerberoastAttack(kdc_host=args.kdc_host, kdc_port=args.kdc_port, scada_url=args.scada_url)
     res = attacker.execute_kerberoast_escalation(account=args.account)
+    if res.get('ticket_simulated'):
+        LOGGER.warning("[TABLETOP_FALLBACK] Kerberoasting ejecutado en modo simulado (sin ticket criptografico real)")
+    elif res.get('ticket_received'):
+        LOGGER.info("[SOCKET_LIVE] Ticket TGS criptografico obtenido exitosamente del KDC")
     LOGGER.info("Resultado de ataque Kerberoasting: %s", res)
     return 0 if res['status'] == 'SUCCESS' else 1
 

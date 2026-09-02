@@ -19,6 +19,7 @@ class TestKerberoastAttack(unittest.TestCase):
             self.assertEqual(res['mode'], 'SOCKET_LIVE')
             self.assertTrue(res['kdc_reachable'])
             self.assertTrue(res['ticket_received'])
+            self.assertFalse(res['ticket_simulated'])
             self.assertTrue(res['is_engineer'])
             self.assertEqual(res['extracted_role'], 'engineer')
 
@@ -30,13 +31,17 @@ class TestKerberoastAttack(unittest.TestCase):
         self.assertEqual(res['status'], 'SUCCESS')
         self.assertEqual(res['mode'], 'TABLETOP_FALLBACK')
         self.assertFalse(res['kdc_reachable'])
+        self.assertFalse(res['ticket_received'])
+        self.assertTrue(res['ticket_simulated'])
         self.assertTrue(res['is_engineer'])
 
     def test_kerberoast_cli(self) -> None:
-        """Verifica la invocación por CLI."""
+        """Verifica la invocación por CLI tanto en live como en fallback."""
         with running_ad_dc(kerberos_port=14088, ldap_port=14389):
             rc = krb_main(['--kdc-host', '127.0.0.1', '--kdc-port', '14088', '--scada-url', ''])
             self.assertEqual(rc, 0)
+        rc_fallback = krb_main(['--kdc-host', '127.0.0.1', '--kdc-port', '59997', '--scada-url', ''])
+        self.assertEqual(rc_fallback, 0)
 
 
 if __name__ == '__main__':

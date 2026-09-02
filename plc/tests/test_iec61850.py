@@ -96,13 +96,19 @@ class TestIEC61850Emulator(unittest.TestCase):
             self.assertTrue(mcast_server.dataset.get('XCBR1.Pos.stVal'))
 
             # Send spoofed trip to multicast address 239.0.0.1
-            spoof_goose_trip(
-                target_host=MULTICAST_GOOSE_ADDR,
-                target_port=15104,
-                ied_name='CITYLAB_IED1',
-                st_num=888,
-                breaker_pos=False
-            )
+            try:
+                spoof_goose_trip(
+                    target_host=MULTICAST_GOOSE_ADDR,
+                    target_port=15104,
+                    ied_name='CITYLAB_IED1',
+                    st_num=888,
+                    breaker_pos=False
+                )
+            except OSError as exc:
+                import errno
+                if exc.errno == errno.ENETUNREACH:
+                    self.skipTest(f"Enrutamiento multicast no disponible en interfaz host: {exc}")
+                raise
             time.sleep(0.2)
 
             # Multicast listener received packet via IP_ADD_MEMBERSHIP and updated state
