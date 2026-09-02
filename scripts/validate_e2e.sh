@@ -31,7 +31,7 @@ cleanup() {
         done < "/tmp/citylab_daemons.pids"
         rm -f "/tmp/citylab_daemons.pids"
     fi
-    local citylab_procs="modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|fed_viz_bridge.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
+    local citylab_procs="modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|hmi_server.py|viz_server.py|siem_pipeline.py|modbus_proxy.py|flag_service.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|fed_viz_bridge.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
     pkill -15 -f "$citylab_procs" 2>/dev/null || true
     sleep 0.2
     pkill -9 -f "$citylab_procs" 2>/dev/null || true
