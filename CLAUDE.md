@@ -34,7 +34,7 @@ The `run_phase*.sh` scripts are now internal implementation invoked by `up`; do 
   ```bash
   PYTHONPATH=. python3 -m pytest attacker/tests/test_scenario_21_loss_of_view.py::TestScenario21LossOfView::test_hmi_detects_loss_of_view_alarm
   ```
-- **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests` (258 tests passing deterministically).
+- **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests` (265 tests passing deterministically).
 - **Bring up the full lab** (requires root — Mininet + Open vSwitch): `sudo ./citylab.sh up`. Lower-level entry points, when you need them directly:
   ```bash
   sudo python3 network/topology.py          # interactive Mininet CLI

@@ -55,7 +55,15 @@ class TestGooseSpoofingAttack(unittest.TestCase):
             breaker_pos=False
         )
 
-        time.sleep(0.15)
+        # Sondeo activo anti-flaky con timeout (máx 0.8s, resolución 20ms)
+        received = False
+        for _ in range(40):
+            if self.server.dataset.get('XCBR1.Pos.stVal') is False:
+                received = True
+                break
+            time.sleep(0.02)
+
+        self.assertTrue(received, "No se procesó el paquete UDP GOOSE dentro de la ventana de espera")
         # El servidor procesa el paquete UDP real y muta el estado a DISPARADO (False)
         pos = self.server.dataset.get('XCBR1.Pos.stVal')
         self.assertFalse(pos)

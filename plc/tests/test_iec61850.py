@@ -108,10 +108,16 @@ class TestIEC61850Emulator(unittest.TestCase):
                 import errno
                 if exc.errno == errno.ENETUNREACH:
                     self.skipTest(f"Enrutamiento multicast no disponible en interfaz host: {exc}")
-                raise
-            time.sleep(0.2)
+            # Sondeo activo anti-flaky con timeout (máx 0.8s, resolución 20ms)
+            received = False
+            for _ in range(40):
+                if mcast_server.dataset.get('XCBR1.Pos.stVal') is False:
+                    received = True
+                    break
+                time.sleep(0.02)
 
             # Multicast listener received packet via IP_ADD_MEMBERSHIP and updated state
+            self.assertTrue(received, "No se recibió el paquete multicast GOOSE dentro de la ventana de espera")
             self.assertFalse(mcast_server.dataset.get('XCBR1.Pos.stVal'))
         finally:
             mcast_server.stop()

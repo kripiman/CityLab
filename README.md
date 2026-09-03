@@ -7,7 +7,7 @@
 - **Co-Simulación Multisectorial**: Coordinación temporal a tiempo real vía **HELICS 3.x** (hasta 11 federados).
 - **Estándar Industrial**: Segmentación de red alineada con **IEC 62443** (Zonas Corporate, DMZ, Celda OT, PAW EWS y Decoy Honeypot).
 - **Visualizador 2D Airgapped**: Dashboard interactivo vectorial SVG/CSS en tiempo real (puerto `:8090`), 100% offline sin dependencias externas.
-- **Fiabilidad y Calidad de Código**: **258 tests unitarios e integración PASS** y 0 procesos huérfanos garantizados tras teardown.
+- **Fiabilidad y Calidad de Código**: **265 tests unitarios e integración PASS** y 0 procesos huérfanos garantizados tras teardown.
 
 ---
 
@@ -97,7 +97,7 @@ http://127.0.0.1:8090        # En ejecuciones locales o de desarrollo
 ./citylab.sh smoke
 ```
 
-### 4. Ejecutar la Batería Completa de Pruebas (258 Tests)
+### 4. Ejecutar la Batería Completa de Pruebas (265 Tests)
 ```bash
 ./citylab.sh test
 # o directamente:

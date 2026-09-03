@@ -15,13 +15,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import yaml
 
@@ -270,7 +271,7 @@ def show_scorecard(flag_service_url: str = "http://10.0.2.20:8570") -> int:
         return 1
 
 
-def main() -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="CityLab Scenario Runner & Flag Verification")
     parser.add_argument("--id", default="01", help="ID del escenario (ej. 01, 02)")
     parser.add_argument("--check", action="store_true", help="Evaluar estado del laboratorio y emitir flags")
@@ -282,7 +283,7 @@ def main() -> int:
     parser.add_argument("--seed", default=None, help="Semilla de sesión")
     parser.add_argument("--db-path", default=None, help="Ruta a base de datos Historian SQLite")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.validate_manifest:
         return 0 if validate_manifest(args.id) else 2

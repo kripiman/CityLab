@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 _temp_dir = tempfile.TemporaryDirectory(prefix="citylab_val_session_")
 os.environ.setdefault("HISTORIAN_DB_PATH", os.path.join(_temp_dir.name, "session_historian.db"))
 
-import unittest
+import pytest
 
 
 def main() -> int:
@@ -22,15 +22,16 @@ def main() -> int:
     print("==========================================================================")
 
     try:
-        loader = unittest.TestLoader()
-        suite = unittest.TestSuite()
-
-        for s in ['network/tests', 'plc/tests', 'physical/tests', 'helics_sim/tests', 'attacker/tests']:
-            suite.addTests(loader.discover(s))
-
-        runner = unittest.TextTestRunner(verbosity=1)
-        result = runner.run(suite)
-        return 0 if result.wasSuccessful() else 1
+        test_suites = [
+            'network/tests',
+            'plc/tests',
+            'physical',
+            'helics_sim',
+            'attacker/tests',
+            '-q',
+        ]
+        ret = pytest.main(test_suites)
+        return int(ret)
     finally:
         _temp_dir.cleanup()
 

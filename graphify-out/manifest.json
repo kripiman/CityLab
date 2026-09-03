@@ -25,9 +25,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "helics_sim/fed_gridmock.py": {
-    "mtime": 1788230255.6584845,
-    "ast_hash": "3fdf59d5dc84847b544549e3871b36a8",
-    "semantic_hash": "3fdf59d5dc84847b544549e3871b36a8"
+    "mtime": 1788458164.2411525,
+    "ast_hash": "e427bed30ff0117b5a46d883fae91c4c",
+    "semantic_hash": ""
   },
   "helics_sim/fed_hospital.py": {
     "mtime": 1787600060.3950653,
@@ -40,9 +40,9 @@
     "semantic_hash": "03297eb6b91c89842a87049b435c8a68"
   },
   "helics_sim/fed_logger.py": {
-    "mtime": 1787090522.9647696,
-    "ast_hash": "6f1b3f9d0e68d81be1fb1e8b2e1209e1",
-    "semantic_hash": "6f1b3f9d0e68d81be1fb1e8b2e1209e1"
+    "mtime": 1788458186.3901734,
+    "ast_hash": "09e66829aa7f7f23c3455cec7c7fbfe7",
+    "semantic_hash": ""
   },
   "helics_sim/fed_transport.py": {
     "mtime": 1787599894.3919678,
@@ -245,9 +245,9 @@
     "semantic_hash": ""
   },
   "attacker/attack_grid_heatwave_attribution.py": {
-    "mtime": 1786504496.3239,
-    "ast_hash": "5c84c7891ab1d05da5bd6a6a8f3044fc",
-    "semantic_hash": "5c84c7891ab1d05da5bd6a6a8f3044fc"
+    "mtime": 1788458349.3303282,
+    "ast_hash": "283a1608a552c5c915fb952556614e42",
+    "semantic_hash": ""
   },
   "attacker/attack_historian_anti_forensics.py": {
     "mtime": 1787685272.2241983,
@@ -375,9 +375,9 @@
     "semantic_hash": "c2e9757f1864e6b4e6861b0e4f8c3ca0"
   },
   "attacker/tests/test_attack_goose.py": {
-    "mtime": 1787610043.9218237,
-    "ast_hash": "f17e5e121db42256c0f103639dcf8d94",
-    "semantic_hash": "f17e5e121db42256c0f103639dcf8d94"
+    "mtime": 1788458285.7092679,
+    "ast_hash": "83d99c4338d793151f7af4786c19814b",
+    "semantic_hash": ""
   },
   "attacker/tests/test_attack_honeypot_touch.py": {
     "mtime": 1787685376.732952,
@@ -545,9 +545,9 @@
     "semantic_hash": "29c725710ad7e29f20c8cad67891c55b"
   },
   "network/tests/test_siem.py": {
-    "mtime": 1787715349.3214042,
-    "ast_hash": "4f38355b3aa22905f1ab27a7aacab055",
-    "semantic_hash": "4f38355b3aa22905f1ab27a7aacab055"
+    "mtime": 1788458260.548244,
+    "ast_hash": "a8af6e6bcbee529768272d29c35eb6ca",
+    "semantic_hash": ""
   },
   "network/tests/test_siem_passive.py": {
     "mtime": 1787004251.741584,
@@ -620,8 +620,8 @@
     "semantic_hash": "7b13b4891e4480ecf9291ff427fdba3c"
   },
   "plc/tests/test_iec61850.py": {
-    "mtime": 1788357290.3643105,
-    "ast_hash": "ad59bb9ad0e05de82951527a2c591591",
+    "mtime": 1788458276.6082592,
+    "ast_hash": "1484f9fb0366a11c9647f2a9095cd4e4",
     "semantic_hash": ""
   },
   "plc/tests/test_modbus_ntcip.py": {
@@ -645,9 +645,9 @@
     "semantic_hash": ""
   },
   "scripts/validate_localhost.py": {
-    "mtime": 1787635077.8198442,
-    "ast_hash": "35562111a86c2d4a0334910017826655",
-    "semantic_hash": "35562111a86c2d4a0334910017826655"
+    "mtime": 1788458131.283121,
+    "ast_hash": "a58faea9615f62e40796612a3548effd",
+    "semantic_hash": ""
   },
   ".amazonq/rules/memory-bank/guidelines.md": {
     "mtime": 1787761934.3492618,
@@ -675,13 +675,13 @@
     "semantic_hash": "cceced69f98870064e4bded7dcffdb62"
   },
   "CLAUDE.md": {
-    "mtime": 1788452529.9799702,
-    "ast_hash": "deb80d147ad9cb7a52d7dafa584ea65c",
+    "mtime": 1788459796.7783167,
+    "ast_hash": "ce2966fc84ec533e2ded574437fbcf6e",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788452510.2199705,
-    "ast_hash": "36b02f3cef4fc6b9313bddaaef9aa4a6",
+    "mtime": 1788459787.939317,
+    "ast_hash": "b1e6fe70ce95e358bf3aff24eceac835",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -700,8 +700,8 @@
     "semantic_hash": "39edb346abbadccdd77b4f15c65df956"
   },
   "docs/OPERATIONS.md": {
-    "mtime": 1788452628.0089688,
-    "ast_hash": "391221752e5ac31feeffc9385232246d",
+    "mtime": 1788459807.4433165,
+    "ast_hash": "e4dc232e271791ca5b87eca161cb2fe4",
     "semantic_hash": ""
   },
   "docs/Roadmaps/PROMPT_AUDITOR.md": {
@@ -1055,9 +1055,9 @@
     "semantic_hash": "2879935fa0fe7f313dcb862319004af3"
   },
   "scripts/run_scenario.py": {
-    "mtime": 1787931722.609264,
-    "ast_hash": "f2438783f719f062b2f59bb5b6109d52",
-    "semantic_hash": "f2438783f719f062b2f59bb5b6109d52"
+    "mtime": 1788458335.431315,
+    "ast_hash": "bcc946ff51722a449f95e674266149c3",
+    "semantic_hash": ""
   },
   "scripts/update_scenario_docs_dynamic_flags.py": {
     "mtime": 1787932446.8028436,
@@ -1210,9 +1210,9 @@
     "semantic_hash": "3d4b537af7c56cb358da77e775205f3b"
   },
   "helics_sim/tests/test_sentinel_sanitization.py": {
-    "mtime": 1788230284.6123788,
-    "ast_hash": "08025df736cd846d7ac0b92fff7a5cb0",
-    "semantic_hash": "08025df736cd846d7ac0b92fff7a5cb0"
+    "mtime": 1788458215.467201,
+    "ast_hash": "7743981d7f0b2c07ba712d56bf5be727",
+    "semantic_hash": ""
   },
   "docs/Audits/PLAN_ALTA_FIDELIDAD_DIGITAL_TWIN.md": {
     "mtime": 1788228746.6195931,
@@ -1252,6 +1252,21 @@
   "docs/federates/09_viz_bridge_and_2d_dashboard.md": {
     "mtime": 1788452673.7079687,
     "ast_hash": "a05342a73b0036dbcdfb8a6d65752796",
+    "semantic_hash": ""
+  },
+  "attacker/tests/test_run_scenario.py": {
+    "mtime": 1788458319.6103,
+    "ast_hash": "f668d20460cde0ec0d3523e9a6e57202",
+    "semantic_hash": ""
+  },
+  "helics_sim/sentinel_utils.py": {
+    "mtime": 1788458154.1481428,
+    "ast_hash": "c29c109dc315386ff5e528a0eadec033",
+    "semantic_hash": ""
+  },
+  "docs/Audits/PLAN_REMEDIACION_QA_20260903.md": {
+    "mtime": 1788458121.4141119,
+    "ast_hash": "0a958d4d9ac425d0d8f6ec446ba06608",
     "semantic_hash": ""
   }
 }

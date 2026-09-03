@@ -38,6 +38,7 @@ class GridHeatwaveAttributionAttack:
         
         return {
             'status': 'SUCCESS',
+            'mode': 'TABLETOP_MOCK',
             'environmental_load_kw': heatwave_demand_kw,
             'cyber_disruption_injected': cyber_injection,
             'attribution_complexity': 'HIGH'

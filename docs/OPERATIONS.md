@@ -72,10 +72,10 @@ python3 helics_sim/fed_viz_bridge.py --standalone --viz-url http://127.0.0.1:809
 ## 3. Pruebas y Validación Automatizada
 
 ### 🧪 1. Suite de Pruebas Unitarias e Integración (Pytest)
-Ejecuta la suite completa de 258 pruebas unitarias y de integración (con `PYTHONPATH=.` obligatorio):
+Ejecuta la suite completa de 265 pruebas unitarias y de integración (con `PYTHONPATH=.` obligatorio):
 ```bash
 PYTHONPATH=. pytest network/tests plc/tests physical helics_sim attacker/tests -q
-# Salida esperada: 258 passed in ~53s
+# Salida esperada: 265 passed in ~50s
 ```
 
 ### 💨 2. Smoke Tests de Co-Simulación HELICS (Sin necesidad de root)

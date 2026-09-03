@@ -13,6 +13,8 @@ import helics as h
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger('fed_gridmock')
 
+from helics_sim.sentinel_utils import sanitize_trip_signal, sanitize_telemetry_double
+
 POLL_INTERVAL = 1.0
 
 
@@ -64,11 +66,11 @@ def main() -> int:
             raw_t = h.helicsInputGetInteger(sub_trans_trip)
             raw_h = h.helicsInputGetDouble(sub_hospital_load)
 
-            water_trip = 1 if raw_w == 1 else 0
-            gas_trip   = 1 if raw_g == 1 else 0
-            grid_trip  = 1 if raw_e == 1 else 0
-            trans_trip = 1 if raw_t == 1 else 0
-            hospital_kw = 0.0 if raw_h < -1e20 else max(0.0, raw_h)
+            water_trip = sanitize_trip_signal(raw_w)
+            gas_trip   = sanitize_trip_signal(raw_g)
+            grid_trip  = sanitize_trip_signal(raw_e)
+            trans_trip = sanitize_trip_signal(raw_t)
+            hospital_kw = sanitize_telemetry_double(raw_h, default=0.0, min_val=0.0)
 
             any_trip = (water_trip == 1 or gas_trip == 1 or grid_trip == 1 or trans_trip == 1)
             if any_trip:

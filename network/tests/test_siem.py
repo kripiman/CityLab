@@ -68,6 +68,15 @@ class TestSiemPipeline(unittest.TestCase):
         parsed = json.loads(export_str)
         self.assertIsInstance(parsed, list)
         self.assertEqual(len(parsed), 1)
+        event = parsed[0]
+        self.assertEqual(event['source_ip'], '10.0.1.99')
+        self.assertEqual(event['destination_ip'], '10.0.3.1')
+        self.assertEqual(event['severity'], 'HIGH')
+        self.assertEqual(event['event_category'], 'network')
+        self.assertEqual(event['event_type'], 'alert')
+        self.assertEqual(event['service_name'], 'sdn_controller')
+        self.assertEqual(event['message'], 'Rate limiting flow installed for offending host')
+        self.assertIn('timestamp', event)
 
     def test_syslog_rfc5424_export(self) -> None:
         self.siem.ingest_raw_event(
@@ -96,6 +105,15 @@ class TestSiemPipeline(unittest.TestCase):
             with open(tmp_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             self.assertEqual(len(data), 1)
+            event = data[0]
+            self.assertEqual(event['source_ip'], '10.0.1.1')
+            self.assertEqual(event['destination_ip'], '10.0.1.2')
+            self.assertEqual(event['severity'], 'LOW')
+            self.assertEqual(event['event_category'], 'network')
+            self.assertEqual(event['event_type'], 'alert')
+            self.assertEqual(event['service_name'], 'test')
+            self.assertEqual(event['message'], 'msg')
+            self.assertIn('timestamp', event)
         finally:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)

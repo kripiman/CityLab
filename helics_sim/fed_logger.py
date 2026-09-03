@@ -17,6 +17,7 @@ import os
 import time
 
 import helics as h
+from helics_sim.sentinel_utils import sanitize_trip_signal, sanitize_telemetry_double
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][LOGGER_FED] %(message)s')
 LOGGER = logging.getLogger('fed_logger')
@@ -105,20 +106,20 @@ def main() -> int:
                 sis_trip = h.helicsInputGetInteger(sub_sis_trip)
 
                 # Sanitización de valores iniciales (sentinels HELICS pre-publicación)
-                w_t1 = 10.0 if w_t1 < -1e20 else w_t1
-                w_t2 = 15.0 if w_t2 < -1e20 else w_t2
-                g_val = 90.0 if g_val < -1e20 else g_val
-                e_val = 60.0 if (e_val < -1e20 or e_val > 70.0) else e_val
-                e_voltage = 1.0 if e_voltage < -1e20 else e_voltage
-                h_load = 0.0 if h_load < -1e20 else h_load
-                tr_cong = 0.0 if tr_cong < -1e20 else tr_cong
+                w_t1 = sanitize_telemetry_double(w_t1, default=10.0)
+                w_t2 = sanitize_telemetry_double(w_t2, default=15.0)
+                g_val = sanitize_telemetry_double(g_val, default=90.0)
+                e_val = sanitize_telemetry_double(e_val, default=60.0, max_val=70.0)
+                e_voltage = sanitize_telemetry_double(e_voltage, default=1.0)
+                h_load = sanitize_telemetry_double(h_load, default=0.0)
+                tr_cong = sanitize_telemetry_double(tr_cong, default=0.0)
 
-                w_trip = 0 if w_trip < -9000000 else w_trip
-                g_trip = 0 if g_trip < -9000000 else g_trip
-                e_trip = 0 if e_trip < -9000000 else e_trip
-                h_ups = 0 if h_ups < -9000000 else h_ups
-                tr_trip = 0 if tr_trip < -9000000 else tr_trip
-                sis_trip = 0 if sis_trip < -9000000 else sis_trip
+                w_trip = sanitize_trip_signal(w_trip)
+                g_trip = sanitize_trip_signal(g_trip)
+                e_trip = sanitize_trip_signal(e_trip)
+                h_ups = sanitize_trip_signal(h_ups)
+                tr_trip = sanitize_trip_signal(tr_trip)
+                sis_trip = sanitize_trip_signal(sis_trip)
 
                 tripped_count = w_trip + g_trip + e_trip + tr_trip
                 alert = 'NORMAL' if tripped_count == 0 else ('PARTIAL_TRIP' if tripped_count < 4 else 'CASCADING_BLACKOUT')
