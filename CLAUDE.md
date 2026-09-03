@@ -34,7 +34,7 @@ The `run_phase*.sh` scripts are now internal implementation invoked by `up`; do 
   ```bash
   PYTHONPATH=. python3 -m pytest attacker/tests/test_scenario_21_loss_of_view.py::TestScenario21LossOfView::test_hmi_detects_loss_of_view_alarm
   ```
-- **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests`.
+- **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests` (258 tests passing deterministically).
 - **Bring up the full lab** (requires root — Mininet + Open vSwitch): `sudo ./citylab.sh up`. Lower-level entry points, when you need them directly:
   ```bash
   sudo python3 network/topology.py          # interactive Mininet CLI
@@ -63,6 +63,8 @@ The system is three layers that only fully connect when the lab is running under
 
 - `network/scada_server.py` — polls all sector PLCs over Modbus (`poll_plcs()` loop calling the extracted `poll_plcs_once()`), serves telemetry over HTTP :8080, and enforces RBAC via `network/rbac.py`. It carries the **Loss-of-View watchdog** (`_consecutive_failures`, threshold 3 → `LOSS_OF_VIEW`).
 - `network/hmi_server.py` — derives an operator overview/alarms from the SCADA telemetry.
+- `network/viz_server.py` — serves the real-time 2D SVG urban visualizer dashboard over HTTP :8090, tracks 8 sectors (`water`, `gas`, `elec`, `transport`, `hospital`, `desal`, `lighting`, `safety`), rejects unknown sectors with HTTP 400, and operates 100% airgapped.
+- `helics_sim/fed_viz_bridge.py` — telemetry bridge feeding `viz_server.py` with 1 Hz throttling from the HELICS bus or via authenticated SCADA fallback (`Authorization: Bearer auditor:AUDIT_TOKEN_2026`).
 - `network/siem_pipeline.py` — SOC correlation engine. Rule 1 = cascading IT→OT (honeypot scan + Modbus injection); Rule 2 = GOOSE spoofing (Industroyer2 pattern). Correlation is driven by ingested events, not auto-hooked into the attack scripts.
 - `network/sdn_controller.py` — OpenFlow circuit-breaker mitigation (`execute_sdn_mitigation`, `--isolate-ip`).
 
@@ -73,6 +75,7 @@ The system is three layers that only fully connect when the lab is running under
 ## Gotchas
 
 - Unit tests never touch Mininet; the lab-dependent scenarios cannot be validated without `sudo` + Mininet + an OVS/HELICS runtime.
+- Always verify 0 orphan processes post-teardown (`citylab_procs` covers all emulators and DMZ daemons: `scada_server`, `hmi_server`, `viz_server`, `modbus_proxy`, `siem_pipeline`, `flag_service`).
 - Scenario docs sometimes describe higher-fidelity mechanisms than the code implements (real Kerberos vs. in-process RBAC, multicast GOOSE vs. loopback UDP). Check the code before trusting a doc step's ports/commands/endpoints.
 - Deeper design docs live in `docs/ERS.md`, `docs/ARCHITECTURE.md`, and `docs/OPERATIONS.md`.
 

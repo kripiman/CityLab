@@ -87,7 +87,10 @@ El cluster SCADA HA implementa arquitectura Primary/Standby:
 | `POST` | `/api/ha/heartbeat` | SCADA HA (`:8080`) | Recepción de latido entre nodos SCADA |
 | `POST` | `/api/ha/sync` | SCADA HA (`:8080`) | Sincronización de estado entre SCADA Primario y Standby |
 | `GET` | `/api/history` | SCADA / Historian (`:8080`) | Consulta de series temporales históricas almacenadas en SQLite WAL |
-| `GET` | `/api/viz/frame` | Viz Server (`:8090`) | Cuadro de renderizado en tiempo real para visualizador 2D/3D |
-| `GET` | `/api/viz/history` | Viz Server (`:8090`) | Histórico de cuadros para reproductor de tendencias 2D/3D |
-| `POST` | `/api/viz/update` | Viz Server (`:8090`) | Actualización de estado sectorial desde HELICS o SCADA |
+| `GET` | `/` ó `/index.html` | Viz Server (`:8090`) | Dashboard interactivo 2D SVG ciberfísico airgapped |
+| `GET` | `/api/viz/frame` | Viz Server (`:8090`) | Cuadro de renderizado en tiempo real de 8 sectores |
+| `GET` | `/api/viz/history` | Viz Server (`:8090`) | Histórico de cuadros para reproductor de tendencias |
+| `POST` | `/api/viz/update` | Viz Server (`:8090`) | Actualización sectorial o por lotes (rechaza sectores desconocidos con HTTP 400) |
+
+Para detalles profundos sobre el puente de datos y la arquitectura SVG, consultar la [Guía de Visualización 2D y Telemetría](09_viz_bridge_and_2d_dashboard.md).
 

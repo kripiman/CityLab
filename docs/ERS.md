@@ -189,6 +189,14 @@ graph TD
 - **RF-18.2 (Medición Real de Recursos)**: `scripts/profile_resources.py` debe medir RSS y CPU reales por proceso de los componentes CityLab vivos (`psutil`, con retroceso a `/proc` y `resource.getrusage`), agregarlos por componente y contrastarlos contra el presupuesto de RNF-01, emitiendo `logs/resource_profile.csv` y `logs/resource_profile_summary.{txt,json}`.
 - **RF-18.3 (Honestidad de la Medición)**: Si no hay procesos CityLab en ejecución, el informe debe declararlo explícitamente y no emitir cifra alguna. Ninguna cifra de recursos publicada en la documentación puede presentarse como medida si no procede de esta instrumentación.
 
+### 3.19 Módulo Visualizador Urbano 2D SVG y Puente de Telemetría (RF-19)
+- **RF-19.1 (Servidor de Estado Multi-Sectorial)**: `network/viz_server.py` (`CityVisualizerStateEngine`) debe mantener en memoria el estado reactivo de 8 sectores urbanos (`water`, `gas`, `elec`, `transport`, `hospital`, `desal`, `lighting`, `safety`/SIS SIL-3), preservando los valores por defecto iniciales (`tank_level == 10.0`, `pressure_psi == 145.0`, `grid_voltage == 230.0`).
+- **RF-19.2 (Validación de Esquema y Rechazo HTTP 400)**: `update_sector_state(sector, payload)` y `POST /api/viz/update` deben retornar código HTTP `400 Bad Request` ante sectores desconocidos, impidiendo la absorción de telemetría fuera de especificación. Debe soportar payloads individuales `{sector, payload}` y por lotes `{sectors: {...}}`.
+- **RF-19.3 (Dashboard 2D SVG Airgapped)**: La interfaz web servida en `:8090` debe operar 100% offline (sin librerías CDN externas ni dependencias npm), mostrando representaciones vectoriales SVG animadas e interactivas de los 8 sectores, con retrocompatibilidad estricta con el título `'CityLab 2D/3D Presentational Visualizer'` y el visor colapsable `<pre id="viewport"></pre>`.
+- **RF-19.4 (Puente de Telemetría Desacoplado)**: `helics_sim/fed_viz_bridge.py` debe soportar modo dual (co-simulación HELICS con tópicos ciberfísicos verificados y modo standalone SCADA poller). En modo fallback SCADA, debe autenticarse obligatoriamente mediante cabecera RFC 6750 `Authorization: Bearer auditor:AUDIT_TOKEN_2026` sobre `GET /api/telemetry` para respetar el Principio de Mínimo Privilegio.
+- **RF-19.5 (Throttling y Política Never-Crash)**: El puente debe acumular internamente los cambios de variables y limitar la tasa de emisión hacia el visualizador a un máximo de 1 Hz, tolerando desconexiones o reinicios del servidor HTTP sin abortar la co-simulación.
+- **RF-19.6 (Supervisión y Limpieza)**: Todos los daemons DMZ (`viz_server.py`, `hmi_server.py`, `modbus_proxy.py`, `siem_pipeline.py`, `flag_service.py`) y el puente `fed_viz_bridge.py` deben quedar registrados en `citylab_procs` y ser terminados con garantía de 0 huérfanos tras `citylab.sh down` y `validate_e2e.sh`.
+
 ---
 
 ## 4. Requisitos No Funcionales (RNF)

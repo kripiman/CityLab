@@ -42,7 +42,8 @@ Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmon
 | **Control SCADA** | `http://10.0.2.20:8080/api/control` | `POST` JSON | `Authorization: Bearer engineer:ENG_TOKEN_2026` |
 | **Cluster HA Status**| `http://10.0.2.20:8080/api/ha/status` | `GET` | Libre / Consulta de estado |
 | **HMI Web Dashboard** | `http://10.0.2.20:8085` | `GET` HTTP | Interfaz visual P&ID integrada |
-| **Viz 2D/3D Server** | `http://10.0.2.20:8090/api/viz/frame` | `GET` HTTP | Telemetría para renderizado visual |
+| **Visualizador 2D SVG**| `http://10.0.2.20:8090` | `GET` HTTP / SVG | Dashboard ciberfísico interactivo airgapped (8 sectores) |
+| **Viz API Telemetría** | `http://10.0.2.20:8090/api/viz/frame` | `GET` JSON | Frame en vivo para visualizador y herramientas externas |
 | **SIEM HTTP Ingest** | `http://10.0.2.20:8514` | `POST` JSON | Endpoint de ingesta de eventos |
 | **Flag & Scoreboard**| `http://10.0.2.20:8570` | `GET`/`POST` REST | Flags dinámicas HMAC + Scoreboard MTTD/MTTR |
 | **Modbus DPI Proxy** | `10.0.2.20:15020` | Modbus TCP | Demuxing transparente por Unit ID |
@@ -50,14 +51,20 @@ Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmon
 ### Ejemplos de Interacción por Consola
 
 ```bash
-# Consultar telemetría consolidada de sectores
+# Consultar telemetría consolidada de sectores en SCADA
 curl -s http://10.0.2.20:8080/api/telemetry | jq .
+
+# Consultar cuadro de estado en tiempo real del visualizador 2D (8 sectores)
+curl -s http://10.0.2.20:8090/api/viz/frame | jq .
 
 # Ejecutar conmutación de actuador con token de ingeniero
 curl -s -X POST http://10.0.2.20:8080/api/control \
   -H "Authorization: Bearer engineer:ENG_TOKEN_2026" \
   -H "Content-Type: application/json" \
   -d '{"sector": "water", "action": "set_pump", "value": 1}' | jq .
+
+# Lanzar puente de telemetría en modo Standalone (SCADA Poller con Bearer Token)
+python3 helics_sim/fed_viz_bridge.py --standalone --viz-url http://127.0.0.1:8090
 ```
 
 ---
@@ -65,20 +72,20 @@ curl -s -X POST http://10.0.2.20:8080/api/control \
 ## 3. Pruebas y Validación Automatizada
 
 ### 🧪 1. Suite de Pruebas Unitarias e Integración (Pytest)
-Ejecuta la suite completa de 200 pruebas unitarias y de integración:
+Ejecuta la suite completa de 258 pruebas unitarias y de integración (con `PYTHONPATH=.` obligatorio):
 ```bash
-pytest network/tests plc/tests physical helics_sim attacker/tests -q
-# Salida esperada: 200 passed in ~42s
+PYTHONPATH=. pytest network/tests plc/tests physical helics_sim attacker/tests -q
+# Salida esperada: 258 passed in ~53s
 ```
 
 ### 💨 2. Smoke Tests de Co-Simulación HELICS (Sin necesidad de root)
-Verifica la física acoplada y la sincronización de mensajes entre federados:
+Verifica la física acoplada y la sincronización de mensajes entre federados con temporizador global de 120 segundos:
 ```bash
 # Smoke test Fase 4 (9 federados)
-./citylab.sh smoke --phase 4     # 9/9 federates EXIT=0
+./citylab.sh smoke --phase 4     # 9/9 federates EXIT=0 (~7s)
 
 # Smoke test Fase 7 (10 federados, incluye SIS SIL-3 y Desalinizadora)
-./citylab.sh smoke --phase 7     # 10/10 federates EXIT=0
+./citylab.sh smoke --phase 7     # 10/10 federates EXIT=0 (~6s)
 ```
 
 ### 🌐 3. Arnés de Validación End-to-End en Mininet Real (Requiere sudo)
@@ -98,6 +105,13 @@ Mide el consumo real de RAM (RSS) y procesador:
 ```bash
 ./citylab.sh profile
 cat logs/resource_profile_summary.txt
+```
+
+### 🧹 6. Verificación Estricta de Ausencia de Procesos Huérfanos
+Tras cualquier prueba en Mininet o desmontaje con `./citylab.sh down`, verifica la ausencia total de procesos residuales:
+```bash
+ps -eo pid,args | grep -E "modbus_emulator|dnp3_emulator|iec61850_emulator|opcua_emulator|honeypot_server|ad_dc_emulator|scada_server|hmi_server|viz_server|siem_pipeline|modbus_proxy|flag_service|fed_|helics_broker" | grep -v grep | wc -l
+# Salida obligatoria esperada: 0
 ```
 
 ---

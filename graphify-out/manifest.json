@@ -240,9 +240,9 @@
     "semantic_hash": "67940b5441754783d625fb2161821432"
   },
   "attacker/attack_goose_spoofing.py": {
-    "mtime": 1787715146.4827733,
-    "ast_hash": "68447c1c498e1ee8a6ebff8a89188f84",
-    "semantic_hash": "68447c1c498e1ee8a6ebff8a89188f84"
+    "mtime": 1788357272.6772873,
+    "ast_hash": "df197a7b5666dcff695f220206732b30",
+    "semantic_hash": ""
   },
   "attacker/attack_grid_heatwave_attribution.py": {
     "mtime": 1786504496.3239,
@@ -265,9 +265,9 @@
     "semantic_hash": "7f735ceadb5ae9e9ec5da0be18bc80ff"
   },
   "attacker/attack_kerberoast_ad.py": {
-    "mtime": 1787684882.0468612,
-    "ast_hash": "58e6bd4a64531a0726b32feab0f1e61b",
-    "semantic_hash": "58e6bd4a64531a0726b32feab0f1e61b"
+    "mtime": 1788357406.2277973,
+    "ast_hash": "9f8d7b9032820c39268c635d89ef5e47",
+    "semantic_hash": ""
   },
   "attacker/attack_live_sdn_defense.py": {
     "mtime": 1786578307.6340547,
@@ -390,9 +390,9 @@
     "semantic_hash": "92062afb483f0d0f44421ab54d1cb107"
   },
   "attacker/tests/test_attack_kerberoast.py": {
-    "mtime": 1787684893.4998763,
-    "ast_hash": "a415eb9955a3fcb2d89a9465d9b8cecd",
-    "semantic_hash": "a415eb9955a3fcb2d89a9465d9b8cecd"
+    "mtime": 1788357417.7378666,
+    "ast_hash": "3b8c949f121bf0f5e4fe559f857c4006",
+    "semantic_hash": ""
   },
   "attacker/tests/test_attack_modbus_read.py": {
     "mtime": 1787684349.6725008,
@@ -560,9 +560,9 @@
     "semantic_hash": "1fe4f1baabea29ec36b236782079cc7b"
   },
   "network/viz_server.py": {
-    "mtime": 1787711693.1011868,
-    "ast_hash": "1ae153be3f99ca7eb5c491cd8b536359",
-    "semantic_hash": "1ae153be3f99ca7eb5c491cd8b536359"
+    "mtime": 1788381735.2410948,
+    "ast_hash": "6d23f6bdae06f94e03f59bf2e50e833c",
+    "semantic_hash": ""
   },
   "physical/elec/grid_elec.py": {
     "mtime": 1786999042.3552299,
@@ -620,9 +620,9 @@
     "semantic_hash": "7b13b4891e4480ecf9291ff427fdba3c"
   },
   "plc/tests/test_iec61850.py": {
-    "mtime": 1787715319.2654095,
-    "ast_hash": "363429bf30f7cc05ae57a3fb95a6181e",
-    "semantic_hash": "363429bf30f7cc05ae57a3fb95a6181e"
+    "mtime": 1788357290.3643105,
+    "ast_hash": "ad59bb9ad0e05de82951527a2c591591",
+    "semantic_hash": ""
   },
   "plc/tests/test_modbus_ntcip.py": {
     "mtime": 1787000916.2750282,
@@ -640,9 +640,9 @@
     "semantic_hash": "97a4bcd596c34e3f6a8c843c12a3572b"
   },
   "scripts/validate_e2e.sh": {
-    "mtime": 1787932215.7851562,
-    "ast_hash": "df1fd643f9d2ea72fd490cb90256f79a",
-    "semantic_hash": "df1fd643f9d2ea72fd490cb90256f79a"
+    "mtime": 1788382306.985112,
+    "ast_hash": "96812c929189a09a981b490451f3a53e",
+    "semantic_hash": ""
   },
   "scripts/validate_localhost.py": {
     "mtime": 1787635077.8198442,
@@ -675,24 +675,24 @@
     "semantic_hash": "cceced69f98870064e4bded7dcffdb62"
   },
   "CLAUDE.md": {
-    "mtime": 1787092932.1367857,
-    "ast_hash": "6a39c57f88a4b7b3be916e37bdda4980",
-    "semantic_hash": "6a39c57f88a4b7b3be916e37bdda4980"
+    "mtime": 1788452529.9799702,
+    "ast_hash": "deb80d147ad9cb7a52d7dafa584ea65c",
+    "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1787092940.6577241,
-    "ast_hash": "9f691750544ee37980dc9aca4eb2a91f",
-    "semantic_hash": "9f691750544ee37980dc9aca4eb2a91f"
+    "mtime": 1788452510.2199705,
+    "ast_hash": "36b02f3cef4fc6b9313bddaaef9aa4a6",
+    "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1787794489.8854964,
-    "ast_hash": "0b6974a502629f15ae86986da7513ccf",
-    "semantic_hash": "0b6974a502629f15ae86986da7513ccf"
+    "mtime": 1788452608.514969,
+    "ast_hash": "dc669204882ec90d21a66b492eb0b652",
+    "semantic_hash": ""
   },
   "docs/ERS.md": {
-    "mtime": 1787715192.8136253,
-    "ast_hash": "798408f0429e4e83992d017f8cd77d99",
-    "semantic_hash": "798408f0429e4e83992d017f8cd77d99"
+    "mtime": 1788452657.3609684,
+    "ast_hash": "77afd5a78b5669bffe756032b6238ec6",
+    "semantic_hash": ""
   },
   "docs/IEC62443_CityLab_Audit_Closure.md": {
     "mtime": 1787779607.5445619,
@@ -700,9 +700,9 @@
     "semantic_hash": "39edb346abbadccdd77b4f15c65df956"
   },
   "docs/OPERATIONS.md": {
-    "mtime": 1787932251.2194438,
-    "ast_hash": "6d4adad96b79cd66e6d5bed031323ccb",
-    "semantic_hash": "6d4adad96b79cd66e6d5bed031323ccb"
+    "mtime": 1788452628.0089688,
+    "ast_hash": "391221752e5ac31feeffc9385232246d",
+    "semantic_hash": ""
   },
   "docs/Roadmaps/PROMPT_AUDITOR.md": {
     "mtime": 1788231887.3060608,
@@ -745,9 +745,9 @@
     "semantic_hash": "2d6d055563e496895e106309e69b5106"
   },
   "docs/federates/07_scada_hmi_infrastructure.md": {
-    "mtime": 1787794516.324488,
-    "ast_hash": "cba0888a58fa2a3b3997720f76cdfb55",
-    "semantic_hash": "cba0888a58fa2a3b3997720f76cdfb55"
+    "mtime": 1788452686.5589688,
+    "ast_hash": "2cd530f724175a91210df87c58482a4d",
+    "semantic_hash": ""
   },
   "docs/federates/08_siem_sdn_active_directory_infrastructure.md": {
     "mtime": 1787794526.765491,
@@ -915,14 +915,14 @@
     "semantic_hash": "6d34e5bca25a7edf289f23a576c3e73f"
   },
   "helics_sim/smoke_test_phase4.sh": {
-    "mtime": 1787106423.5549166,
-    "ast_hash": "efb76fbbd4d8cf18387de320a868ee35",
-    "semantic_hash": "efb76fbbd4d8cf18387de320a868ee35"
+    "mtime": 1788357596.4851573,
+    "ast_hash": "7bf55233c038ca6667f1dedc9682447c",
+    "semantic_hash": ""
   },
   "helics_sim/smoke_test_phase7.sh": {
-    "mtime": 1787106453.5495746,
-    "ast_hash": "d9f328f7d12ed22a53b7822545a343a6",
-    "semantic_hash": "d9f328f7d12ed22a53b7822545a343a6"
+    "mtime": 1788357599.8841584,
+    "ast_hash": "7929cdc7f22d8b3ed843399231ea9eb7",
+    "semantic_hash": ""
   },
   "helics_sim/tests/test_fed_sis.py": {
     "mtime": 1787106409.4630773,
@@ -940,9 +940,9 @@
     "semantic_hash": "1c536196c84f92d556c306dd919363ad"
   },
   "network/tests/test_viz_server.py": {
-    "mtime": 1787084615.6967173,
-    "ast_hash": "b007094612654ea33373d425587bd1a0",
-    "semantic_hash": "b007094612654ea33373d425587bd1a0"
+    "mtime": 1788381541.5189981,
+    "ast_hash": "b519f44f06d78bc17454bc9028b5ebae",
+    "semantic_hash": ""
   },
   "physical/elec/smart_lighting.py": {
     "mtime": 1787607461.725892,
@@ -960,9 +960,9 @@
     "semantic_hash": "cd713269ee39646ecbc0287ab0d48c29"
   },
   "citylab.sh": {
-    "mtime": 1787932228.1979594,
-    "ast_hash": "5025378c42a7adf68e3670ba362c80ac",
-    "semantic_hash": "5025378c42a7adf68e3670ba362c80ac"
+    "mtime": 1788382300.6671112,
+    "ast_hash": "94377b8c42e4e3cb7e46794838469317",
+    "semantic_hash": ""
   },
   "network/tests/test_profile_resources.py": {
     "mtime": 1787108853.3866596,
@@ -1223,5 +1223,35 @@
     "mtime": 1788228238.0903957,
     "ast_hash": "8124f2270eb286cc7f3496ff04916c03",
     "semantic_hash": "8124f2270eb286cc7f3496ff04916c03"
+  },
+  "network/tests/test_scada_http_strict_integration.py": {
+    "mtime": 1788357655.5771785,
+    "ast_hash": "447310a3363f996865c7fa0f27b6d394",
+    "semantic_hash": ""
+  },
+  "docs/Audits/PLAN_REMEDIACION_QA_20260901.md": {
+    "mtime": 1788356914.9761553,
+    "ast_hash": "49e996c83e7a54d1cc61ac6adb0b45c2",
+    "semantic_hash": ""
+  },
+  "helics_sim/fed_viz_bridge.py": {
+    "mtime": 1788381571.7250106,
+    "ast_hash": "0e85de7564b9187ab683e0a91fa9bedd",
+    "semantic_hash": ""
+  },
+  "helics_sim/tests/test_fed_viz_bridge.py": {
+    "mtime": 1788381582.1060154,
+    "ast_hash": "171dee3e3bdd119a2c23b343480121f2",
+    "semantic_hash": ""
+  },
+  "docs/Audits/PLAN_VISUALIZADOR_2D_FASE9.md": {
+    "mtime": 1788381494.524979,
+    "ast_hash": "1afcd207617df38d194ffcf57991ca21",
+    "semantic_hash": ""
+  },
+  "docs/federates/09_viz_bridge_and_2d_dashboard.md": {
+    "mtime": 1788452673.7079687,
+    "ast_hash": "a05342a73b0036dbcdfb8a6d65752796",
+    "semantic_hash": ""
   }
 }

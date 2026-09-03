@@ -55,7 +55,8 @@ flowchart TB
         Historian["TSDB Historian (SQLite WAL)"]
         SIEM["SIEM Correlation Engine (10.0.2.20:8514)"]
         HMI["HMI Server (10.0.2.20:8085)"]
-        Viz["Visualizador 2D/3D (10.0.2.20:8090)"]
+        Viz["Visualizador 2D SVG Airgapped (10.0.2.20:8090)"]
+        Bridge["fed_viz_bridge (Puente Telemetría HELICS/SCADA)"]
     end
 
     subgraph L4 ["Capa 4: Zona Corporativa & Honey (Mininet s1 / s5)"]
@@ -65,6 +66,7 @@ flowchart TB
     end
 
     Broker <--> WaterMath & ElecMath & GasMath & HospMath & TransMath & DesalMath & LightMath & SisMath
+    Broker -.->|Suscripción Multitópico| Bridge
     WaterMath <--> PLC_Water
     ElecMath <--> PLC_Elec & IED_Subst
     GasMath <--> PLC_Gas
@@ -76,7 +78,8 @@ flowchart TB
     PLC_Water & PLC_Gas & PLC_Elec & IED_Subst & GW_Opcua & Proxy -.->|Async Audit Logs| SIEM
     SCADA -->|LDAP Auth TCP 389| DC
     HMI --> SCADA
-    Viz --> SCADA
+    SCADA -.->|Fallback RBAC Bearer| Bridge
+    Bridge -->|POST /api/viz/update (1 Hz Throttle)| Viz
 ```
 
 ### Límites de Fidelidad y Evaluación de Realidad Operativa
@@ -137,6 +140,7 @@ CityLab/
 ├── helics_sim/                  # Co-simulación ciberfísica distribuida en tiempo real
 │   ├── fed_water.py / fed_gas.py / fed_elec.py / fed_transport.py / fed_hospital.py
 │   ├── fed_desal.py / fed_lighting.py / fed_sis.py / fed_gridlabd.py / fed_logger.py
+│   ├── fed_viz_bridge.py        # Puente de telemetría hacia servidor visualizador 2D
 │   ├── run_federates.py         # Orquestador general de co-simulación HELICS
 │   └── smoke_test_phase*.sh     # Smoke tests automatizados de co-simulación
 ├── physical/                    # Modelos matemáticos de dinámica física diferencial
@@ -256,6 +260,12 @@ graph LR
         broker -->|Todas las variables| log
         log -->|cascading_events.csv| disk["logs/cascading_events.csv"]
     end
+
+    subgraph Fed_Viz ["Puente Visualizador Urbano (Fase 9)"]
+        viz_bridge["fed_viz_bridge"]
+        broker -->|Telemetría 8 Sectores| viz_bridge
+        viz_bridge -->|POST /api/viz/update (1 Hz)| viz_srv["viz_server.py (:8090)"]
+    end
 ```
 
 ### Relaciones de Cascada Crítica
@@ -333,6 +343,23 @@ El proxy escucha en `10.0.2.20:15020` y realiza inspección profunda de paquetes
 - **Detección Loss-of-View (F-06)**: Mantiene un contador `_consecutive_failures[sector]`. Si se alcanzan 3 fallos consecutivos (`LOSS_OF_VIEW_THRESHOLD = 3`), el estado del sector pasa a `LOSS_OF_VIEW` y se generan alertas operativas en el dashboard HMI.
 - **Sincronización HA**: Sincroniza instantáneas de estado mediante `sync_state(state)` y expone el estado de conmutación en `/api/ha/status`.
 
+### Visualizador Urbano 2D SVG Airgapped y Puente de Telemetría (`network/viz_server.py`, `helics_sim/fed_viz_bridge.py`)
+Incorporado en la Fase 9 para proporcionar observabilidad visual de grado centro de operaciones (SOC/NOC):
+- **Motor de Estado 8-Sectores (`CityVisualizerStateEngine`)**:
+  - Administra el estado en memoria de los 8 sectores urbanos: `water`, `gas`, `elec`, `transport`, `hospital`, `desal`, `lighting` y `safety` (SIS SIL-3).
+  - Preserva compatibilidad estricta con valores iniciales de diseño (`tank_level == 10.0`, `pressure_psi == 145.0`, `grid_voltage == 230.0`).
+  - **Validación Estricta HTTP 400**: El método `update_sector_state` y el endpoint `POST /api/viz/update` rechazan con `400 Bad Request` cualquier sector no registrado en el esquema de la ciudad (evitando absorción silenciosa de telemetría espuria). Admite tanto payloads individuales `{sector, payload}` como por lotes `{sectors: {...}}`.
+- **Dashboard 2D SVG Reactivo (100% Airgapped)**:
+  - Servido en `GET /` y `GET /index.html` en el puerto `:8090`.
+  - Cero dependencias npm, cero librerías CDN externas (aislamiento estricto apto para la jaula de egress del Cyber Range).
+  - Paneles vectoriales interactivos para los 8 sectores: tanques SWaT con líquido dinámico, manómetro de gas con aguja rotativa en tiempo real, disyuntor XCBR1 animado con arco de apertura, semáforos tricolor, conmutador ATS de hospital, ósmosis inversa de desalinizadora, luminaria municipal y escudo de interbloqueos SIS SIL-3.
+  - Mantiene retrocompatibilidad con título canónico `'CityLab 2D/3D Presentational Visualizer'` y panel colapsable de telemetría cruda `<pre id="viewport"></pre>`.
+- **Puente de Telemetría (`helics_sim/fed_viz_bridge.py`)**:
+  - **Modo Dual**: Suscriptor nativo de co-simulación HELICS (`water/*`, `gas/*`, `grid/*`, `transport/*`, `hospital/*`, `desal/pump_trip`, `desal/power_kw`, `desal/tank_level_pct`, `lighting/power_kw`, `sis/trip`), con fallback automático o forzado (`--standalone`) a sondeo HTTP SCADA.
+  - **Autenticación RBAC Bearer en Fallback**: En modo SCADA poller, inyecta la cabecera `Authorization: Bearer auditor:AUDIT_TOKEN_2026` hacia `GET /api/telemetry` (conforme con `STRICT_AUTH=1` y principio de mínimo privilegio).
+  - **Throttling a 1 Hz y Despacho Consolidado**: Buffer local que acumula métricas y despacha como máximo una transacción por segundo (`sectors: {...}`), evitando la saturación del servidor HTTP.
+  - **Destino Configurable y Resiliencia**: Configurable vía flag `--viz-url` y variable `VIZ_URL` (`http://127.0.0.1:8090` en local/CI, `http://10.0.2.20:8090` en Mininet DMZ), con política de tolerancia a caídas de red (*never-crash*).
+
 ---
 
 ## 7. Pipeline de Seguridad: SIEM Central y Defensa Dinámica SDN
@@ -384,4 +411,7 @@ Implementa defensa activa a nivel de plano de datos (Data Plane Enforcement):
 - `STRICT_AUTH`: `1` activa el modo estricto en el servidor SCADA y RBAC, exigiendo cabecera `Authorization: Bearer <role>:<token>`. `0` opera en modo permisivo CTF.
 - `SIEM_HTTP_URL`: URL del colector central SIEM (`http://10.0.2.20:8514`). Si está definida, los emuladores reenvían eventos de seguridad de forma asíncrona.
 - `ENABLE_SIS_FEDERATE`: `1` activa el federado de seguridad SIS SIL-3 en la co-simulación HELICS (utilizado en la federación de 10 federados).
+- `VIZ_URL`: Endpoint de destino del visualizador urbano para `fed_viz_bridge.py` (`http://127.0.0.1:8090` en CI/local, `http://10.0.2.20:8090` en Mininet DMZ).
+- `SCADA_BEARER_TOKEN`: Credencial estática RBAC utilizada por `fed_viz_bridge.py` en modo fallback SCADA (`auditor:AUDIT_TOKEN_2026`).
+- `GOOSE_MULTICAST_IF`: Dirección IP opcional de interfaz local para enlace multicast en inyecciones GOOSE (`attack_goose_spoofing.py`). Si no está definida, respeta la tabla de enrutamiento del kernel de Mininet.
 
