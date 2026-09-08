@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import logging
 import time
-from typing import Optional, Any
+from typing import Optional, Any, Sequence
 import os
 
 import helics as h
@@ -28,7 +28,7 @@ BROKER_ADDRESS = os.environ.get("HELICS_BROKER_ADDRESS", "127.0.0.1")
 BROKER_PORT = int(os.environ.get("HELICS_BROKER_PORT", "23404"))
 
 
-def create_federate(fed_name: str, plant_type: str) -> tuple[h.helics_federate, Any, Any, Optional[Any], Optional[Any]]:
+def create_federate(fed_name: str, plant_type: str) -> tuple[h.helics_federate, Any, Any, Optional[Any], Optional[Any], dict[str, Any]]:
     fi = h.helicsCreateFederateInfo()
     h.helicsFederateInfoSetCoreTypeFromString(fi, "zmq")
     h.helicsFederateInfoSetCoreInitString(
@@ -39,6 +39,7 @@ def create_federate(fed_name: str, plant_type: str) -> tuple[h.helics_federate, 
     fed = h.helicsCreateValueFederate(fed_name, fi)
 
     pub_t1: Optional[Any] = None  # solo usado por water
+    extra_io: dict[str, Any] = {}
 
     if plant_type == "gas":
         pub_val = h.helicsFederateRegisterGlobalPublication(fed, "gas/pressure", h.HELICS_DATA_TYPE_DOUBLE, "")
@@ -49,15 +50,21 @@ def create_federate(fed_name: str, plant_type: str) -> tuple[h.helics_federate, 
         pub_trip = h.helicsFederateRegisterGlobalPublication(fed, "grid/trip", h.HELICS_DATA_TYPE_INT, "")
         sub_input = h.helicsFederateRegisterSubscription(fed, "hospital/load_kw", "")
         pub_t1 = h.helicsFederateRegisterSubscription(fed, "gas/trip", "")  # reutilizado como sub_gas_trip para elec
+        extra_io['desal_kw'] = h.helicsFederateRegisterSubscription(fed, "desal/power_kw", "")
+        extra_io['lighting_kw'] = h.helicsFederateRegisterSubscription(fed, "lighting/power_kw", "")
+        extra_io['pub_lighting_trip'] = h.helicsFederateRegisterGlobalPublication(
+            fed, "grid/lighting_trip", h.HELICS_DATA_TYPE_INT, "")
     else:  # water
         pub_val  = h.helicsFederateRegisterGlobalPublication(fed, "water/t2_level", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_t1   = h.helicsFederateRegisterGlobalPublication(fed, "water/t1_level", h.HELICS_DATA_TYPE_DOUBLE, "")
         pub_trip = h.helicsFederateRegisterGlobalPublication(fed, "breaker/trip", h.HELICS_DATA_TYPE_INT, "")
         sub_input = h.helicsFederateRegisterSubscription(fed, "grid/voltage_pu", "")
 
+    extra_io['sub_sis_trip'] = h.helicsFederateRegisterSubscription(fed, "sis/trip", "")
+
     h.helicsFederateEnterExecutingMode(fed)
     LOGGER.info("HELICS federate %s [%s] ready (broker=%s:%d)", fed_name, plant_type, BROKER_ADDRESS, BROKER_PORT)
-    return fed, pub_val, pub_trip, sub_input, pub_t1
+    return fed, pub_val, pub_trip, sub_input, pub_t1, extra_io
 
 
 def read_actuator_running(client: ModbusTcpClient) -> Optional[bool]:
@@ -70,14 +77,14 @@ def read_actuator_running(client: ModbusTcpClient) -> Optional[bool]:
     return None
 
 
-def main() -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="HELICS ICSSIM Federate")
     parser.add_argument("--plant-type", choices=["water", "gas", "elec"], default="water", help="Plant type")
     parser.add_argument("--plc-ip", default="", help="Target PLC Modbus IP")
     parser.add_argument("--plc-port", type=int, default=502, help="Target PLC Modbus port")
     parser.add_argument("--fed-name", default="", help="HELICS federate name")
     parser.add_argument("--mock-plc", action="store_true", help="Use mock PLC state instead of connecting to Modbus")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     default_ips = {"water": "10.0.3.10", "gas": "10.0.3.12", "elec": "10.0.3.13"}
     plc_ip = args.plc_ip or os.environ.get("PLC_IP", default_ips.get(args.plant_type, "10.0.3.10"))
@@ -113,7 +120,7 @@ def main() -> int:
         LOGGER.info('Running in MOCK PLC mode [%s]', args.plant_type)
     else:
         LOGGER.info('Successfully connected to PLC Modbus.')
-    fed, pub_val, pub_trip, sub_input, pub_t1 = create_federate(fed_name, args.plant_type)
+    fed, pub_val, pub_trip, sub_input, pub_t1, extra_io = create_federate(fed_name, args.plant_type)
 
     if args.plant_type == "gas":
         plant: Any = GasPlant()
@@ -122,9 +129,13 @@ def main() -> int:
     else:
         plant = TwoStageWaterPlant()
 
+    max_steps = int(os.environ.get('HELICS_MAX_STEPS', '0'))
+    steps = 0
+
     try:
         current_time = 0.0
         while True:
+            steps += 1
             if client is not None:
                 actuator_state = read_actuator_running(client)
                 if actuator_state is None:
@@ -162,11 +173,19 @@ def main() -> int:
             else:
                 # Interdependencia real: actualizar p_load_pu y gas_available ANTES de step()
                 if args.plant_type == 'elec' and isinstance(plant, ElecPlant):
-                    if sub_input is not None:
-                        hospital_kw = h.helicsInputGetDouble(sub_input)
-                        hospital_pu = hospital_kw / 550.0
-                        city_pu = 400.0 / 550.0
-                        plant.p_load_pu = city_pu + hospital_pu
+                    hospital_kw = h.helicsInputGetDouble(sub_input) if sub_input is not None else 550.0
+                    desal_kw = h.helicsInputGetDouble(extra_io['desal_kw']) if extra_io.get('desal_kw') is not None else 200.0
+                    lighting_kw = h.helicsInputGetDouble(extra_io['lighting_kw']) if extra_io.get('lighting_kw') is not None else 50.0
+
+                    # Sanitizar valores iniciales (sentinels HELICS pre-publicación -> valores nominales de diseño)
+                    hospital_kw = 550.0 if hospital_kw < -1e20 else hospital_kw
+                    desal_kw = 200.0 if desal_kw < -1e20 else desal_kw
+                    lighting_kw = 50.0 if lighting_kw < -1e20 else lighting_kw
+
+                    # Carga combinada nominal: base (400 kW) + Hospital (550 kW) + Desalinizadora (200 kW) + Alumbrado (50 kW) = 1200 kW (1.0 pu)
+                    total_load_kw = 400.0 + hospital_kw + desal_kw + lighting_kw
+                    plant.p_load_pu = total_load_kw / 1200.0
+
                     if pub_t1 is not None:
                         g_trip = h.helicsInputGetInteger(pub_t1)
                         plant.gas_available = (g_trip == 0)
@@ -176,7 +195,12 @@ def main() -> int:
                     dt=POLL_INTERVAL,
                 )
 
-            trip = 1 if plant.needs_trip() else 0
+                if args.plant_type == 'elec' and extra_io.get('pub_lighting_trip') is not None:
+                    h.helicsPublicationPublishInteger(
+                        extra_io['pub_lighting_trip'], 1 if plant.needs_trip() else 0)
+
+            sis_trip = h.helicsInputGetInteger(extra_io['sub_sis_trip']) if extra_io.get('sub_sis_trip') is not None else 0
+            trip = 1 if (plant.needs_trip() or sis_trip == 1) else 0
 
             h.helicsPublicationPublishDouble(pub_val, float(val))
             h.helicsPublicationPublishInteger(pub_trip, int(trip))
@@ -184,6 +208,9 @@ def main() -> int:
 
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
+            if max_steps > 0 and steps >= max_steps:
+                LOGGER.info('[%s] Reached HELICS_MAX_STEPS=%d, exiting', args.plant_type, max_steps)
+                break
             time.sleep(POLL_INTERVAL)
     except KeyboardInterrupt:
         LOGGER.info('Shutdown requested')

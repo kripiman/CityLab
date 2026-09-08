@@ -5,9 +5,10 @@ import socket
 import threading
 import time
 import unittest
+from unittest.mock import MagicMock, patch
 
 from network.modbus_proxy import ModbusDpiProxyServer, ModbusDpiEngine
-from network.scada_server import scada_state, poll_plcs
+from network.scada_server import scada_state, poll_plcs, _consecutive_failures, LOSS_OF_VIEW_THRESHOLD
 
 
 class TestDpiProxyAndScadaWatchdog(unittest.TestCase):
@@ -39,16 +40,98 @@ class TestDpiProxyAndScadaWatchdog(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(reason, 'UNAUTHORIZED_WRITE_SOURCE_NOT_EWS')
 
-        # FC5 (Write Single Coil) from authorized h_ews (10.0.2.30) to addr 0 -> ALLOWED
-        ok, reason = engine.inspect_and_filter('10.0.2.30', '10.0.3.10', write_packet)
+        # FC5 (Write Single Coil) from authorized h_ews (10.0.4.30) to addr 0 -> ALLOWED
+        ok, reason = engine.inspect_and_filter('10.0.4.30', '10.0.3.10', write_packet)
         self.assertTrue(ok)
         self.assertEqual(reason, 'ALLOWED')
 
         # FC5 Write to out of range register addr 10 -> DENIED
         out_of_range_packet = b'\x00\x03\x00\x00\x00\x06\x01\x05\x00\x0a\xff\x00'
-        ok, reason = engine.inspect_and_filter('10.0.2.30', '10.0.3.10', out_of_range_packet)
+        ok, reason = engine.inspect_and_filter('10.0.4.30', '10.0.3.10', out_of_range_packet)
         self.assertFalse(ok)
         self.assertIn('REGISTER_OUT_OF_RANGE', reason)
+
+    def test_multi_plc_unit_id_routing(self) -> None:
+        engine = ModbusDpiEngine()
+        # Unit ID 1 -> 10.0.3.10 (water)
+        read_uid1 = b'\x00\x01\x00\x00\x00\x06\x01\x01\x00\x00\x00\x04'
+        ok1, reason1 = engine.inspect_and_filter('10.0.2.20', '10.0.3.10', read_uid1)
+        self.assertTrue(ok1)
+
+        # Unit ID 4 -> 10.0.3.14 (transport)
+        read_uid4 = b'\x00\x01\x00\x00\x00\x06\x04\x01\x00\x00\x00\x04'
+        ok4, reason4 = engine.inspect_and_filter('10.0.2.20', '10.0.3.14', read_uid4)
+        self.assertTrue(ok4)
+
+    @patch('network.scada_server.ModbusTcpClient')
+    def test_scada_watchdog_loss_of_view(self, mock_modbus_client: MagicMock) -> None:
+        # Verify that unreachable PLCs increment _consecutive_failures and trigger LOSS_OF_VIEW status via poll_plcs_once()
+        from network.scada_server import poll_plcs_once
+
+        mock_instance = MagicMock()
+        mock_instance.connect.return_value = False
+        mock_modbus_client.return_value = mock_instance
+
+        orig_failures = dict(_consecutive_failures)
+        orig_sectors = dict(scada_state['sectors'])
+        try:
+            for sector in _consecutive_failures:
+                _consecutive_failures[sector] = 0
+
+            for _ in range(LOSS_OF_VIEW_THRESHOLD):
+                poll_plcs_once()
+            
+            self.assertEqual(_consecutive_failures['water'], LOSS_OF_VIEW_THRESHOLD)
+            self.assertEqual(scada_state['sectors']['water']['status'], 'LOSS_OF_VIEW')
+        finally:
+            _consecutive_failures.clear()
+            _consecutive_failures.update(orig_failures)
+            scada_state['sectors'].clear()
+            scada_state['sectors'].update(orig_sectors)
+
+    @patch('network.scada_server.ModbusTcpClient')
+    def test_scada_proxy_polling_unit_ids(self, mock_modbus_client: MagicMock) -> None:
+        """Verifica que USE_MODBUS_PROXY=1 dirija las peticiones al proxy con Unit ID correspondiente por sector."""
+        import os
+        from network.scada_server import poll_plcs_once, SECTOR_UNIT_IDS
+        import network.scada_server as scada_mod
+
+        old_use_proxy = scada_mod.USE_MODBUS_PROXY
+        scada_mod.USE_MODBUS_PROXY = True
+        scada_mod.MODBUS_PROXY_HOST = '10.0.2.20'
+        scada_mod.MODBUS_PROXY_PORT = 15020
+
+        calls_made = []
+
+        def mock_client_factory(host, port, timeout=1.0):
+            mock_inst = MagicMock()
+            mock_inst.connect.return_value = True
+            
+            def mock_read_coils(addr, count, **kwargs):
+                uid = kwargs.get('unit', kwargs.get('slave', 1))
+                calls_made.append((host, port, uid))
+                resp = MagicMock()
+                resp.isError.return_value = False
+                resp.bits = [True, False, True, False]
+                return resp
+
+            mock_inst.read_coils = mock_read_coils
+            return mock_inst
+
+        mock_modbus_client.side_effect = mock_client_factory
+        try:
+            poll_plcs_once()
+            self.assertEqual(len(calls_made), 4)
+            # All 4 calls must go to proxy host/port
+            for host, port, uid in calls_made:
+                self.assertEqual(host, '10.0.2.20')
+                self.assertEqual(port, 15020)
+
+            # Each sector must have dispatched its assigned unit ID
+            dispatched_uids = {uid for _, _, uid in calls_made}
+            self.assertEqual(dispatched_uids, {1, 2, 3, 4})
+        finally:
+            scada_mod.USE_MODBUS_PROXY = old_use_proxy
 
 
 if __name__ == '__main__':

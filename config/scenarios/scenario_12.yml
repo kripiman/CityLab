@@ -1,0 +1,22 @@
+id: '12'
+title: Ransomware con Impacto en Infraestructura OT
+difficulty: Avanzado
+category: Ransomware Emulation / IT-OT Lateral Movement
+seed_scope:
+- encrypted_extensions
+- flags
+objectives:
+- id: FLAG_1
+  desc: Detección de cifrado de archivos en estación de ingeniería
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/health
+    expect: 200
+- id: FLAG_2
+  desc: Aislamiento de segmento OT activado ante ransomware
+  points: 250
+  check:
+    type: openflow_rule
+    switch: s3
+    pattern: drop

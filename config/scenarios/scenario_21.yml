@@ -1,0 +1,22 @@
+id: '21'
+title: Pérdida de Visibilidad (Loss of View) y Aislamiento Manual
+difficulty: Intermedio
+category: Loss of View / SCADA Watchdog / Incident Containment
+seed_scope:
+- timeout_thresholds
+- flags
+objectives:
+- id: FLAG_1
+  desc: Pérdida de paquetes de telemetría provocada
+  points: 100
+  check:
+    type: scada_sector_status
+    sector: water
+    expect: LOSS_OF_VIEW
+- id: FLAG_2
+  desc: Aislamiento manual ejecutado en switch de acceso
+  points: 150
+  check:
+    type: openflow_rule
+    switch: s3
+    pattern: drop

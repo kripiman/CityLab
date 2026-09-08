@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import hmac
 import logging
+import os
 import socket
 import struct
 import threading
@@ -61,7 +62,15 @@ class Dnp3OutstationState:
         self.frequency_hz: float = 60.00
         self.power_kw: float = 500.00
         self.fault_active: bool = False
+        self.sa_challenge_count: int = 0
         self._lock = threading.Lock()
+
+    def verify_sa_challenge_hmac(self, challenge_data: bytes, response_hmac: bytes, secret_key: bytes = b'CITYLAB_DNP3_SA') -> bool:
+        """Verifica la respuesta HMAC-SHA256 para DNP3 Secure Authentication (IEEE 1815 SA L1)."""
+        with self._lock:
+            self.sa_challenge_count += 1
+            expected = hmac.new(secret_key, challenge_data, hashlib.sha256).digest()
+            return hmac.compare_digest(expected, response_hmac)
 
     def trip_breaker(self) -> None:
         with self._lock:
@@ -253,7 +262,8 @@ class Dnp3Server:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Emulador DNP3 Outstation IEEE 1815 (PLC Eléctrico)")
-    parser.add_argument("--host", default="0.0.0.0", help="Dirección IP de bind (default: 0.0.0.0)")
+    default_host = os.getenv("DNP3_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    parser.add_argument("--host", default=default_host, help=f"Dirección IP de bind (default: {default_host})")
     parser.add_argument("--port", type=int, default=20000, help="Puerto DNP3 TCP (default: 20000)")
     args = parser.parse_args()
 

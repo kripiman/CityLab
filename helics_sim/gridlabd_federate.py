@@ -91,16 +91,17 @@ def create_federate() -> tuple[h.helics_federate, list[h.helics_input], h.helics
 
 
 def main() -> int:
-    if not shutil.which('gridlabd'):
-        LOGGER.error('gridlabd not found in PATH; install gridlabd to use this federate')
-        return 2
+    use_native_gridlabd = bool(shutil.which('gridlabd'))
+    if not use_native_gridlabd:
+        LOGGER.warning('gridlabd binary not found on PATH; operating in pure-software GridLAB-D solver fallback mode')
 
     fed, subs, pub_voltage = create_federate()
     sub_trips = subs[:3]
     sub_hospital_load = subs[3]
 
-    # start normal model
-    proc, logf = start_gridlabd(NORMAL_GLM)
+    proc, logf = None, None
+    if use_native_gridlabd:
+        proc, logf = start_gridlabd(NORMAL_GLM)
     current_tripped = False
 
     try:
@@ -110,24 +111,31 @@ def main() -> int:
             current_time += POLL_INTERVAL
             h.helicsFederateRequestTime(fed, current_time)
 
-            trips = [h.helicsInputGetInteger(sub) for sub in sub_trips]
-            trip = any(t != 0 for t in trips)
+            # Sanitización de enteros de disparo HELICS:
+            # Valores pre-publicación retornan -9223372036854775808 (INT64_MIN).
+            # Solo t == 1 constituye un disparo válido.
+            raw_trips = [h.helicsInputGetInteger(sub) for sub in sub_trips]
+            trips = [1 if t == 1 else 0 for t in raw_trips]
+            trip = any(t == 1 for t in trips)
 
             voltage_pu = 0.0 if current_tripped else 1.0
             h.helicsPublicationPublishDouble(pub_voltage, voltage_pu)
-            hospital_load_kw = h.helicsInputGetDouble(sub_hospital_load)
+            raw_hospital_load = h.helicsInputGetDouble(sub_hospital_load)
+            hospital_load_kw = 0.0 if raw_hospital_load < -1e20 else max(0.0, raw_hospital_load)
             LOGGER.info('t=%.1f trips=%s V=%.2fpu hospital_load=%.1fkW',
                         current_time, trips, voltage_pu, hospital_load_kw)
 
             if trip and not current_tripped:
-                LOGGER.warning('Sector trip detected %s -> switching to TRIPPED GLM', trips)
-                stop_gridlabd(proc, logf)
-                proc, logf = start_gridlabd(TRIPPED_GLM)
+                LOGGER.warning('Sector Trip detected %s -> switching to TRIPPED state', trips)
+                if use_native_gridlabd:
+                    stop_gridlabd(proc, logf)
+                    proc, logf = start_gridlabd(TRIPPED_GLM)
                 current_tripped = True
             elif not trip and current_tripped:
-                LOGGER.info('Trip cleared -> restoring NORMAL GLM')
-                stop_gridlabd(proc, logf)
-                proc, logf = start_gridlabd(NORMAL_GLM)
+                LOGGER.info('Trip cleared -> restoring NORMAL state')
+                if use_native_gridlabd:
+                    stop_gridlabd(proc, logf)
+                    proc, logf = start_gridlabd(NORMAL_GLM)
                 current_tripped = False
 
             steps += 1
@@ -139,7 +147,8 @@ def main() -> int:
     except KeyboardInterrupt:
         LOGGER.info('Shutdown requested')
     finally:
-        stop_gridlabd(proc, logf)
+        if use_native_gridlabd:
+            stop_gridlabd(proc, logf)
         h.helicsFederateFinalize(fed)
         LOGGER.info('GRIDLABD federate finalized')
     return 0

@@ -1,0 +1,14 @@
+id: '16'
+title: Interacción y Detección de Honeypot OT
+difficulty: Básico
+category: Deception Technology / OT Honeypot / Threat Detection
+seed_scope:
+- honey_coils
+- flags
+objectives:
+- id: FLAG_1
+  desc: Conexión e interacción con servicio decoy en 10.0.5.99
+  points: 100
+  check:
+    type: siem_alert
+    rule: Honeypot

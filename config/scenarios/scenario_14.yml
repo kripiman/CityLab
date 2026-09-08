@@ -1,0 +1,21 @@
+id: '14'
+title: Escaneo Activo y Enumeración de PLCs OT
+difficulty: Básico
+category: Network Scanning / Modbus Enumeration / Asset Profiling
+seed_scope:
+- unit_id_ranges
+- flags
+objectives:
+- id: FLAG_1
+  desc: Identificación de puertos industriales abiertos (502, 20000, 4840)
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/telemetry
+    expect: 200
+- id: FLAG_2
+  desc: Alerta de escaneo masivo de puertos detectada en honeypot/SIEM
+  points: 150
+  check:
+    type: siem_alert
+    rule: Scan

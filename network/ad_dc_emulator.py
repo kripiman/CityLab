@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import socket
 import threading
 import time
@@ -195,7 +196,8 @@ class DomainControllerEmulator:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Emulador de Samba AD DC (h_dc.citylab.local)")
-    parser.add_argument("--host", default="0.0.0.0", help="Host bind IP (default: 0.0.0.0)")
+    default_host = os.getenv("AD_DC_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    parser.add_argument("--host", default=default_host, help=f"Host bind IP (default: {default_host})")
     args = parser.parse_args()
 
     dc = DomainControllerEmulator(args.host)

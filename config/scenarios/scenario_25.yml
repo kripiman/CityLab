@@ -1,0 +1,15 @@
+id: '25'
+title: Ejercicio Tabletop de Respuesta a Incidentes por Ransomware
+difficulty: Intermedio
+category: Incident Response / Tabletop Simulation / Crisis Management
+seed_scope:
+- incident_timeline
+- flags
+objectives:
+- id: FLAG_1
+  desc: Evaluación de plan de contingencia y aislamiento de activos críticos
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/health
+    expect: 200

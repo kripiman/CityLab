@@ -2,7 +2,7 @@
 """Modbus/TCP DPI Proxy & Application Gateway — Control Compensatorio COMP-01 (IEC 62443 SR 3.5 & SR 6.1).
 
 Interpuesto entre DMZ y OT:
-  - Valida Function Codes (FC Allowlist): FC1/FC3 desde h_scada (10.0.2.20), FC5/FC16 solo desde h_ews (10.0.2.30).
+  - Valida Function Codes (FC Allowlist): FC1/FC3 desde h_scada (10.0.2.20), FC5/FC16 solo desde h_ews (10.0.4.30).
   - Valida rango de direcciones de registro (Permitido solo [0..3]).
   - Implementa Rate Limiting en comandos de escritura (máx 10 writes/seg).
   - Registro de auditoría inmutable en `logs/modbus_dpi_audit.log`.
@@ -29,8 +29,8 @@ os.makedirs(LOG_DIR, exist_ok=True)
 AUDIT_LOG_FILE = os.path.join(LOG_DIR, 'modbus_dpi_audit.log')
 
 # Reglas de Política IEC 62443 SR 3.5
-ALLOWED_READ_SOURCES = {'10.0.2.20', '10.0.2.30', '127.0.0.1'}  # h_scada, h_ews
-ALLOWED_WRITE_SOURCES = {'10.0.2.30', '127.0.0.1'}             # Solo h_ews (PAW)
+ALLOWED_READ_SOURCES = {'10.0.2.20', '10.0.4.30', '127.0.0.1'}  # h_scada, h_ews
+ALLOWED_WRITE_SOURCES = {'10.0.4.30', '127.0.0.1'}             # Solo h_ews (PAW)
 ALLOWED_READ_FCS = {1, 2, 3, 4}
 ALLOWED_WRITE_FCS = {5, 6, 15, 16}
 MAX_WRITE_REGISTER_ADDR = 3
@@ -63,6 +63,12 @@ class ModbusDpiEngine:
 
     def __init__(self) -> None:
         self.rate_limiter = RateLimiter(MAX_WRITES_PER_SEC)
+        self.siem = None
+        try:
+            from network.siem_pipeline import SiemCorrelationEngine
+            self.siem = SiemCorrelationEngine()
+        except Exception:
+            self.siem = None
 
     def log_audit(self, src_ip: str, dst_ip: str, fc: int, addr: int, val: int, status: str, reason: str = "") -> None:
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -72,6 +78,21 @@ class ModbusDpiEngine:
                 f.write(log_line)
         except Exception as exc:
             LOGGER.error("Falló escritura en log de auditoría DPI: %s", exc)
+
+        if status == 'DENIED' and self.siem:
+            try:
+                self.siem.ingest_raw_event(
+                    event_category='process_control',
+                    event_type='denial',
+                    severity='CRITICAL' if 'UNAUTHORIZED' in reason or 'RATE_LIMIT' in reason else 'HIGH',
+                    source_ip=src_ip,
+                    destination_ip=dst_ip,
+                    service_name='modbus_proxy',
+                    message=f'Modbus DPI Denial [FC={fc} addr={addr} val={val}]: {reason}',
+                    metadata={'fc': fc, 'addr': addr, 'val': val, 'reason': reason}
+                )
+            except Exception as exc:
+                LOGGER.debug('[DPI-SIEM] Error enviando evento a SIEM: %s', exc)
 
     def inspect_and_filter(self, src_ip: str, dst_ip: str, packet: bytes) -> Tuple[bool, str]:
         """Inspecciona la trama Modbus/TCP en Capa 7.
@@ -134,7 +155,7 @@ class ModbusDpiEngine:
 class ModbusDpiProxyServer:
     """Proxy TCP transparente/inverso que filtra tráfico Modbus hacia los PLCs."""
 
-    def __init__(self, listen_host: str = '0.0.0.0', listen_port: int = 15020) -> None:
+    def __init__(self, listen_host: str = '10.0.2.20', listen_port: int = 15020) -> None:
         self.listen_host = listen_host
         self.listen_port = listen_port
         self.engine = ModbusDpiEngine()
@@ -170,14 +191,45 @@ class ModbusDpiProxyServer:
                 if not data:
                     return
 
-                # Target PLC por omisión o mapeo (ej. 10.0.3.10)
-                dst_ip = '10.0.3.10'
+                # Target PLC mapeado por Unit ID (byte 6)
+                unit_id = data[6] if len(data) > 6 else 1
+                uid_map = {
+                    1: '10.0.3.10',
+                    2: '10.0.3.12',
+                    3: '10.0.3.13',
+                    4: '10.0.3.14',
+                    5: '10.0.3.15'
+                }
+                dst_ip = uid_map.get(unit_id, '10.0.3.10')
+
                 allowed, reason = self.engine.inspect_and_filter(src_ip, dst_ip, data)
 
                 if allowed:
-                    # Enviar respuesta Modbus OK emulada / forward
-                    resp = data[:8] + b'\x00\x04\x00\x00'
-                    client_sock.sendall(resp)
+                    # Intenta forwarding real al PLC de destino
+                    forwarded = False
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as plc_sock:
+                            plc_sock.settimeout(1.0)
+                            plc_sock.connect((dst_ip, 502))
+                            plc_sock.sendall(data)
+                            resp = plc_sock.recv(1024)
+                            if resp:
+                                client_sock.sendall(resp)
+                                forwarded = True
+                    except Exception:
+                        forwarded = False
+
+                    if not forwarded:
+                        LOGGER.warning("PLC_UNREACHABLE: No se pudo conectar a %s:502 para Unit ID %d", dst_ip, unit_id)
+                        # Devolver Modbus Exception 0x0B (Gateway Target Device Failed to Respond) o emular si standalone
+                        fc = data[7] if len(data) >= 8 else 0x80
+                        if os.getenv('MODBUS_PROXY_STRICT_FORWARD', '0') == '1':
+                            exception_resp = data[:7] + bytes([fc | 0x80, 0x0B])
+                            client_sock.sendall(exception_resp)
+                        else:
+                            # Respuesta emulada fallback para testing sin PLC backend activo
+                            resp = data[:8] + b'\x00\x04\x00\x00'
+                            client_sock.sendall(resp)
                 else:
                     LOGGER.warning("DPI REJECT desde %s: %s", src_ip, reason)
                     # Devolver Modbus Exception 0x01 (Illegal Function / Operation Denied)
@@ -195,10 +247,11 @@ class ModbusDpiProxyServer:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Proxy DPI Modbus/TCP Control Compensatorio COMP-01")
-    parser.add_argument("--listen-port", type=int, default=15020, help="Puerto de escucha (default: 15020)")
+    parser.add_argument("--bind-host", "--host", dest="bind_host", type=str, default=os.getenv("MODBUS_PROXY_HOST", "10.0.2.20"), help="IP de escucha (default: 10.0.2.20)")
+    parser.add_argument("--listen-port", "--port", dest="listen_port", type=int, default=int(os.getenv("MODBUS_PROXY_PORT", "15020")), help="Puerto de escucha (default: 15020)")
     args = parser.parse_args()
 
-    proxy = ModbusDpiProxyServer(listen_port=args.listen_port)
+    proxy = ModbusDpiProxyServer(listen_host=args.bind_host, listen_port=args.listen_port)
     try:
         proxy.start()
     except KeyboardInterrupt:

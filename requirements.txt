@@ -23,3 +23,8 @@ scapy==2.6.1
 
 # === UTILIDADES ===
 python-dotenv==1.1.0
+
+# === INSTRUMENTACIÓN DE MEDICIÓN ===
+# Usado por scripts/profile_resources.py (`./citylab.sh profile`) para medir RSS/CPU reales.
+# Si falta, el medidor cae a /proc y a resource.getrusage (stdlib) midiendo solo RSS.
+psutil>=5.9

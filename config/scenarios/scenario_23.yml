@@ -1,0 +1,21 @@
+id: '23'
+title: Defensa Dinámica con Controlador SDN y Circuit Breaker
+difficulty: Avanzado
+category: Software-Defined Networking / Automated Incident Response / OpenFlow
+seed_scope:
+- flow_priorities
+- flags
+objectives:
+- id: FLAG_1
+  desc: Disparo automático de Circuit Breaker ante anomalía
+  points: 100
+  check:
+    type: siem_alert
+    rule: Circuit Breaker
+- id: FLAG_2
+  desc: Regla OpenFlow DROP activa en tabla de flujo de s3
+  points: 200
+  check:
+    type: openflow_rule
+    switch: s3
+    pattern: drop

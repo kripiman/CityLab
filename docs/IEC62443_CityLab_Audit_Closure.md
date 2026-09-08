@@ -37,8 +37,8 @@
 | **F-02** | h_ews como SPOF (Kerberoastable, sin zona aislada) | SL1 | **SL2** | ✅ MITIGADO |
 | **F-03** | h_attacker y h_dc en mismo L2 sin microsegmentación | SL0 | **SL1†** | ⚠️ ACEPTADO |
 | **F-04** | Cadena ciberfísica sin Safe State (hospital blackout) | SL0 | **SL2** | ✅ MITIGADO |
-| **F-05** | Sin protocolo Loss of View / Loss of Control | SL0 | **SL2** | ✅ MITIGADO |
-| **F-06** | Modbus/DNP3 sin autenticación ni integridad | SL0 | **SL1** | ✅ MITIGADO PARCIAL |
+| **F-05** | Modbus/DNP3 sin autenticación ni integridad (Nivel 1 Plano) | SL0 | **SL1** | ✅ MITIGADO PARCIAL |
+| **F-06** | Sin protocolo / aislamiento Loss of View / Loss of Control | SL0 | **SL2** | ✅ MITIGADO |
 
 †  SL1 aceptado formalmente para F-03 (debilidad pedagógica CTF — RF-10.3 en ERS.md).
 
@@ -56,11 +56,11 @@
 ### Semana 2 — Controles Sustantivos
 - **CONTROL-COMP-01**: Proxy DPI Modbus/TCP (`network/modbus_proxy.py`) con FC Allowlist, validación de registros, Rate Limiting y Audit Log inmutable.
 - **F-02**: Zona EWS PAW Aislada `s4` (`10.0.4.0/24`) con reglas iptables PAW (solo SSH desde Corporate, REJECT desde DMZ).
-- **F-05**: Watchdog Continuous Monitoring & Loss of View Alarm en `network/scada_server.py`.
+- **F-06**: Watchdog Continuous Monitoring & Loss of View Alarm en `network/scada_server.py`.
 
 ### Semana 3 — Controles Avanzados
 - **CONTROL-COMP-02**: Controlador SDN OpenFlow (`network/sdn_controller.py`) para microsegmentación en OVS `s3` y Circuit Breaker dinámico DoS (>50 pkt/s).
-- **F-06 Parcial**: DNP3 Secure Authentication Level 1 (IEEE 1815-2012 §7) con firmas HMAC-SHA256 en `plc/dnp3_emulator.py`.
+- **F-05 Parcial**: DNP3 Secure Authentication Level 1 (IEEE 1815-2012 §7) con firmas HMAC-SHA256 en `plc/dnp3_emulator.py`.
 - **F-03**: Documentación formal de Riesgo Aceptado L2 Corporate en `docs/ERS.md` (RF-10.3 & RF-10.4).
 
 ---
@@ -72,6 +72,17 @@
 | RR-01 | HMAC DNP3 SA Level 1 (4B) crackeable offline si atacante captura tráfico OT | Baja | Alto | **Aceptado** — Laboratorio. Mitigar en producción con SA Level 5 + TLS enclosure |
 | RR-02 | Safe State Override activo solo si UPS < 50% — ventana de ataque válida entre 50% y 0% | Media | Alto | **Aceptado** — Umbral de 50% es conservador. Reducir a 75% para mayor protección |
 | RR-03 | Circuit Breaker SDN no persiste ante reinicio de OVS switch | Baja | Media | **Aceptado** — Laboratorio. En producción: reglas grabadas en `ovs-vsctl` persistent flows |
+
+---
+
+## 🎯 DECISIONES DE DISEÑO PEDAGÓGICO CTF (HALLAZGOS INTENCIONALES)
+
+Para preservar la utilidad pedagógica y el realismo de los escenarios de entrenamiento ofensivo/defensivo CTF, los siguientes 4 hallazgos se mantienen abiertos por diseño:
+
+1. **F-03 (Switches Corp/DMZ Standalone)**: Extender SDN a `s1`/`s2` bloquearía el pivoteo L2 básico y dificultaría la navegación del alumno.
+2. **F-05 (Modbus/TCP Plano Nivel 1)**: Eliminar Modbus plano en `:502` anularía las prácticas de inyección de paquetes OT.
+3. **F-06 (Alarma LoV sin Aislamiento Automático)**: El aislamiento automático deshabilitaría la interacción manual del operador ante contingencias.
+4. **F-07 (Sin Load-Shedding Automático en Cascada)**: El deslastre automático prevendría las demostraciones de fallas ciberfísicas en cascada.
 
 ---
 

@@ -62,7 +62,7 @@ class HospitalPlant:
     ups_energy_kwh: float = 75.0         # energía actual del UPS
     generator_start_delay_s: float = 10.0
     state: PowerState = PowerState.GRID_NORMAL
-    _gen_start_ts: float = field(default=float('inf'), repr=False)
+    _gen_timer_s: float = field(default=0.0, repr=False)
 
     def update(self, voltage_pu: float, freq_hz: float, dt: float, suppress_generator: bool = False) -> tuple[float, int]:
         """Actualiza estado del hospital. Retorna (load_kw_on_grid, on_ups_flag)."""
@@ -72,21 +72,15 @@ class HospitalPlant:
             if not grid_ok:
                 LOGGER.warning('Grid fault detected (V=%.3fpu f=%.2fHz) → activating UPS', voltage_pu, freq_hz)
                 self.state = PowerState.UPS_ACTIVE
-                self._gen_start_ts = time.monotonic() + self.generator_start_delay_s
+                self._gen_timer_s = self.generator_start_delay_s
 
         elif self.state == PowerState.UPS_ACTIVE:
             # Descargar UPS
             self.ups_energy_kwh -= (self.base_load_kw * dt) / 3600.0
             self.ups_energy_kwh = max(0.0, self.ups_energy_kwh)
+            self._gen_timer_s -= dt
 
-            # Control Compensatorio IEC 62443: Safe State Hardware Override
-            # Si el generador es suprimido por Modbus pero el UPS baja del 50% (37.5 kWh),
-            # el interbloqueo físico invalida la supresión de software.
-            if suppress_generator and self.ups_energy_kwh < 37.5:
-                LOGGER.warning('[SAFE-STATE OVERRIDE] Emergency hardware interlock unblocked generator (Modbus suppression overridden)')
-                suppress_generator = False
-
-            if not suppress_generator and time.monotonic() >= self._gen_start_ts:
+            if not suppress_generator and self._gen_timer_s <= 0.0:
                 LOGGER.warning('Generator online → hospital autonomous')
                 self.state = PowerState.GENERATOR_ONLINE
 
@@ -153,20 +147,7 @@ def main() -> int:
             if freq_hz == 0.0:
                 freq_hz = 60.0
 
-            # Read Hospital PLC Modbus state (10.0.3.15:502) — Coil 1 controls suppress_generator
-            suppress_gen = False
-            plc_host = os.environ.get('HOSPITAL_PLC_HOST', '10.0.3.15')
-            try:
-                client = ModbusTcpClient(plc_host, port=502, timeout=0.5)
-                if client.connect():
-                    rr = client.read_coils(0, 4)
-                    if rr and not rr.isError():
-                        suppress_gen = bool(rr.bits[1])
-                    client.close()
-            except Exception:
-                suppress_gen = False
-
-            load_kw, on_ups = plant.update(voltage_pu, freq_hz, POLL_INTERVAL, suppress_generator=suppress_gen)
+            load_kw, on_ups = plant.update(voltage_pu, freq_hz, POLL_INTERVAL)
 
             h.helicsPublicationPublishDouble(pub_load, float(load_kw))
             h.helicsPublicationPublishInteger(pub_ups, int(on_ups))

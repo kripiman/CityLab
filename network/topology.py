@@ -2,15 +2,19 @@
 """
 Mininet topology for Phase 1 PoC (IEC 62443 segmentation)
 Zones:
- - Corporate (10.0.1.0/24) -> attacker host
- - DMZ       (10.0.2.0/24) -> jump/historian host
- - OT        (10.0.3.0/24) -> plc, icssim hosts
+ - Corporate (10.0.1.0/24) -> attacker, dc hosts
+ - DMZ       (10.0.2.0/24) -> jump, scada historian hosts
+ - OT        (10.0.3.0/24) -> plcs, icssim hosts
+ - EWS PAW   (10.0.4.0/24) -> engineering workstation host
+ - Honeypot  (10.0.5.0/24) -> decoy honeypot host
 
-A single user-space firewall host (fw) bridges the three switches and enforces
-segmentation via iptables. The fw host will have three interfaces:
+A single user-space firewall host (fw) bridges the five switches and enforces
+segmentation via iptables. The fw host will have five interfaces:
  - fw-eth0 -> Corporate (gw 10.0.1.1)
  - fw-eth1 -> DMZ       (gw 10.0.2.1)
  - fw-eth2 -> OT        (gw 10.0.3.1)
+ - fw-eth3 -> EWS PAW   (gw 10.0.4.1)
+ - fw-eth4 -> Honeypot  (gw 10.0.5.1)
 
 Usage (run as root):
   sudo python3 network/topology.py
@@ -19,15 +23,19 @@ Usage (run as root):
 from __future__ import annotations
 
 import argparse
+import os
+import re
+import subprocess
 import sys
-from typing import Dict
+import time
+from pathlib import Path
+from typing import Dict, Optional
 
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.net import Mininet
 from mininet.node import Node, OVSKernelSwitch, OVSController
 from mininet.topo import Topo
-import os
 
 # Custom CLI that shortens pingall duration using MININET_PING_TIMEOUT (seconds)
 class CustomCLI(CLI):
@@ -60,121 +68,155 @@ class Iec62443Topo(Topo):
         s_dmz  = self.addSwitch('s2')
         s_ot   = self.addSwitch('s3')
         s_ews  = self.addSwitch('s4')  # Isolated EWS PAW Zone
+        s_honey = self.addSwitch('s5') # Honeypot observation VLAN
 
-        # Firewall host (will have 4 interfaces once linked)
+        # Isolated EWS PAW Zone
+        ews = self.addHost('h_ews', ip='10.0.4.30/24')
+
+        # Firewall host (will have 5 interfaces once linked)
         fw = self.addHost('fw')
 
         # Corporate hosts
         attacker = self.addHost('h_attacker', ip='10.0.1.10/24')
-        corp_dc  = self.addHost('h_dc',       ip='10.0.1.20/24')
+        dc       = self.addHost('h_dc',       ip='10.0.1.20/24')
 
         # DMZ hosts
-        dmz_jump     = self.addHost('h_dmz',   ip='10.0.2.10/24')
+        dmz_jump = self.addHost('h_dmz', ip='10.0.2.10/24')
         scada_server = self.addHost('h_scada', ip='10.0.2.20/24')
 
-        # Isolated EWS Zone (10.0.4.0/24)
-        ews_station  = self.addHost('h_ews',   ip='10.0.4.30/24')
-
-        # OT hosts: water (.10), icssim (.11), gas (.12), elec (.13), trans (.14), hosp (.15), honey (.99)
+        # OT hosts: water (10.0.3.10), gas (10.0.3.12), elec (10.0.3.13), trans (10.0.3.14), hosp (10.0.3.15), desal (10.0.3.16), lighting (10.0.3.17), ied (10.0.3.20), gateway (10.0.3.30)
         plc_water = self.addHost('h_plc',        ip='10.0.3.10/24')
         icssim    = self.addHost('h_icssim',     ip='10.0.3.11/24')
         plc_gas   = self.addHost('h_plc_gas',    ip='10.0.3.12/24')
         plc_elec  = self.addHost('h_plc_elec',   ip='10.0.3.13/24')
-        plc_trans = self.addHost('h_plc_trans',  ip='10.0.3.14/24')
+        plc_trans = self.addHost('h_plc_tr',     ip='10.0.3.14/24')
         plc_hosp  = self.addHost('h_plc_hosp',   ip='10.0.3.15/24')
-        plc_honey = self.addHost('h_plc_honey',  ip='10.0.3.99/24')
+        plc_desal = self.addHost('h_desal',      ip='10.0.3.16/24')
+        plc_light = self.addHost('h_lighting',   ip='10.0.3.17/24')
+        ied_subst = self.addHost('h_ied',        ip='10.0.3.20/24')
+        gw_telem  = self.addHost('h_gateway',    ip='10.0.3.30/24')
+        plc_honey = self.addHost('h_honey',      ip='10.0.5.99/24')
 
-        # Links (order determines fw-eth names: eth0=corp, eth1=dmz, eth2=ot, eth3=ews)
+        # Links (order determines fw-eth names: eth0=corp, eth1=dmz, eth2=ot, eth3=ews, eth4=honey)
         self.addLink(fw, s_corp)
         self.addLink(fw, s_dmz)
         self.addLink(fw, s_ot)
         self.addLink(fw, s_ews)
+        self.addLink(fw, s_honey)
 
         # Connect switches to hosts
         self.addLink(s_corp, attacker)
-        self.addLink(s_corp, corp_dc)
+        self.addLink(s_corp, dc)
         self.addLink(s_dmz, dmz_jump)
         self.addLink(s_dmz, scada_server)
-        self.addLink(s_ews, ews_station)
         self.addLink(s_ot, plc_water)
         self.addLink(s_ot, icssim)
         self.addLink(s_ot, plc_gas)
         self.addLink(s_ot, plc_elec)
         self.addLink(s_ot, plc_trans)
         self.addLink(s_ot, plc_hosp)
-        self.addLink(s_ot, plc_honey)
+        self.addLink(s_ot, plc_desal)
+        self.addLink(s_ot, plc_light)
+        self.addLink(s_ot, ied_subst)
+        self.addLink(s_ot, gw_telem)
+        self.addLink(s_ews, ews)
+        self.addLink(s_honey, plc_honey)
 
 
 def apply_fw_configuration(fw: Node) -> None:
     """Configure FW host interfaces, IP forwarding and iptables rules.
 
-    Assumes interfaces: fw-eth0 (corp), fw-eth1 (dmz), fw-eth2 (ot), fw-eth3 (ews)
+    Assumes interfaces: fw-eth0 (corp), fw-eth1 (dmz), fw-eth2 (ot), fw-eth3 (ews), fw-eth4 (honey)
     """
     # Assign IPs to firewall interfaces
     fw.cmd('ip addr flush dev fw-eth0')
     fw.cmd('ip addr flush dev fw-eth1')
     fw.cmd('ip addr flush dev fw-eth2')
     fw.cmd('ip addr flush dev fw-eth3')
+    fw.cmd('ip addr flush dev fw-eth4')
 
     fw.cmd('ip addr add 10.0.1.1/24 dev fw-eth0')
     fw.cmd('ip addr add 10.0.2.1/24 dev fw-eth1')
     fw.cmd('ip addr add 10.0.3.1/24 dev fw-eth2')
     fw.cmd('ip addr add 10.0.4.1/24 dev fw-eth3')
+    fw.cmd('ip addr add 10.0.5.1/24 dev fw-eth4')
 
-    # Enable IP forwarding
+    for intf in ('fw-eth0', 'fw-eth1', 'fw-eth2', 'fw-eth3', 'fw-eth4'):
+        fw.cmd(f'ip link set dev {intf} up')
+
+    # Enable IP forwarding and disable rp_filter for multihomed routing
     fw.cmd('sysctl -w net.ipv4.ip_forward=1 > /dev/null')
+    fw.cmd('sysctl -w net.ipv4.conf.all.rp_filter=0 > /dev/null')
+    fw.cmd('sysctl -w net.ipv4.conf.default.rp_filter=0 > /dev/null')
+    for intf in ('fw-eth0', 'fw-eth1', 'fw-eth2', 'fw-eth3', 'fw-eth4'):
+        fw.cmd(f'sysctl -w net.ipv4.conf.{intf}.rp_filter=0 > /dev/null')
 
     # Default DROP policy for forwarding (deny by default)
     fw.cmd('iptables -F')
     fw.cmd('iptables -P FORWARD DROP')
 
-    # Allow established related
-    fw.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
+    # Allow established/related connections
+    fw.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || true")
 
-    # Permit h_scada (10.0.2.20) and h_ews (10.0.4.30) -> OT Modbus/TCP (port 502)
-    for plc_ip in ('10.0.3.10', '10.0.3.12', '10.0.3.13', '10.0.3.14', '10.0.3.15', '10.0.3.99'):
-        fw.cmd(f"iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d {plc_ip} -p tcp --dport 502 -j ACCEPT")
-        fw.cmd(f"iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d {plc_ip} -p tcp --dport 502 -j ACCEPT")
+    # 1. Allow DMZ SCADA (10.0.2.20) <-> OT Zone (10.0.3.0/24)
+    fw.cmd("iptables -A FORWARD -s 10.0.2.20 -d 10.0.3.0/24 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.3.0/24 -d 10.0.2.20 -j ACCEPT")
 
-    # Permit h_scada and h_ews -> OT DNP3 (port 20000) for Electrical PLC (10.0.3.13)
-    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth2 -s 10.0.2.20 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
-    fw.cmd("iptables -A FORWARD -i fw-eth3 -o fw-eth2 -s 10.0.4.30 -d 10.0.3.13 -p tcp --dport 20000 -j ACCEPT")
+    # 2. Allow EWS PAW (10.0.4.30) <-> OT Zone (10.0.3.0/24)
+    fw.cmd("iptables -A FORWARD -s 10.0.4.30 -d 10.0.3.0/24 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.3.0/24 -d 10.0.4.30 -j ACCEPT")
 
-    # Permit Corporate (10.0.1.0/24) -> Isolated EWS Zone (10.0.4.30) ONLY via SSH (PAW Rule)
-    fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth3 -d 10.0.4.30 -p tcp --dport 22 -j ACCEPT")
+    # 3. Allow Corporate (10.0.1.0/24) <-> Corporate (10.0.1.0/24) & DMZ SSH / ICMP ping
+    fw.cmd("iptables -A FORWARD -s 10.0.1.0/24 -d 10.0.1.0/24 -j ACCEPT")
     fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p tcp --dport 22 -j ACCEPT")
-    fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth1 -p icmp -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth0 -p tcp --sport 22 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.2.0/24 -d 10.0.1.0/24 -p icmp -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.1.0/24 -d 10.0.2.0/24 -p icmp -j ACCEPT")
+    # Allow DMZ SCADA (10.0.2.20) -> Corporate AD DC (10.0.1.20:389 TCP) for SCADA_AD_AUTH
+    fw.cmd("iptables -A FORWARD -s 10.0.2.20 -d 10.0.1.20 -p tcp --dport 389 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.1.20 -d 10.0.2.20 -p tcp --sport 389 -j ACCEPT")
 
-    # Explicitly block DMZ -> Isolated EWS Zone (10.0.4.0/24)
-    fw.cmd("iptables -A FORWARD -i fw-eth1 -o fw-eth3 -j REJECT")
+    # 4. Allow traffic to honeypot from anywhere to detect scanning
+    fw.cmd("iptables -A FORWARD -d 10.0.5.99 -j ACCEPT")
+    fw.cmd("iptables -A FORWARD -s 10.0.5.99 -j ACCEPT")
 
-    # Explicitly block Corporate -> OT
-    fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth2 -j REJECT")
-    fw.cmd("iptables -A FORWARD -i fw-eth2 -o fw-eth0 -j REJECT")
+    # 5. Explicitly block Corporate (10.0.1.0/24) -> OT Zone (10.0.3.0/24)
+    fw.cmd("iptables -A FORWARD -i fw-eth0 -o fw-eth2 -j DROP")
+    fw.cmd("iptables -A FORWARD -i fw-eth2 -o fw-eth0 -j DROP")
 
-    # Allow local host operations on fw
+    # Allow local loopback on fw
     fw.cmd("iptables -A INPUT -i lo -j ACCEPT")
 
-    print('[*] Firewall configured (Zones: Corp 10.0.1.1, DMZ 10.0.2.1, OT 10.0.3.1, EWS PAW 10.0.4.1)')
+    # Apply root namespace egress filtering to prevent leaking 10.0.0.0/8 & multicast
+    apply_egress_containment()
+
+    print('[*] Firewall configured (fw IPs: 10.0.1.1, 10.0.2.1, 10.0.3.1)')
 
 
 def configure_host_routes(net: Mininet) -> None:
     """Set default routes on hosts to point to the FW gateway in each zone."""
-    for corp_host in ('h_attacker', 'h_dc'):
-        try:
-            h = net.get(corp_host)
-            h.cmd('ip route flush default')
-            h.cmd('ip route add default via 10.0.1.1')
-        except KeyError:
-            pass
+    for host in net.hosts:
+        host.cmd('sysctl -w net.ipv4.conf.all.rp_filter=0 > /dev/null 2>&1 || true')
+        host.cmd('sysctl -w net.ipv4.conf.default.rp_filter=0 > /dev/null 2>&1 || true')
 
-    for dmz_host in ('h_dmz', 'h_scada'):
-        try:
-            h = net.get(dmz_host)
-            h.cmd('ip route flush default')
-            h.cmd('ip route add default via 10.0.2.1')
-        except KeyError:
-            pass
+    h_attacker = net.get('h_attacker')
+    h_attacker.cmd('ip route flush default')
+    h_attacker.cmd('ip route add default via 10.0.1.1')
+
+    h_dc = net.get('h_dc')
+    h_dc.cmd('ip route flush default')
+    h_dc.cmd('ip route add default via 10.0.1.1')
+
+    h_dmz = net.get('h_dmz')
+    h_dmz.cmd('ip route flush default')
+    h_dmz.cmd('ip route add default via 10.0.2.1')
+
+    try:
+        h_scada = net.get('h_scada')
+        h_scada.cmd('ip route flush default')
+        h_scada.cmd('ip route add default via 10.0.2.1')
+    except KeyError:
+        pass
 
     try:
         h_ews = net.get('h_ews')
@@ -183,7 +225,7 @@ def configure_host_routes(net: Mininet) -> None:
     except KeyError:
         pass
 
-    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_trans', 'h_plc_hosp', 'h_plc_honey'):
+    for ot_host in ('h_plc', 'h_icssim', 'h_plc_gas', 'h_plc_elec', 'h_plc_tr', 'h_plc_hosp', 'h_desal', 'h_lighting', 'h_ied', 'h_gateway'):
         try:
             h = net.get(ot_host)
             h.cmd('ip route flush default')
@@ -191,49 +233,133 @@ def configure_host_routes(net: Mininet) -> None:
         except KeyError:
             pass
 
+    try:
+        h_honey = net.get('h_honey')
+        h_honey.cmd('ip route flush default')
+        h_honey.cmd('ip route add default via 10.0.5.1')
+    except KeyError:
+        pass
+
     print('[*] Host default routes configured to use FW as gateway')
 
 
 def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
-    """Run minimal connectivity checks and return statuses.
-
-    Tests:
-    - Attacker -> PLC (ICMP) should FAIL (segmentation)
-    - DMZ -> PLC (TCP port 502) should SUCCEED (allowed Modbus)
-    - DMZ -> Electrical PLC (TCP port 20000) should SUCCEED (allowed DNP3)
-    - Attacker -> Corporate DC (TCP port 88/389) should SUCCEED (Corporate internal)
-    - DMZ -> Attacker (icmp) should SUCCEED (management allowed)
-    """
+    """Run L3/L4 firewall connectivity and conduit checks across all zones."""
+    time.sleep(1.5)
     results: Dict[str, bool] = {}
-    attacker = net.get('h_attacker')
-    dmz = net.get('h_dmz')
-    plc = net.get('h_plc')
+    h_attacker = net.get('h_attacker')
+    h_dmz = net.get('h_dmz')
+    h_scada = net.get('h_scada')
+    h_dc = net.get('h_dc')
 
     print('[*] Testing: Attacker -> PLC (ping) - expected: BLOCKED')
-    out = attacker.cmd('ping -c1 -W1 10.0.3.10')
-    results['attacker_ping_plc'] = ('1 packets transmitted, 1 received' in out)
+    out_ping = h_attacker.cmd('ping -c 1 -W 1 10.0.3.10')
+    attacker_blocked = '100% packet loss' in out_ping or 'Destination Port Unreachable' in out_ping or '0 received' in out_ping or 'reject' in out_ping.lower()
+    results['attacker_ping_plc_blocked'] = attacker_blocked
 
-    print('[*] Testing: DMZ -> PLC (tcp:502) - expected: ALLOWED (if PLC listens)')
-    tcp_test = dmz.cmd("timeout 1 bash -c '</dev/tcp/10.0.3.10/502' && echo open || echo closed'")
-    results['dmz_modbus_502'] = ('open' in tcp_test)
-
-    print('[*] Testing: DMZ -> Electrical PLC (tcp:20000 DNP3) - expected: ALLOWED')
-    dnp3_test = dmz.cmd("timeout 1 bash -c '</dev/tcp/10.0.3.13/20000' && echo open || echo closed'")
-    results['dmz_dnp3_20000'] = ('open' in dnp3_test)
-
-    print('[*] Testing: Attacker -> Corporate DC (tcp:88 Kerberos) - expected: ALLOWED')
-    kdc_test = attacker.cmd("timeout 1 bash -c '</dev/tcp/10.0.1.20/88' && echo open || echo closed'")
-    results['attacker_kdc_88'] = ('open' in kdc_test)
+    print('[*] Testing: h_scada (DMZ) -> PLC (ping) - expected: ALLOWED')
+    out_dmz_ot = h_scada.cmd('ping -c 1 -W 1 10.0.3.10')
+    results['dmz_ping_plc_allowed'] = ('1 received' in out_dmz_ot or ('0% packet loss' in out_dmz_ot and '100% packet loss' not in out_dmz_ot))
 
     print('[*] Testing: DMZ -> Attacker (ping) - expected: ALLOWED')
-    out2 = dmz.cmd('ping -c1 -W1 10.0.1.10')
-    results['dmz_ping_attacker'] = ('1 packets transmitted, 1 received' in out2)
+    out2 = h_dmz.cmd('ping -c 1 -W 1 10.0.1.10')
+    results['dmz_ping_attacker_allowed'] = ('1 received' in out2 or ('0% packet loss' in out2 and '100% packet loss' not in out2))
+
+    print('[*] Testing: h_scada (10.0.2.20) -> h_dc (10.0.1.20:389 TCP LDAP) - expected: ALLOWED')
+    out_ldap = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.1.20\', 389)); s.close(); print(\'LDAP_OK\')\nexcept Exception:\n print(\'LDAP_FAIL\')"')
+    results['scada_to_dc_ldap_tcp389_allowed'] = 'LDAP_OK' in out_ldap
+
+    print('[*] Testing: Attacker (10.0.1.10) -> PLC (10.0.3.10:502 Modbus) - expected: BLOCKED')
+    out_atk_modbus = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(1.5); s.connect((\'10.0.3.10\', 502)); s.close(); print(\'MODBUS_LEAK\')\nexcept Exception:\n print(\'MODBUS_BLOCKED_OK\')"')
+    results['attacker_to_plc_modbus_blocked'] = 'MODBUS_BLOCKED_OK' in out_atk_modbus
+
+    print('[*] Testing: h_scada (10.0.2.20) -> PLC (10.0.3.10:502 Modbus) - expected: ALLOWED')
+    out_scada_modbus = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.10\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['scada_to_plc_modbus_allowed'] = 'MODBUS_OK' in out_scada_modbus
+
+    print('[*] Testing: Attacker (10.0.1.10) -> Honeypot (10.0.5.99:502) - expected: ALLOWED')
+    out_honey = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.5.99\', 502)); s.close(); print(\'HONEY_OK\')\nexcept Exception:\n print(\'HONEY_FAIL\')"')
+    results['attacker_to_honeypot_allowed'] = 'HONEY_OK' in out_honey
 
     return results
 
 
+def apply_egress_containment() -> None:
+    """Aplica reglas de contención anti-escape en el namespace raíz.
+
+    Impide que tráfico originado en 10.0.0.0/8 o multicast 239.0.0.0/8
+    salga a través de la interfaz física / de salida default del host.
+    """
+    try:
+        res = subprocess.run(["ip", "route", "show", "default"], capture_output=True, text=True)
+        m = re.search(r"dev\s+([^\s]+)", res.stdout)
+        if m:
+            phys_iface = m.group(1).strip()
+            os.system(f"iptables -C OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP")
+            os.system(f"iptables -C FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP")
+            os.system(f"iptables -C OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || iptables -A OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP")
+            print(f"[*] Egress containment applied: blocking 10.0.0.0/8 & 239.0.0.0/8 out on {phys_iface}")
+    except Exception as exc:
+        print(f"[WARN] No se pudo configurar egress filtering: {exc}")
+
+
+def cleanup_egress_containment() -> None:
+    """Elimina las reglas de contención anti-escape aplicadas al host."""
+    try:
+        res = subprocess.run(["ip", "route", "show", "default"], capture_output=True, text=True)
+        m = re.search(r"dev\s+([^\s]+)", res.stdout)
+        if m:
+            phys_iface = m.group(1).strip()
+            os.system(f"iptables -D OUTPUT -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+            os.system(f"iptables -D FORWARD -s 10.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+            os.system(f"iptables -D OUTPUT -d 239.0.0.0/8 -o {phys_iface} -j DROP 2>/dev/null || true")
+    except Exception:
+        pass
+
+
+def teardown_topology_and_daemons(net: Optional[Mininet] = None) -> None:
+    """Detiene la red Mininet, termina emuladores de forma segura y limpia estado OVS."""
+    cleanup_egress_containment()
+    if net is not None:
+        try:
+            net.stop()
+        except Exception:
+            pass
+
+    pid_file = Path("/tmp/citylab_daemons.pids")
+    if pid_file.exists():
+        try:
+            pids = [line.strip() for line in pid_file.read_text().splitlines() if line.strip()]
+            for pid_str in pids:
+                try:
+                    pid = int(pid_str)
+                    cmdline_path = Path(f"/proc/{pid}/cmdline")
+                    if cmdline_path.exists():
+                        cmdline = cmdline_path.read_text()
+                        if "citylab" in cmdline.lower() or any(k in cmdline for k in ("emulator", "server", "pipeline", "proxy", "flag_service")):
+                            os.kill(pid, 15)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    continue
+            time.sleep(0.1)
+            for pid_str in pids:
+                try:
+                    pid = int(pid_str)
+                    cmdline_path = Path(f"/proc/{pid}/cmdline")
+                    if cmdline_path.exists():
+                        cmdline = cmdline_path.read_text()
+                        if "citylab" in cmdline.lower() or any(k in cmdline for k in ("emulator", "server", "pipeline", "proxy", "flag_service")):
+                            os.kill(pid, 9)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    continue
+            pid_file.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    os.system("mn -c >/dev/null 2>&1 || true")
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Start Mininet IEC62443 PoC topology')
+    parser = argparse.ArgumentParser(description='CityLab IEC 62443 Cyber Range Topology')
     parser.add_argument('--test', action='store_true', help='Run automated connectivity tests and exit')
     args = parser.parse_args()
 
@@ -243,87 +369,169 @@ def main() -> int:
     print('[*] Starting network... (requires root)')
     net.start()
 
-    # Force standalone mode so OVS switches learn MACs/ARP without an external controller.
-    for sw in ('s1', 's2', 's3'):
-        net.get(sw).cmd(f'ovs-vsctl set-fail-mode {sw} standalone')
-
-    # Configure switch s3 interface on the host to allow host processes to communicate with OT devices.
-    os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
-    os.system('ip link set s3 up')
-
-    fw = net.get('fw')
-    apply_fw_configuration(fw)
-    configure_host_routes(net)
-
-    # Auto-start services
     try:
-        auto_plc = os.environ.get('AUTO_START_PLC', '1')
-    except Exception:
-        auto_plc = '1'
-    if auto_plc == '1':
-        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
-        dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
-        ad_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
-
-        # Auto-start Corporate DC (h_dc @ 10.0.1.20)
-        try:
-            h_dc = net.get('h_dc')
-            h_dc.cmd(f'python3 {ad_script} > /tmp/h_dc.log 2>&1 &')
-            print('[*] h_dc (10.0.1.20): Samba AD DC emulator spawned on :88, :389, :445')
-        except Exception as exc:
-            print(f'[WARN] h_dc auto-start skipped: {exc}')
-
-        # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
-        plc_hosts = [
-            ('h_plc',        'water'),
-            ('h_plc_gas',    'gas'),
-            ('h_plc_elec',   'elec'),
-            ('h_plc_trans',  'transport'),
-            ('h_plc_hosp',   'elec'),
-            ('h_plc_honey',  'water'),
-        ]
-        for host_name, plant_type in plc_hosts:
+        # Configure OVS switches to standalone mode and add NORMAL fallback flow
+        for sw_name in ('s1', 's2', 's3', 's4', 's5'):
             try:
-                h = net.get(host_name)
-                cmd = f'python3 {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
-                h.cmd(cmd)
-                print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
-
-                # Spawn DNP3 Outstation on h_plc_elec (10.0.3.13:20000)
-                if host_name == 'h_plc_elec':
-                    h.cmd(f'python3 {dnp3_script} --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
-                    print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
-            except KeyError:
-                print(f'[WARN] {host_name} not present; skipping')
+                sw_node = net.get(sw_name)
+                res1 = sw_node.cmd(f'ovs-vsctl set-fail-mode {sw_name} standalone')
+                res2 = sw_node.cmd(f'ovs-ofctl add-flow {sw_name} "priority=0,actions=NORMAL"')
+                if 'error' in res1.lower() or 'error' in res2.lower() or 'ovs-ofctl:' in res2.lower() or 'ovs-vsctl:' in res1.lower():
+                    print(f'[WARN] OVS command emitted error on {sw_name}: {res1.strip()} {res2.strip()}')
             except Exception as exc:
-                print(f'[ERROR] {host_name}: {exc}')
+                print(f'[WARN] Fallo al configurar switch OVS {sw_name}: {exc}')
 
-        # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080)
-        try:
-            scada = net.get('h_scada')
-            scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
-            scada.cmd(f'python3 {scada_script} > /tmp/h_scada.log 2>&1 &')
-            print('[*] h_scada (10.0.2.20): scada_server spawned on :8080')
-        except Exception as exc:
-            print(f'[WARN] h_scada auto-start skipped: {exc}')
+        # Configure switch s3 interface on the host to allow host processes (like fed_icssim.py)
+        # to communicate with OT devices (like h_plc).
+        os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
+        os.system('ip link set s3 up')
 
-    if args.test:
+        fw = net.get('fw')
+        apply_fw_configuration(fw)
+        configure_host_routes(net)
+
+        # Optionally auto-start PLC runtime & OT emulators inside Mininet hosts.
         try:
+            auto_plc = os.environ.get('AUTO_START_PLC', '1')
+        except Exception:
+            auto_plc = '1'
+        if auto_plc == '1':
+            repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            py_bin = sys.executable
+            emulator = os.path.join(repo_root, 'plc', 'modbus_emulator.py')
+            siem_url = os.getenv('SIEM_HTTP_URL', 'http://10.0.2.20:8514')
+            # (host_name, plant_type) — mismo puerto 502, IPs aisladas por Mininet
+            plc_hosts = [
+                ('h_plc',        'water'),
+                ('h_plc_gas',    'gas'),
+                ('h_plc_elec',   'elec'),
+                ('h_plc_tr',     'transport'),
+                ('h_plc_hosp',   'hospital'),
+                ('h_desal',      'water'),
+                ('h_lighting',   'elec'),
+            ]
+            for host_name, plant_type in plc_hosts:
+                try:
+                    h = net.get(host_name)
+                    cmd = f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {emulator} --plant-type {plant_type} > /tmp/{host_name}.log 2>&1 &'
+                    h.cmd(cmd)
+                    print(f'[*] {host_name} ({plant_type}): modbus_emulator spawned on :502')
+                except KeyError:
+                    print(f'[WARN] {host_name} not present; skipping')
+                except Exception as exc:
+                    print(f'[ERROR] {host_name}: {exc}')
+
+            # Auto-start DNP3 Outstation en h_plc_elec (10.0.3.13:20000)
+            try:
+                dnp3_script = os.path.join(repo_root, 'plc', 'dnp3_emulator.py')
+                h_elec = net.get('h_plc_elec')
+                h_elec.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {dnp3_script} --host 0.0.0.0 --port 20000 > /tmp/h_plc_elec_dnp3.log 2>&1 &')
+                print('[*] h_plc_elec (10.0.3.13): dnp3_emulator spawned on :20000')
+            except Exception as exc:
+                print(f'[WARN] DNP3 auto-start skipped: {exc}')
+
+            # Auto-start IEC 61850 IED en h_ied (10.0.3.20:10102) con multicast GOOSE/SV (239.0.0.1 / 239.0.0.2)
+            try:
+                iec_script = os.path.join(repo_root, 'plc', 'iec61850_emulator.py')
+                h_ied_node = net.get('h_ied')
+                h_ied_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} ENABLE_MULTICAST=1 GOOSE_DEST=239.0.0.1 SV_DEST=239.0.0.2 {py_bin} {iec_script} --host 0.0.0.0 --goose-port 10102 --multicast > /tmp/h_ied.log 2>&1 &')
+                print('[*] h_ied (10.0.3.20): iec61850_emulator spawned on :10102 (multicast 239.0.0.1/239.0.0.2)')
+            except Exception as exc:
+                print(f'[WARN] IEC 61850 auto-start skipped: {exc}')
+
+            # Auto-start OPC UA Server en h_gateway (10.0.3.30:4840)
+            try:
+                opcua_script = os.path.join(repo_root, 'plc', 'opcua_emulator.py')
+                h_gw_node = net.get('h_gateway')
+                h_gw_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {opcua_script} --host 0.0.0.0 --port 4840 > /tmp/h_gateway.log 2>&1 &')
+                print('[*] h_gateway (10.0.3.30): opcua_emulator spawned on :4840')
+            except Exception as exc:
+                print(f'[WARN] OPC UA auto-start skipped: {exc}')
+
+            # Auto-start Honeypot en h_honey (10.0.5.99:502)
+            try:
+                honey_script = os.path.join(repo_root, 'plc', 'honeypot_server.py')
+                h_honey_node = net.get('h_honey')
+                h_honey_node.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {honey_script} --host 0.0.0.0 --port 502 > /tmp/h_honey.log 2>&1 &')
+                print('[*] h_honey (10.0.5.99): honeypot_server daemon spawned on :502')
+            except Exception as exc:
+                print(f'[WARN] Honeypot auto-start skipped: {exc}')
+
+            # Auto-start Samba AD DC Emulator en h_dc (10.0.1.20)
+            try:
+                dc_script = os.path.join(repo_root, 'network', 'ad_dc_emulator.py')
+                h_dc_node = net.get('h_dc')
+                h_dc_node.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {dc_script} --host 0.0.0.0 > /tmp/h_dc.log 2>&1 &')
+                print('[*] h_dc (10.0.1.20): ad_dc_emulator spawned on :88, :389, :445')
+            except Exception as exc:
+                print(f'[WARN] AD DC auto-start skipped: {exc}')
+
+            # Auto-start Modbus DPI Proxy en DMZ (h_scada @ 10.0.2.20:15020)
+            try:
+                scada = net.get('h_scada')
+                proxy_script = os.path.join(repo_root, 'network', 'modbus_proxy.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} {py_bin} {proxy_script} --host 0.0.0.0 --port 15020 > /tmp/h_modbus_proxy.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): modbus_proxy spawned on :15020')
+            except Exception as exc:
+                print(f'[WARN] modbus_proxy auto-start skipped: {exc}')
+
+            # Auto-start SCADA Server en DMZ (h_scada @ 10.0.2.20:8080) con USE_MODBUS_PROXY=1
+            try:
+                use_proxy_env = os.getenv('USE_MODBUS_PROXY', '1')
+                scada_script = os.path.join(repo_root, 'network', 'scada_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} SIEM_HTTP_URL={siem_url} USE_MODBUS_PROXY={use_proxy_env} {py_bin} {scada_script} > /tmp/h_scada.log 2>&1 &')
+                print(f'[*] h_scada (10.0.2.20): scada_server spawned on :8080 (USE_MODBUS_PROXY={use_proxy_env})')
+            except Exception as exc:
+                print(f'[WARN] h_scada auto-start skipped: {exc}')
+
+            # Auto-start HMI Server en DMZ (h_scada @ 10.0.2.20:8085)
+            try:
+                hmi_script = os.path.join(repo_root, 'network', 'hmi_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {hmi_script} --port 8085 > /tmp/h_hmi.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): hmi_server spawned on :8085')
+            except Exception as exc:
+                print(f'[WARN] hmi_server auto-start skipped: {exc}')
+
+            # Auto-start Viz Server en DMZ (h_scada @ 10.0.2.20:8090)
+            try:
+                viz_script = os.path.join(repo_root, 'network', 'viz_server.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {viz_script} --port 8090 > /tmp/h_viz.log 2>&1 &')
+                print('[*] h_scada (10.0.2.20): viz_server spawned on :8090')
+            except Exception as exc:
+                print(f'[WARN] viz_server auto-start skipped: {exc}')
+
+            # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
+            try:
+                siem_script = os.path.join(repo_root, 'network', 'siem_pipeline.py')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} {py_bin} {siem_script} --host 0.0.0.0 --port 8514 > /tmp/h_siem.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+                print('[*] h_scada (10.0.2.20): siem_pipeline daemon spawned on :8514')
+            except Exception as exc:
+                print(f'[WARN] siem_pipeline auto-start skipped: {exc}')
+
+            # Auto-start Flag & Scoring Service en DMZ (h_scada @ 10.0.2.20:8570)
+            try:
+                flag_script = os.path.join(repo_root, 'network', 'flag_service.py')
+                session_seed = os.getenv('CITYLAB_SESSION_SEED', 'citylab_default_session_seed_2026')
+                scada.cmd(f'nohup env PYTHONPATH={repo_root} CITYLAB_SESSION_SEED={session_seed} SIEM_HTTP_URL={siem_url} {py_bin} {flag_script} --host 0.0.0.0 --port 8570 > /tmp/h_flag_service.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+                print('[*] h_scada (10.0.2.20): flag_service daemon spawned on :8570')
+            except Exception as exc:
+                print(f'[WARN] flag_service auto-start skipped: {exc}')
+
+        if args.test:
             results = run_connectivity_tests(net)
-        except KeyError as exc:
-            print(f'[ERROR] Test result key missing: {exc}')
-            net.stop()
-            return 1
-        for k, v in results.items():
-            print(f' - {k}: {"PASS" if v else "FAIL"}')
-        net.stop()
-        return 0 if not results['attacker_ping_plc'] else 2
+            for k, v in results.items():
+                print(f' - {k}: {"PASS" if v else "FAIL"}')
+            return 0 if all(results.values()) else 2
 
-    print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
-    CustomCLI(net)
-    net.stop()
-    return 0
+        print('[*] Mininet CLI activa. Pruebas: sudo python3 network/topology.py --test')
+        # Use CustomCLI to allow a shortened pingall via MININET_PING_TIMEOUT env var
+        CustomCLI(net)
+        return 0
+    except Exception as exc:
+        print(f'[ERROR] Error en ejecución de topología: {exc}')
+        return 1
+    finally:
+        teardown_topology_and_daemons(net)
 
 
 if __name__ == '__main__':

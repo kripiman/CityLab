@@ -1,0 +1,21 @@
+id: '02'
+title: Inyección y Spoofing de Mensajes GOOSE IEC 61850
+difficulty: Avanzada
+category: Industrial Cybersecurity / Substation Automation / IEC 61850
+seed_scope:
+- stnum_offsets
+- flags
+objectives:
+- id: FLAG_1
+  desc: Sniffing de multicast GOOSE en subestación
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/health
+    expect: 200
+- id: FLAG_2
+  desc: Disparo no autorizado de interruptor de subestación detectado en SIEM
+  points: 200
+  check:
+    type: siem_alert
+    rule: GOOSE

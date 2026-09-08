@@ -164,3 +164,15 @@ logs/
 graphify-out/
 *.pcap
 
+# Debug dumps & local agent session archives
+kimi-debug-session_*.zip
+*.zip
+
+# Local IDE junk & local agent rules
+.clinerules/
+.cursor/*
+!.cursor/rules/
+.opencode/
+.windsurf/
+AGENTS.md
+

@@ -14,7 +14,7 @@ import argparse
 import logging
 import os
 import time
-from typing import Optional
+from typing import Optional, Sequence
 
 import helics as h
 try:
@@ -57,12 +57,12 @@ def create_federate() -> tuple[h.helics_federate, h.helics_publication, h.helics
     return fed, pub_congestion, pub_trip, sub_voltage
 
 
-def main() -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="HELICS Transport Federate")
     parser.add_argument("--plc-ip", default=os.environ.get("PLC_IP", "10.0.3.14"))
     parser.add_argument("--plc-port", type=int, default=int(os.environ.get("PLC_PORT", "502")))
     parser.add_argument("--mock-plc", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     use_mock = args.mock_plc or os.environ.get("MOCK_PLC", "0") == "1"
     client: Optional[ModbusTcpClient] = None

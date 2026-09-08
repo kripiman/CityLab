@@ -1,65 +1,160 @@
-# CityLab — Guía de Operaciones (Fase 3 Ciudad Completa)
+# 🛠️ CityLab — Guía de Operaciones y Validación (Runbook Integral)
 
-Instrucciones para desplegar, operar e interactuar con el Cyber Range ciberfísico de la ciudad completa (7 federados).
-
----
-
-## 1. Despliegue de la Ciudad Completa (Fase 3)
-
-### Modo Interactivo con Mininet + 7 Federados
-```bash
-sudo ./run_phase3.sh
-```
-
-El script desplegará:
-- **Broker HELICS 3.x**: Orquestación de 7 federados en puerto `23404` / `23500`.
-- **Procesos Ciberfísicos**: Agua SWaT 2 Etapas, Gasoducto, Ecuación de Swing Eléctrica, Transporte Semafórico.
-- **Federados de Infraestructura**: GridLAB-D 13.8 kV, Hospital Crítico, Servidor SCADA DMZ (`10.0.2.20:8080`), Estación de Ingeniería `h_ews` (`10.0.2.30`).
-- **Observabilidad Centralizada**: CSV Logger (`logs/cascading_events.csv`).
+Manual operativo para despliegue, ejecución, pruebas automatizadas y validación de seguridad en el Cyber Range CityLab.
 
 ---
 
-## 2. Consolas Nativas Interactivas (`lab_terminal.sh`)
+## 1. Comandos de Ciclo de Vida del Cyber Range (`./citylab.sh`)
 
-Para interactuar con soporte terminal completo PTY (`clear`, `nano`, `vim`, `nmap`, `hydra`, `tshark`, `tmux`):
+`./citylab.sh` es el punto de entrada unificado para administrar el laboratorio.
+
+### 🚀 Despliegue Completo (Co-Simulación HELICS + Red Mininet)
 
 ```bash
-# Terminal de Atacante (10.0.1.10)
-./lab_terminal.sh attacker
+# Despliegue interactivo completo (Fase 3: 7 federados + Mininet + DMZ + OT + AD DC)
+sudo ./citylab.sh up
 
-# Terminal Salto DMZ (10.0.2.10)
-./lab_terminal.sh dmz
-
-# Terminal Estación de Ingeniería DMZ (10.0.2.30)
-./lab_terminal.sh ews
-
-# Terminal Servidor SCADA (10.0.2.20)
-./lab_terminal.sh scada
-
-# Dashboard Multi-Panel tmux
-./lab_terminal.sh attach
+# Despliegue por fases específicas
+sudo ./citylab.sh up --phase 1   # Nodo mínimo viable (Water SWaT)
+sudo ./citylab.sh up --phase 2   # Co-simulación multisectorial
+sudo ./citylab.sh up --phase 3   # Ciudad completa (por defecto)
 ```
 
----
-
-## 3. Acceso a la API REST SCADA Central (DMZ)
-
-Desde la consola del atacante o salto DMZ:
+### 🔍 Inspección de Estado
 ```bash
-curl http://10.0.2.20:8080/api/telemetry
+./citylab.sh status
 ```
+Muestra todos los procesos activos (HELICS broker, federados físicos, emuladores Modbus/DNP3/IEC61850/OPCUA, SCADA, HMI, SIEM y proxy).
 
----
-
-## 4. Pruebas Automatizadas Locales (Smoke Test 7 Federados)
-
-Para validar la federación de 7 procesos sin Mininet:
+### 🛑 Detención y Limpieza Completa
 ```bash
-./helics_sim/smoke_test_phase3.sh
+sudo ./citylab.sh down
+```
+Detiene de forma limpia todos los procesos huérfanos (SIGTERM/SIGKILL) y desmonta switches, enlaces e interfaces virtuales de Mininet (`mn -c`).
+
+---
+
+## 2. Acceso a Servicios y Dashboards de Supervisión
+
+| Servicio | URL / Socket | Método / Protocolo | Autenticación (`STRICT_AUTH=1`) |
+|---|---|---|---|
+| **SCADA REST API** | `http://10.0.2.20:8080/api/telemetry` | `GET` | `Authorization: Bearer operator:OP_TOKEN_2026` |
+| **Control SCADA** | `http://10.0.2.20:8080/api/control` | `POST` JSON | `Authorization: Bearer engineer:ENG_TOKEN_2026` |
+| **Cluster HA Status**| `http://10.0.2.20:8080/api/ha/status` | `GET` | Libre / Consulta de estado |
+| **HMI Web Dashboard** | `http://10.0.2.20:8085` | `GET` HTTP | Interfaz visual P&ID integrada |
+| **Visualizador 2D SVG**| `http://10.0.2.20:8090` | `GET` HTTP / SVG | Dashboard ciberfísico interactivo airgapped (8 sectores) |
+| **Viz API Telemetría** | `http://10.0.2.20:8090/api/viz/frame` | `GET` JSON | Frame en vivo para visualizador y herramientas externas |
+| **SIEM HTTP Ingest** | `http://10.0.2.20:8514` | `POST` JSON | Endpoint de ingesta de eventos |
+| **Flag & Scoreboard**| `http://10.0.2.20:8570` | `GET`/`POST` REST | Flags dinámicas HMAC + Scoreboard MTTD/MTTR |
+| **Modbus DPI Proxy** | `10.0.2.20:15020` | Modbus TCP | Demuxing transparente por Unit ID |
+
+### Ejemplos de Interacción por Consola
+
+```bash
+# Consultar telemetría consolidada de sectores en SCADA
+curl -s http://10.0.2.20:8080/api/telemetry | jq .
+
+# Consultar cuadro de estado en tiempo real del visualizador 2D (8 sectores)
+curl -s http://10.0.2.20:8090/api/viz/frame | jq .
+
+# Ejecutar conmutación de actuador con token de ingeniero
+curl -s -X POST http://10.0.2.20:8080/api/control \
+  -H "Authorization: Bearer engineer:ENG_TOKEN_2026" \
+  -H "Content-Type: application/json" \
+  -d '{"sector": "water", "action": "set_pump", "value": 1}' | jq .
+
+# Lanzar puente de telemetría en modo Standalone (SCADA Poller con Bearer Token)
+python3 helics_sim/fed_viz_bridge.py --standalone --viz-url http://127.0.0.1:8090
 ```
 
 ---
 
-## 5. Escenarios CTF Disponibles
+## 3. Pruebas y Validación Automatizada
 
-- [Escenario 01: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)
+### 🧪 1. Suite de Pruebas Unitarias e Integración (Pytest)
+Ejecuta la suite completa de 265 pruebas unitarias y de integración (con `PYTHONPATH=.` obligatorio):
+```bash
+PYTHONPATH=. pytest network/tests plc/tests physical helics_sim attacker/tests -q
+# Salida esperada: 265 passed in ~50s
+```
+
+### 💨 2. Smoke Tests de Co-Simulación HELICS (Sin necesidad de root)
+Verifica la física acoplada y la sincronización de mensajes entre federados con temporizador global de 120 segundos:
+```bash
+# Smoke test Fase 4 (9 federados)
+./citylab.sh smoke --phase 4     # 9/9 federates EXIT=0 (~7s)
+
+# Smoke test Fase 7 (10 federados, incluye SIS SIL-3 y Desalinizadora)
+./citylab.sh smoke --phase 7     # 10/10 federates EXIT=0 (~6s)
+```
+
+### 🌐 3. Arnés de Validación End-to-End en Mininet Real (Requiere sudo)
+Ejecuta el ciclo de vida completo: firewall OVS, sockets OT reales, ataque GOOSE, alerta SIEM y mitigación SDN Circuit Breaker:
+```bash
+sudo ./scripts/validate_e2e.sh
+```
+
+### 🛡️ 4. Test Rápido de Conduits de Red Mininet
+Valida exclusivamente las 7 reglas de firewall y conduits de microsegmentación:
+```bash
+sudo python3 network/topology.py --test
+```
+
+### 📊 5. Profiling y Medición de Memoria / CPU
+Mide el consumo real de RAM (RSS) y procesador:
+```bash
+./citylab.sh profile
+cat logs/resource_profile_summary.txt
+```
+
+### 🧹 6. Verificación Estricta de Ausencia de Procesos Huérfanos
+Tras cualquier prueba en Mininet o desmontaje con `./citylab.sh down`, verifica la ausencia total de procesos residuales:
+```bash
+ps -eo pid,args | grep -E "modbus_emulator|dnp3_emulator|iec61850_emulator|opcua_emulator|honeypot_server|ad_dc_emulator|scada_server|hmi_server|viz_server|siem_pipeline|modbus_proxy|flag_service|fed_|helics_broker" | grep -v grep | wc -l
+# Salida obligatoria esperada: 0
+```
+
+---
+
+## 4. Matriz de Escenarios CTF / Ataques Industriales
+
+El Cyber Range incluye un currículo formativo completo de **29 escenarios CTF** documentados en [`docs/scenarios/`](file:///home/kripi/Documentos/GitHub/CityLab/docs/scenarios) (`scenario_01_*.md` a `scenario_29_*.md`). Destacan entre ellos:
+- [⚡ **Escenario 01**: Apagón Urbano en Cascada](scenarios/scenario_01_cascading_blackout.md)
+- [🛡️ **Escenario 02**: Inyección y Spoofing de Mensajes GOOSE IEC 61850](scenarios/scenario_02_goose_spoofing.md)
+- [📉 **Escenario 03**: Ataque Low and Slow al Sistema SIS SIL-3](scenarios/scenario_03_triton_low_slow.md)
+- [🔄 **Escenario 04**: Replay Attack Modbus Tipo Stuxnet](scenarios/scenario_04_stuxnet_replay.md)
+- [🔄 **Escenario 05**: Conmutación y Failover en Cluster SCADA HA](scenarios/scenario_05_dcs_failover.md)
+- [🔑 **Escenario 06**: Kerberoasting y Abuso de Samba Active Directory](scenarios/scenario_06_kerberoast_ad.md)
+- [🌐 **Escenario 17**: Exploración y Tour de la API HMI/SCADA](scenarios/scenario_17_scada_tour_api.md)
+- [🔀 **Escenario 19**: Cadena de Pivoteo Attacker $\to$ DMZ $\to$ OT](scenarios/scenario_19_guided_pivoting_chain.md)
+- [👁️ **Escenario 21**: Pérdida de Visibilidad (*Loss of View*) y Aislamiento](scenarios/scenario_21_loss_of_view_manual_isolation.md)
+- [🧱 **Escenario 23**: Defensa Dinámica con Controlador SDN y Circuit Breaker](scenarios/scenario_23_live_sdn_defense_under_fire.md)
+
+---
+
+## 5. Evaluación de Objetivos, Flags Dinámicas y Métricas SOC
+
+CityLab utiliza un motor de evaluación server-side basado en manifiestos YAML (`config/scenarios/scenario_NN.yml`) y flags HMAC generadas dinámicamente a partir de la semilla de sesión `CITYLAB_SESSION_SEED`.
+
+### 🏁 Evaluación y Emisión de Flags por Estado Real
+```bash
+# Validar el cumplimiento de objetivos de un escenario (ej. 01)
+python3 scripts/run_scenario.py --id 01 --check
+
+# Validar el manifiesto YAML contra schema.json
+python3 scripts/run_scenario.py --id 01 --validate-manifest
+
+# Enviar una flag para validación oficial
+python3 scripts/run_scenario.py --id 01 --submit "FLAG_1{4f8a9b2c1d3e}" --team "estudiante_1"
+```
+
+### 🏆 Scoreboard y Métricas SOC Automatizadas (MTTD / MTTR)
+```bash
+# Consultar métricas de tiempo medio de detección y mitigación
+python3 network/scoreboard.py
+
+# Ver el Scoreboard consolidado de la sesión
+python3 scripts/run_scenario.py --scorecard
+```
+
+

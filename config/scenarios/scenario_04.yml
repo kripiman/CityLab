@@ -1,0 +1,21 @@
+id: '04'
+title: Replay Attack Modbus Tipo Stuxnet
+difficulty: Intermedio
+category: Industrial Protocol Exploitation / Modbus Replay
+seed_scope:
+- packet_hashes
+- flags
+objectives:
+- id: FLAG_1
+  desc: Captura de paquetes Modbus legítimos
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/telemetry
+    expect: 200
+- id: FLAG_2
+  desc: Replay inyectado y detectado por anomalía Modbus DPI
+  points: 200
+  check:
+    type: siem_alert
+    rule: Modbus

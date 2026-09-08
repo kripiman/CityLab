@@ -1,0 +1,15 @@
+id: '20'
+title: Conmutación de Modo de Autenticación Estricta (STRICT_AUTH)
+difficulty: Intermedio
+category: Security Hardening / RBAC / Authentication Enforcing
+seed_scope:
+- strict_tokens
+- flags
+objectives:
+- id: FLAG_1
+  desc: Verificación de enforcement de tokens de rol en SCADA API
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8080/api/whoami
+    expect: 200
