@@ -263,8 +263,9 @@ class Dnp3Server:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Emulador DNP3 Outstation IEEE 1815 (PLC Eléctrico)")
     default_host = os.getenv("DNP3_HOST", os.getenv("BIND_HOST", "0.0.0.0"))
+    default_port = int(os.getenv("DNP3_PORT", "20000"))
     parser.add_argument("--host", default=default_host, help=f"Dirección IP de bind (default: {default_host})")
-    parser.add_argument("--port", type=int, default=20000, help="Puerto DNP3 TCP (default: 20000)")
+    parser.add_argument("--port", type=int, default=default_port, help=f"Puerto DNP3 TCP (default: {default_port})")
     args = parser.parse_args()
 
     server = Dnp3Server(args.host, args.port)

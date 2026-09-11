@@ -20,8 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from helics_sim.fed_gridmock import main as fed_gridmock_main
-from physical.water.plant_water import TwoStageWaterPlant
+from network.siem_pipeline import SiemCorrelationEngine
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][ATTRIBUTION-ATTACK] %(message)s')
 LOGGER = logging.getLogger('attack_grid_heatwave_attribution')
@@ -29,19 +28,37 @@ LOGGER = logging.getLogger('attack_grid_heatwave_attribution')
 
 class GridHeatwaveAttributionAttack:
 
+    def __init__(self) -> None:
+        self.siem = SiemCorrelationEngine()
+
     def execute_hybrid_attack(self) -> Dict[str, Any]:
         LOGGER.info("Simulando pico de demanda por ola de calor urbana (Carga 550 kW)...")
         heatwave_demand_kw = 550.0
-        
+        attacker_ip = '10.0.1.10'  # h_attacker IP (Corporate network 10.0.1.0/24)
+
         LOGGER.info("Inyectando disrupción ciberfísica simultánea sobre el alimentador principal...")
         cyber_injection = True
-        
+
+        evt = self.siem.ingest_raw_event(
+            event_category='process_control',
+            event_type='malicious_write',
+            severity='HIGH',
+            source_ip=attacker_ip,
+            destination_ip='10.0.3.13',
+            service_name='modbus_dnp3',
+            message=f'Concurrent Grid Stress: {heatwave_demand_kw:.0f} kW peak demand with simultaneous Breaker Trip Injection (Coil 1 = 1)'
+        )
+
+        alerts = self.siem.active_alerts
+        LOGGER.info("Evento ingestado en SIEM para analisis de atribucion: %s | Alertas activas: %d", evt, len(alerts))
+
         return {
             'status': 'SUCCESS',
-            'mode': 'TABLETOP_MOCK',
+            'mode': 'SIEM_INGESTED',
             'environmental_load_kw': heatwave_demand_kw,
             'cyber_disruption_injected': cyber_injection,
-            'attribution_complexity': 'HIGH'
+            'attribution_complexity': 'HIGH',
+            'siem_alerts_count': len(alerts)
         }
 
 

@@ -30,7 +30,9 @@ POLL_INTERVAL = 1.0
 
 @dataclass
 class SafetyInterlockLimits:
-    max_tank_level_m3: float = 19.0       # 95% de 20m³ SWaT T1
+    # SIS_MAX_TANK_LEVEL permite la randomizacion pedagogica del Escenario 28 (Entorno Ciego
+    # Anti-Memorizacion); en ausencia de la env var conserva el valor de diseño 19.0 (95% de 20m³ SWaT T1).
+    max_tank_level_m3: float = float(os.getenv('SIS_MAX_TANK_LEVEL', '19.0'))
     min_tank_level_m3: float = 0.5        # 0.5m³ SWaT T1
     max_gas_pressure_psi: float = 180.0   # Presión máxima admisible tubería gas
     max_grid_freq_hz: float = 62.5        # Frecuencia máxima admisible red eléctrica (SIL-3 threshold sobre 60Hz nominal)

@@ -19,7 +19,13 @@ Escenario dinámico en el que el laboratorio asigna aleatoriamente direcciones I
    ```bash
    python3 attacker/attack_blind_randomized_env.py
    ```
-2. Analizar las variables aleatorias y adaptar la estrategia de intrusión.
+   El script persiste los parámetros generados en `/tmp/citylab_blind_env.json` y `/tmp/citylab_blind_env.sh`.
+2. Antes de levantar el laboratorio, cargar los parámetros aleatorizados en el entorno:
+   ```bash
+   source /tmp/citylab_blind_env.sh   # exporta DNP3_PORT y SIS_MAX_TANK_LEVEL
+   sudo -E ./citylab.sh up            # -E preserva las variables exportadas bajo sudo
+   ```
+3. Analizar las variables aleatorias y adaptar la estrategia de intrusión.
 
 ---
 
