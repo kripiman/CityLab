@@ -100,9 +100,9 @@
     "semantic_hash": "428fa10f13e026c68a8a62b5a28d5d83"
   },
   "network/scada_server.py": {
-    "mtime": 1788911640.4384189,
-    "ast_hash": "c58a83f38176d1edc2ead4dcb358b62f",
-    "semantic_hash": "c58a83f38176d1edc2ead4dcb358b62f"
+    "mtime": 1789138629.11581,
+    "ast_hash": "b41396a6e3329bb23cf1db49decc4dbe",
+    "semantic_hash": ""
   },
   "network/sdn_controller.py": {
     "mtime": 1788911640.4384673,
@@ -120,9 +120,9 @@
     "semantic_hash": "ad9a243158a82695684e223acaa0cbf5"
   },
   "network/topology.py": {
-    "mtime": 1788911640.438572,
-    "ast_hash": "13ec9ef9db0d43377d02aa0b1d0ee056",
-    "semantic_hash": "13ec9ef9db0d43377d02aa0b1d0ee056"
+    "mtime": 1789138615.9097972,
+    "ast_hash": "f63fdc7825dd9d536c01968870bdd687",
+    "semantic_hash": ""
   },
   "physical/__init__.py": {
     "mtime": 1785963945.6979995,
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788911617.1314297,
-    "ast_hash": "b1e6fe70ce95e358bf3aff24eceac835",
+    "mtime": 1789136552.7119915,
+    "ast_hash": "7e9b3af89e5e40773902ec208d3dec5a",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -1265,8 +1265,8 @@
     "semantic_hash": ""
   },
   "docs/Audits/PLAN_REMEDIACION_QA_20260903.md": {
-    "mtime": 1788911617.134791,
-    "ast_hash": "0a958d4d9ac425d0d8f6ec446ba06608",
+    "mtime": 1789138654.384834,
+    "ast_hash": "9e81cb6f5f5d717a4d9ba0c7d8b08a92",
     "semantic_hash": ""
   },
   "lab_terminal.sh": {

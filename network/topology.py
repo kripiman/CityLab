@@ -281,6 +281,28 @@ def run_connectivity_tests(net: Mininet) -> Dict[str, bool]:
     out_honey = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.5.99\', 502)); s.close(); print(\'HONEY_OK\')\nexcept Exception:\n print(\'HONEY_FAIL\')"')
     results['attacker_to_honeypot_allowed'] = 'HONEY_OK' in out_honey
 
+    h_ews = net.get('h_ews')
+
+    print('[*] Testing: h_scada (10.0.2.20) -> Desal PLC (10.0.3.16:502 Modbus) - expected: ALLOWED')
+    out_scada_desal = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.16\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['scada_to_desal_modbus_allowed'] = 'MODBUS_OK' in out_scada_desal
+
+    print('[*] Testing: h_scada (10.0.2.20) -> Lighting PLC (10.0.3.17:502 Modbus) - expected: ALLOWED')
+    out_scada_light = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.17\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['scada_to_lighting_modbus_allowed'] = 'MODBUS_OK' in out_scada_light
+
+    print('[*] Testing: h_scada (10.0.2.20) -> Hospital PLC (10.0.3.15:502 Modbus) - expected: ALLOWED')
+    out_scada_hosp = h_scada.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.15\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['scada_to_hosp_modbus_allowed'] = 'MODBUS_OK' in out_scada_hosp
+
+    print('[*] Testing: Attacker (10.0.1.10) -> Desal PLC (10.0.3.16:502 Modbus) - expected: BLOCKED')
+    out_atk_desal = h_attacker.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(1.5); s.connect((\'10.0.3.16\', 502)); s.close(); print(\'MODBUS_LEAK\')\nexcept Exception:\n print(\'MODBUS_BLOCKED_OK\')"')
+    results['attacker_to_desal_modbus_blocked'] = 'MODBUS_BLOCKED_OK' in out_atk_desal
+
+    print('[*] Testing: h_ews PAW (10.0.4.30) -> PLC (10.0.3.10:502 Modbus) - expected: ALLOWED')
+    out_ews_plc = h_ews.cmd('python3 -c "import socket\ntry:\n s=socket.socket(); s.settimeout(2.0); s.connect((\'10.0.3.10\', 502)); s.close(); print(\'MODBUS_OK\')\nexcept Exception:\n print(\'MODBUS_FAIL\')"')
+    results['ews_to_plc_modbus_allowed'] = 'MODBUS_OK' in out_ews_plc
+
     return results
 
 

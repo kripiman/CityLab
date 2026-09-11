@@ -8,8 +8,8 @@
 | **Commit Base:** | `e3d8155` (HEAD rama `test`, tag `v0.16.2`) |
 | **Módulos Afectados:** | `scripts/validate_localhost.py`, `helics_sim/sentinel_utils.py` (nuevo), `helics_sim/fed_gridmock.py`, `helics_sim/fed_logger.py`, `network/tests/test_siem.py`, `plc/tests/test_iec61850.py`, `attacker/tests/test_attack_goose.py`, `scripts/run_scenario.py`, `attacker/tests/test_run_scenario.py` (nuevo) |
 | **Estándares:** | IEC 62443 / NIST SP 800-82r3 / Reglas de Calidad CityLab (Anti-trampa #18, SUT Real #6, Asertos Fuertes #1, Anti-Flaky #19, Argv #11) |
-| **Estado:** | EN PROCESO DE IMPLEMENTACIÓN |
-| **Fecha:** | 2026-09-03 |
+| **Estado:** | COMPLETADO Y AUDITADO (v0.16.4) |
+| **Fecha:** | 2026-09-03 (Actualizado 2026-09-11) |
 
 ---
 
@@ -66,3 +66,13 @@ flowchart TD
 4. `plc/tests/test_iec61850.py` y `attacker/tests/test_attack_goose.py` no deben contener retardos ciegos fijos.
 5. `scripts/run_scenario.py` debe ser testeable con paso explícito de `argv`.
 6. Cero procesos huérfanos post-ejecución.
+
+---
+
+## 4. RESOLUCIÓN DE BRECHAS RESIDUALES DE AUDITORÍA (2026-09-11)
+
+| Caso Residual | Estado Previo | Dictamen / Resolución Implementada |
+|---|---|---|
+| **E2E Mininet Sudo Layer** | ❓ Bloqueado | **🔵 RESUELTO**: Ejecutado personalmente por el usuario con sudo y auditado por QA Lead en `scripts/validate_e2e.sh:100-167`. Verificada la autenticidad de asertos en OVS flow dumps, readback real en log de IED (`XCBR1.Pos.stVal=False`), puertos en escucha y aislamiento de contenedores. |
+| **`run_connectivity_tests()` (--test)** | 🟡 Cobertura Parcial | **🔵 RESUELTO**: Ampliado en `network/topology.py` de 7 a 12 asertos directos. Ahora verifica conectividad Modbus hacia `h_desal` (10.0.3.16:502), `h_lighting` (10.0.3.17:502), `h_plc_hosp` (10.0.3.15:502), aislamiento desde `h_attacker`, y canal de mantenimiento privilegiado desde `h_ews` (10.0.4.30: PAW Zone). |
+| **Alcance `PLC_CONFIGS` (SCADA)** | 🟡 Brecha de Polling | **🔵 FORMALIZADO**: Formalizado en `network/scada_server.py` y `docs/ERS.md` (RF-06.2). Las 4 infraestructuras primarias (`water`, `gas`, `elec`, `transport`) componen el loop de control crítico Nivel 2. Los activos secundarios (`hosp`, `desal`, `lighting`) se monitorean a nivel gerencial/desacoplado vía Visualizador 2D SVG (`fed_viz_bridge.py`), preservando la brecha educativa deliberada de visibilidad CTF. |

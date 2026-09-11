@@ -3,7 +3,7 @@
 **CityLab** es un entorno de entrenamiento ciberfísico (*Cyber Range*) 100% basado en software, diseñado para simular ataques ofensivos (Red Team / Hacking Ético) y monitoreo defensivo (Blue Team) sobre infraestructuras críticas urbanas e interdependencias ciberfísicas en cascada.
 
 - **0% Sobrecarga de Máquinas Virtuales**: Ejecución nativa en Linux mediante Mininet y procesos distribuidos.
-- **Eficiencia de Recursos**: Consumo de memoria RAM total $<1.5\text{ GB}$ para la ciudad completa.
+- **Eficiencia de Recursos**: Consumo de memoria RAM total $<8.0\text{ GB}$ para la ciudad completa.
 - **Co-Simulación Multisectorial**: Coordinación temporal a tiempo real vía **HELICS 3.x** (hasta 11 federados).
 - **Estándar Industrial**: Segmentación de red alineada con **IEC 62443** (Zonas Corporate, DMZ, Celda OT, PAW EWS y Decoy Honeypot).
 - **Visualizador 2D Airgapped**: Dashboard interactivo vectorial SVG/CSS en tiempo real (puerto `:8090`), 100% offline sin dependencias externas.

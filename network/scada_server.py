@@ -37,6 +37,14 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s][SCADA_SERVER] %(message)s')
 LOGGER = logging.getLogger('scada_server')
 
+# Configuración de sondeo de infraestructura crítica primaria (IEC 62443 Nivel 2).
+# Alcance estricto (ERS RF-06.2): 'water', 'gas', 'elec', 'transport'.
+# NOTA DE DISEÑO PEDAGÓGICO / AUDITORÍA:
+# Los activos secundarios de campo (h_plc_hosp 10.0.3.15, h_desal 10.0.3.16, h_lighting 10.0.3.17)
+# disponen de daemons Modbus reales en la Celda OT y son monitoreados de forma desacoplada
+# por el Visualizador 2D (viz_server.py + fed_viz_bridge.py). Su omisión en el loop de polling
+# primario de SCADA es un diseño educativo intencional (Loss of Primary SCADA Visibility)
+# conforme a la especificación ERS RF-06.2 y escenario CTF F-06.
 PLC_CONFIGS = {
     'water':     ('10.0.3.10', 502),
     'gas':       ('10.0.3.12', 502),
