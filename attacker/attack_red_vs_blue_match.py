@@ -12,7 +12,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -36,9 +36,10 @@ class RedVsBlueMatch:
     def __init__(self, siem_url: str = None) -> None:
         self.engine = ScoreboardEngine(siem_url=siem_url or os.getenv('SIEM_HTTP_URL', 'http://10.0.2.20:8514'))
 
-    def run_adjudicated_match(self) -> Dict[str, Any]:
+    def run_adjudicated_match(self, events: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         LOGGER.info("Iniciando ciberejercicio Red vs Blue con motor de arbitraje...")
-        scorecard = self.engine.generate_scorecard(scenario_id='27')
+        raw_events = events if events is not None else self.engine.fetch_siem_events()
+        scorecard = self.engine.generate_scorecard(scenario_id='27', events=raw_events)
         metrics = scorecard['soc_metrics']
 
         if scorecard['total_events_analyzed'] == 0:
@@ -46,16 +47,44 @@ class RedVsBlueMatch:
             score_board = dict(_TABLETOP_BASELINE)
             mode = 'TABLETOP_FALLBACK'
         else:
-            # Puntuacion derivada de metricas SOC reales medidas por network/scoreboard.py:
-            # Red Team puntua por ataques efectivamente detectados; Blue Team por acciones de
-            # deteccion/mitigacion reales, con bono si la contencion fue rapida (<2min).
-            red_pts = metrics['attacks_detected'] * 100
+            # Metricas ofensivas del Red Team (exito de intrusion, disrupcion y evasion):
+            # El equipo atacante puntua por compromisos exitosos (exploits), impacto en procesos
+            # (disrupciones/trips) y ataques no mitigados por la defensa.
+            # NO se recompensa al atacante por ser detectado por el Blue Team.
+            successful_exploits = sum(
+                1 for ev in raw_events
+                if str(ev.get('event_type', '')).lower() in ('system_trip', 'malicious_write', 'intrusion', 'exploit')
+                or any(k in str(ev.get('message', '')).lower() for k in ('trip', 'disrupt', 'sabotage', 'override', 'compromise', 'unauthorized write'))
+            )
+            services_disrupted = sum(
+                1 for ev in raw_events
+                if str(ev.get('event_type', '')).lower() == 'system_trip'
+                or any(k in str(ev.get('message', '')).lower() for k in ('system_trip', 'trip breaker', 'service disrupted', 'shutdown', 'blackout'))
+            )
+            # Ataques que no fueron neutralizados por acciones defensivas del Blue Team
+            unmitigated_attacks = max(0, metrics['attacks_detected'] - metrics['defense_actions'])
+
+            if successful_exploits > 0 or services_disrupted > 0:
+                red_pts = (successful_exploits * 100) + (services_disrupted * 100) + (unmitigated_attacks * 50)
+            else:
+                red_pts = unmitigated_attacks * 100
+
+            metrics['successful_exploits'] = successful_exploits
+            metrics['services_disrupted'] = services_disrupted
+            metrics['unmitigated_attacks'] = unmitigated_attacks
+
+            # Metricas defensivas del Blue Team (deteccion, respuesta y mitigacion rapida):
             blue_pts = metrics['alerts_generated'] * 50 + metrics['defense_actions'] * 150
             fast_containment = metrics['mttr_seconds'] is not None and metrics['mttr_seconds'] < 120
             if fast_containment:
                 blue_pts += 200
+
             winner_team = 'Blue Team' if blue_pts >= red_pts else 'Red Team'
-            reason = f"MTTR {metrics['mttr_formatted']}" if fast_containment else f"MTTD {metrics['mttd_formatted']} / MTTR {metrics['mttr_formatted']}"
+            if winner_team == 'Red Team':
+                reason = f"Exploits {successful_exploits} / Disrupciones {services_disrupted} / Evasiones {unmitigated_attacks}"
+            else:
+                reason = f"MTTR {metrics['mttr_formatted']}" if fast_containment else f"MTTD {metrics['mttd_formatted']} / MTTR {metrics['mttr_formatted']}"
+
             score_board = {
                 'red_team_points': red_pts,
                 'blue_team_points': blue_pts,

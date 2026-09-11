@@ -320,8 +320,8 @@
     "semantic_hash": "82c7fab9e5abda56cda00f003f8eaa99"
   },
   "attacker/attack_red_vs_blue_match.py": {
-    "mtime": 1789139844.6442962,
-    "ast_hash": "9382c60a8fdf444e445fe6dbd6901f0e",
+    "mtime": 1789146278.520383,
+    "ast_hash": "d49c8fdcbeca11d0f21047511de1c329",
     "semantic_hash": ""
   },
   "attacker/attack_scada_tour.py": {
@@ -475,9 +475,9 @@
     "semantic_hash": "2a2ee7200d363dad775a2500871e99ae"
   },
   "attacker/tests/test_scenario_27_red_blue.py": {
-    "mtime": 1788911617.1330287,
-    "ast_hash": "47d91494ae9b3d0f067f5d14169688cd",
-    "semantic_hash": "47d91494ae9b3d0f067f5d14169688cd"
+    "mtime": 1789146313.7803795,
+    "ast_hash": "6a321948b7fb36a301844c5f23d213e0",
+    "semantic_hash": ""
   },
   "attacker/tests/test_scenario_28_blind.py": {
     "mtime": 1788911617.1331055,
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789141242.4906125,
-    "ast_hash": "1b4b912483481f5cfb384fd6cad1720c",
+    "mtime": 1789146406.0173707,
+    "ast_hash": "7b6092b24ba94b5adff7b9842d9fb5fd",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {

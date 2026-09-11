@@ -1586,7 +1586,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "attack_historian_anti_forensics.py"
     },
     {
@@ -1599,7 +1599,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics_historianantiforensicsattack",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "historianantiforensicsattack"
     },
     {
@@ -1611,7 +1611,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics_historianantiforensicsattack_init",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": ".__init__()"
     },
     {
@@ -1623,7 +1623,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics_historianantiforensicsattack_execute_log_tampering",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": ".execute_log_tampering()"
     },
     {
@@ -1634,7 +1634,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics_py_any",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "any"
     },
     {
@@ -1646,7 +1646,7 @@
       "_origin": "ast",
       "id": "attacker_attack_historian_anti_forensics_main",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "main()"
     },
     {
@@ -1752,8 +1752,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_attack_insider_rbac_insiderrbacattack_init",
-      "community": 27,
-      "community_name": "RBACResolver",
+      "community": 51,
+      "community_name": "InsiderRbacAttack",
       "norm_label": ".__init__()"
     },
     {
@@ -1892,8 +1892,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "attacker_attack_live_sdn_defense",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "attack_live_sdn_defense.py"
     },
     {
@@ -1905,8 +1905,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "attacker_attack_live_sdn_defense_livesdndefense",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "livesdndefense"
     },
     {
@@ -1917,8 +1917,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_attack_live_sdn_defense_livesdndefense_execute_sdn_mitigation",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": ".execute_sdn_mitigation()"
     },
     {
@@ -1928,8 +1928,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "attacker_attack_live_sdn_defense_py_any",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "any"
     },
     {
@@ -1940,8 +1940,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_attack_live_sdn_defense_main",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "main()"
     },
     {
@@ -2875,7 +2875,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "attacker/attack_red_vs_blue_match.py",
-      "source_location": "L76",
+      "source_location": "L105",
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_attack_red_vs_blue_match_main",
@@ -3032,7 +3032,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "attack_stuxnet_replay.py"
     },
     {
@@ -3045,7 +3045,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_stuxnetreplayattack",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "stuxnetreplayattack"
     },
     {
@@ -3057,7 +3057,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_stuxnetreplayattack_init",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": ".__init__()"
     },
     {
@@ -3069,7 +3069,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_stuxnetreplayattack_record_normal_baseline",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": ".record_normal_baseline()"
     },
     {
@@ -3080,7 +3080,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_py_any",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "any"
     },
     {
@@ -3092,7 +3092,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_stuxnetreplayattack_execute_replay_and_sabotage",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": ".execute_replay_and_sabotage()"
     },
     {
@@ -3104,7 +3104,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_main",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "main()"
     },
     {
@@ -3115,7 +3115,7 @@
       "_origin": "ast",
       "id": "attacker_attack_stuxnet_replay_rationale_36",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "ataque replay con sabotaje fisico y verificacion de divergencia telemetria vs..."
     },
     {
@@ -3508,7 +3508,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "test_attack_anti_forensics.py"
     },
     {
@@ -3521,7 +3521,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_testantiforensicsattack",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "testantiforensicsattack"
     },
     {
@@ -3533,7 +3533,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_testantiforensicsattack_test_anti_forensics_execution_wipes_records",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": ".test_anti_forensics_execution_wipes_records()"
     },
     {
@@ -3545,7 +3545,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_testantiforensicsattack_test_anti_forensics_cli",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": ".test_anti_forensics_cli()"
     },
     {
@@ -3557,7 +3557,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_testantiforensicsattack_cleanup",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "._cleanup()"
     },
     {
@@ -3568,7 +3568,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_rationale_17",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "verifica que el ataque purgue fisicamente los registros de telemetria de la..."
     },
     {
@@ -3579,7 +3579,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_anti_forensics_rationale_39",
       "community": 142,
-      "community_name": "HistorianAntiForensicsAttack",
+      "community_name": "HistorianTSDB",
       "norm_label": "verifica ejecucion cli con db temporal."
     },
     {
@@ -3942,8 +3942,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_tests_test_attack_dosing_testchemicaldosingattack_test_dosing_attack_main_cli",
-      "community": 24,
-      "community_name": "running_modbus_server",
+      "community": 2,
+      "community_name": "ChemicalDosingAttack",
       "norm_label": ".test_dosing_attack_main_cli()"
     },
     {
@@ -3986,8 +3986,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "attacker_tests_test_attack_dosing_rationale_55",
-      "community": 24,
-      "community_name": "running_modbus_server",
+      "community": 2,
+      "community_name": "ChemicalDosingAttack",
       "norm_label": "el entrypoint cli main() ejecuta la sobre-dosificacion contra el puerto de test..."
     },
     {
@@ -4850,7 +4850,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "test_attack_stuxnet.py"
     },
     {
@@ -4863,7 +4863,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_teststuxnetattack",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "teststuxnetattack"
     },
     {
@@ -4875,7 +4875,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_teststuxnetattack_test_stuxnet_replay_socket_divergence_e2e",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": ".test_stuxnet_replay_socket_divergence_e2e()"
     },
     {
@@ -4887,7 +4887,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_teststuxnetattack_test_stuxnet_replay_tabletop_fallback",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": ".test_stuxnet_replay_tabletop_fallback()"
     },
     {
@@ -4911,7 +4911,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_teststuxnetattack_cleanup",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "._cleanup()"
     },
     {
@@ -4922,7 +4922,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_rationale_17",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "verifica que el ataque sabotee el plc via modbus mientras el historian recibe..."
     },
     {
@@ -4933,7 +4933,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_attack_stuxnet_rationale_43",
       "community": 36,
-      "community_name": "HistorianTSDB",
+      "community_name": "StuxnetReplayAttack",
       "norm_label": "si el plc no esta activo, el ataque activa el modo tabletop_fallback..."
     },
     {
@@ -5153,7 +5153,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "test_run_scenario.py"
     },
     {
@@ -5166,7 +5166,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "testrunscenario"
     },
     {
@@ -5178,7 +5178,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_validate_manifest_scenario_01",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_validate_manifest_scenario_01()"
     },
     {
@@ -5190,7 +5190,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_validate_manifest_nonexistent_negative",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_validate_manifest_nonexistent_negative()"
     },
     {
@@ -5202,7 +5202,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_main_cli_validate_manifest_success",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_main_cli_validate_manifest_success()"
     },
     {
@@ -5214,7 +5214,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_main_cli_validate_manifest_failure",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_main_cli_validate_manifest_failure()"
     },
     {
@@ -5226,7 +5226,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_main_cli_scorecard_unreachable_fallback",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_main_cli_scorecard_unreachable_fallback()"
     },
     {
@@ -5238,7 +5238,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_testrunscenario_test_main_cli_submit_unreachable_fallback",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": ".test_main_cli_submit_unreachable_fallback()"
     },
     {
@@ -5249,7 +5249,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_13",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "pruebas unitarias sobre scripts/run_scenario.py."
     },
     {
@@ -5260,7 +5260,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_16",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "validar manifiesto existente de scenario_01 via funcion interna."
     },
     {
@@ -5271,7 +5271,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_21",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "validar manifiesto inexistente debe retornar false sin lanzar excepcion no..."
     },
     {
@@ -5282,7 +5282,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_26",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "main() con --validate-manifest en escenario valido debe retornar codigo 0."
     },
     {
@@ -5293,7 +5293,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_31",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "main() con --validate-manifest en escenario invalido debe retornar codigo 2."
     },
     {
@@ -5304,7 +5304,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_36",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "main() con --scorecard hacia url caida no debe romper ejecucion y retorna..."
     },
     {
@@ -5315,7 +5315,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_run_scenario_rationale_41",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "main() con --submit hacia servicio caido retorna codigo 1 controladamente."
     },
     {
@@ -5561,7 +5561,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_21_loss_of_view_py_patch",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "patch"
     },
     {
@@ -5573,7 +5573,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_21_loss_of_view_testscenario21lossofview_test_loss_of_view_behavioral_polling_accumulation",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".test_loss_of_view_behavioral_polling_accumulation()"
     },
     {
@@ -5584,8 +5584,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_21_loss_of_view_testscenario21lossofview_test_hmi_detects_loss_of_view_alarm",
-      "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".test_hmi_detects_loss_of_view_alarm()"
     },
     {
@@ -5596,7 +5596,7 @@
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_21_loss_of_view_rationale_18",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "ejercita la logica de produccion poll_plcs_once() y verifica la transicion real..."
     },
     {
@@ -5606,8 +5606,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_21_loss_of_view_rationale_47",
-      "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "verifica que el motor hmi registre alarma de loss_of_view y cambie a..."
     },
     {
@@ -5653,8 +5653,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_23_sdn",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "test_scenario_23_sdn.py"
     },
     {
@@ -5666,8 +5666,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_23_sdn_testscenario23sdn",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "testscenario23sdn"
     },
     {
@@ -5677,8 +5677,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_23_sdn_py_patch",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "patch"
     },
     {
@@ -5689,8 +5689,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_23_sdn_testscenario23sdn_test_sdn_defense_execution_success",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": ".test_sdn_defense_execution_success()"
     },
     {
@@ -5701,8 +5701,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "attacker_tests_test_scenario_23_sdn_testscenario23sdn_test_sdn_defense_execution_no_ovs",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": ".test_sdn_defense_execution_no_ovs()"
     },
     {
@@ -5917,6 +5917,75 @@
       "community": 21,
       "community_name": "ScoreboardEngine",
       "norm_label": ".test_red_blue_match_execution()"
+    },
+    {
+      "label": ".test_red_team_offensive_scoring()",
+      "file_type": "code",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L18",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_offensive_scoring",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": ".test_red_team_offensive_scoring()"
+    },
+    {
+      "label": ".test_red_team_not_rewarded_when_fully_mitigated()",
+      "file_type": "code",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L64",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_not_rewarded_when_fully_mitigated",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": ".test_red_team_not_rewarded_when_fully_mitigated()"
+    },
+    {
+      "label": ".test_red_team_evasion_fallback_scoring()",
+      "file_type": "code",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L108",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_evasion_fallback_scoring",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": ".test_red_team_evasion_fallback_scoring()"
+    },
+    {
+      "label": "Verifica que el Red Team punt\u00faa por exploits y disrupciones, no por detecci\u00f3n.",
+      "file_type": "rationale",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_rationale_19",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": "verifica que el red team puntua por exploits y disrupciones, no por deteccion."
+    },
+    {
+      "label": "Si la defensa detecta y mitiga todos los escaneos/ataques sin exploits, Red\u2026",
+      "file_type": "rationale",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_rationale_65",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": "si la defensa detecta y mitiga todos los escaneos/ataques sin exploits, red..."
+    },
+    {
+      "label": "Verifica que si no hay exploits espec\u00edficos pero hay ataques no mitigados,\u2026",
+      "file_type": "rationale",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L109",
+      "_origin": "ast",
+      "id": "attacker_tests_test_scenario_27_red_blue_rationale_109",
+      "community": 21,
+      "community_name": "ScoreboardEngine",
+      "norm_label": "verifica que si no hay exploits especificos pero hay ataques no mitigados,..."
     },
     {
       "label": "test_scenario_28_blind.py",
@@ -6148,7 +6217,7 @@
       },
       "_origin": "ast",
       "id": "citylab_cmd_down",
-      "community": 15,
+      "community": 39,
       "community_name": "cmd_down",
       "norm_label": "cmd_down()"
     },
@@ -8627,8 +8696,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "helics_sim_tests_test_fed_sis_testsisfederate_test_standalone_execution",
-      "community": 25,
-      "community_name": "SafetyInstrumentedLogic",
+      "community": 170,
+      "community_name": "\ud83d\udee1\ufe0f Federado 05 \u2014 Sistema de Seguridad SIS / ESD (SIL-3) (`fed_sis.py`)",
       "norm_label": ".test_standalone_execution()"
     },
     {
@@ -9263,7 +9332,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "ad_dc_emulator.py"
     },
     {
@@ -9275,8 +9344,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_ldapserverthread",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": "ldapserverthread"
     },
     {
@@ -9287,8 +9356,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_ldapserverthread_init",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".__init__()"
     },
     {
@@ -9300,7 +9369,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_ldapserverthread_run",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": ".run()"
     },
     {
@@ -9312,7 +9381,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_ldapserverthread_handle_ldap",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "._handle_ldap()"
     },
     {
@@ -9323,7 +9392,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_py_socket",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "socket"
     },
     {
@@ -9335,8 +9404,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_kerberosserverthread",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": "kerberosserverthread"
     },
     {
@@ -9347,8 +9416,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_kerberosserverthread_init",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".__init__()"
     },
     {
@@ -9360,7 +9429,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_kerberosserverthread_run",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": ".run()"
     },
     {
@@ -9372,7 +9441,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_kerberosserverthread_handle_kerberos",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "._handle_kerberos()"
     },
     {
@@ -9385,7 +9454,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_smbserverthread",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "smbserverthread"
     },
     {
@@ -9396,8 +9465,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_smbserverthread_init",
-      "community": 31,
-      "community_name": "SmbServerThread",
+      "community": 185,
+      "community_name": "Architecture \u2014 the big picture",
       "norm_label": ".__init__()"
     },
     {
@@ -9409,7 +9478,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_smbserverthread_run",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": ".run()"
     },
     {
@@ -9421,7 +9490,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_smbserverthread_handle_smb",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "._handle_smb()"
     },
     {
@@ -9434,7 +9503,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_domaincontrolleremulator",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "domaincontrolleremulator"
     },
     {
@@ -9445,8 +9514,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_ad_dc_emulator_domaincontrolleremulator_init",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".__init__()"
     },
     {
@@ -9458,7 +9527,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_domaincontrolleremulator_start",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": ".start()"
     },
     {
@@ -9470,7 +9539,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_main",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "main()"
     },
     {
@@ -9480,8 +9549,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "network_ad_dc_emulator_rationale_44",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": "escuchador ldap en puerto 389."
     },
     {
@@ -9491,8 +9560,8 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "network_ad_dc_emulator_rationale_90",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": "escuchador kerberos kdc en puerto 88."
     },
     {
@@ -9503,7 +9572,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_rationale_136",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "escuchador smb v2/v3 en puerto 445."
     },
     {
@@ -9514,7 +9583,7 @@
       "_origin": "ast",
       "id": "network_ad_dc_emulator_rationale_179",
       "community": 31,
-      "community_name": "SmbServerThread",
+      "community_name": "KerberosServerThread",
       "norm_label": "orquestador completo del controlador de dominio h_dc."
     },
     {
@@ -9524,8 +9593,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_flag_service",
-      "community": 103,
-      "community_name": "flag_service.py",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "flag_service.py"
     },
     {
@@ -9536,8 +9605,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_flag_service_generate_flag_hmac",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "generate_flag_hmac()"
     },
     {
@@ -9548,8 +9617,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_flag_service_verify_flag_hmac",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "verify_flag_hmac()"
     },
     {
@@ -9693,8 +9762,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_flag_service_ratelimiter",
-      "community": 103,
-      "community_name": "flag_service.py",
+      "community": 40,
+      "community_name": "RateLimiter",
       "norm_label": "ratelimiter"
     },
     {
@@ -9705,8 +9774,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_flag_service_ratelimiter_init",
-      "community": 103,
-      "community_name": "flag_service.py",
+      "community": 40,
+      "community_name": "RateLimiter",
       "norm_label": ".__init__()"
     },
     {
@@ -9815,7 +9884,7 @@
       "_origin": "ast",
       "id": "network_flag_service_threadedflagserver",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "threadedflagserver"
     },
     {
@@ -9826,7 +9895,7 @@
       "_origin": "ast",
       "id": "network_flag_service_py_threadingmixin",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "threadingmixin"
     },
     {
@@ -9837,7 +9906,7 @@
       "_origin": "ast",
       "id": "network_flag_service_py_httpserver",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "httpserver"
     },
     {
@@ -9848,8 +9917,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_flag_service_threadedflagserver_init",
-      "community": 103,
-      "community_name": "flag_service.py",
+      "community": 40,
+      "community_name": "RateLimiter",
       "norm_label": ".__init__()"
     },
     {
@@ -9872,8 +9941,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_flag_service_threadedflagserver_get_scoreboard_data",
-      "community": 1,
-      "community_name": "FlagServiceHandler",
+      "community": 103,
+      "community_name": "ThreadedFlagServer",
       "norm_label": ".get_scoreboard_data()"
     },
     {
@@ -9885,7 +9954,7 @@
       "_origin": "ast",
       "id": "network_flag_service_run_flag_service",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "run_flag_service()"
     },
     {
@@ -9896,7 +9965,7 @@
       "_origin": "ast",
       "id": "network_flag_service_py_path",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "path"
     },
     {
@@ -9906,8 +9975,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "network_flag_service_rationale_53",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "genera una flag dinamica e inmemorizable: flag_<id>{hmac_sha256(seed,..."
     },
     {
@@ -9917,8 +9986,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "network_flag_service_rationale_64",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "verifica si la flag enviada coincide exactamente con la calculada para la..."
     },
     {
@@ -9961,8 +10030,8 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "network_flag_service_rationale_315",
-      "community": 103,
-      "community_name": "flag_service.py",
+      "community": 40,
+      "community_name": "RateLimiter",
       "norm_label": "limitador de tasa de peticiones deslizante por clave."
     },
     {
@@ -9984,7 +10053,7 @@
       "_origin": "ast",
       "id": "network_flag_service_rationale_527",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "servidor http multihilo para el servicio de flags y scoring."
     },
     {
@@ -9995,7 +10064,7 @@
       "_origin": "ast",
       "id": "network_flag_service_rationale_585",
       "community": 103,
-      "community_name": "flag_service.py",
+      "community_name": "ThreadedFlagServer",
       "norm_label": "inicia el demonio de flag service."
     },
     {
@@ -10005,7 +10074,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_historian",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "historian.py"
     },
@@ -10018,7 +10087,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_historian_historiantsdb",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "historiantsdb"
     },
@@ -10030,7 +10099,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_historian_historiantsdb_init",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": ".__init__()"
     },
@@ -10041,7 +10110,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "network_historian_py_path",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "path"
     },
@@ -10076,7 +10145,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_historian_historiantsdb_init_db",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "._init_db()"
     },
@@ -10147,8 +10216,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_historian_historiantsdb_last",
-      "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community": 0,
+      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
       "norm_label": ".last()"
     },
     {
@@ -10183,7 +10252,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_historian_historiantsdb_close",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": ".close()"
     },
@@ -10194,7 +10263,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "network_historian_rationale_39",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "time-series historian embebido sobre sqlite wal. interfaz publica identica a la..."
     },
@@ -10216,7 +10285,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "network_historian_rationale_72",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "crea las tablas si no existen. idempotente."
     },
@@ -10271,8 +10340,8 @@
       "source_location": "L247",
       "_origin": "ast",
       "id": "network_historian_rationale_247",
-      "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community": 0,
+      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
       "norm_label": "retorna el snapshot mas reciente de un sector, o none si no hay datos."
     },
     {
@@ -10304,7 +10373,7 @@
       "source_location": "L299",
       "_origin": "ast",
       "id": "network_historian_rationale_299",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "cierra la conexion del hilo actual."
     },
@@ -10327,8 +10396,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_format_rbac_token",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "format_rbac_token()"
     },
     {
@@ -10352,8 +10421,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_industrialhmiengine_init",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".__init__()"
     },
     {
@@ -10364,8 +10433,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_industrialhmiengine_fetch_scada_status",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".fetch_scada_status()"
     },
     {
@@ -10375,8 +10444,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "network_hmi_server_py_any",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "any"
     },
     {
@@ -10387,8 +10456,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_industrialhmiengine_get_overview",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".get_overview()"
     },
     {
@@ -10399,8 +10468,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_industrialhmiengine_get_history",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".get_history()"
     },
     {
@@ -10411,8 +10480,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_industrialhmiengine_trigger_control_action",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".trigger_control_action()"
     },
     {
@@ -10424,8 +10493,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "hmirequesthandler"
     },
     {
@@ -10435,8 +10504,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "network_hmi_server_py_basehttprequesthandler",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "basehttprequesthandler"
     },
     {
@@ -10447,8 +10516,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler_do_get",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".do_get()"
     },
     {
@@ -10459,8 +10528,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler_do_post",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".do_post()"
     },
     {
@@ -10471,8 +10540,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler_send_json",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "._send_json()"
     },
     {
@@ -10483,8 +10552,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler_send_html",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "._send_html()"
     },
     {
@@ -10495,8 +10564,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_hmi_server_hmirequesthandler_log_message",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": ".log_message()"
     },
     {
@@ -10553,8 +10622,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "network_hmi_server_rationale_36",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "asegura que el token posea el formato <role>:<token> para compatibilidad..."
     },
     {
@@ -10575,8 +10644,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "network_hmi_server_rationale_63",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "consulta el estado actual del servidor scada con cabecera de autenticacion rbac."
     },
     {
@@ -10586,8 +10655,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "network_hmi_server_rationale_118",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "consulta series de tiempo historicas directamente a historiantsdb en sqlite wal."
     },
     {
@@ -10597,8 +10666,8 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "network_hmi_server_rationale_128",
-      "community": 26,
-      "community_name": "HmiRequestHandler",
+      "community": 13,
+      "community_name": "IndustrialHmiEngine",
       "norm_label": "envia una accion de control al scada server con token rbac."
     },
     {
@@ -10609,7 +10678,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "modbus_proxy.py"
     },
     {
@@ -10622,7 +10691,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_ratelimiter",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "ratelimiter"
     },
     {
@@ -10634,7 +10703,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_ratelimiter_init",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".__init__()"
     },
     {
@@ -10646,7 +10715,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_ratelimiter_is_allowed",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".is_allowed()"
     },
     {
@@ -10659,7 +10728,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiengine",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "modbusdpiengine"
     },
     {
@@ -10671,7 +10740,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiengine_init",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".__init__()"
     },
     {
@@ -10683,7 +10752,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiengine_log_audit",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".log_audit()"
     },
     {
@@ -10695,7 +10764,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiengine_inspect_and_filter",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".inspect_and_filter()"
     },
     {
@@ -10708,7 +10777,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiproxyserver",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "modbusdpiproxyserver"
     },
     {
@@ -10720,7 +10789,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiproxyserver_init",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".__init__()"
     },
     {
@@ -10732,7 +10801,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiproxyserver_start",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".start()"
     },
     {
@@ -10744,7 +10813,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiproxyserver_handle_client",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "._handle_client()"
     },
     {
@@ -10755,7 +10824,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_py_socket",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "socket"
     },
     {
@@ -10767,7 +10836,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_modbusdpiproxyserver_stop",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".stop()"
     },
     {
@@ -10779,7 +10848,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_main",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "main()"
     },
     {
@@ -10790,7 +10859,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_rationale_41",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "controlador de tasa de escrituras por ip de origen."
     },
     {
@@ -10801,7 +10870,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_rationale_62",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "motor de inspeccion profunda de paquetes (dpi) modbus/tcp."
     },
     {
@@ -10812,7 +10881,7 @@
       "_origin": "ast",
       "id": "network_modbus_proxy_rationale_98",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "inspecciona la trama modbus/tcp en capa 7. header modbus tcp (mbap): -..."
     },
     {
@@ -11205,8 +11274,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_scada_server",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 142,
+      "community_name": "HistorianTSDB",
       "norm_label": "scada_server.py"
     },
     {
@@ -11218,7 +11287,7 @@
       "_origin": "ast",
       "id": "network_scada_server_poll_plcs_once",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "poll_plcs_once()"
     },
     {
@@ -11229,7 +11298,7 @@
       "_origin": "ast",
       "id": "network_scada_server_py_any",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "any"
     },
     {
@@ -11240,8 +11309,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_scada_server_poll_plcs",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 142,
+      "community_name": "HistorianTSDB",
       "norm_label": "poll_plcs()"
     },
     {
@@ -11253,7 +11322,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_scada_server_scadaapihandler",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": "scadaapihandler"
     },
@@ -11264,7 +11333,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "network_scada_server_py_basehttprequesthandler",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": "basehttprequesthandler"
     },
@@ -11276,7 +11345,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_scada_server_scadaapihandler_log_message",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": ".log_message()"
     },
@@ -11288,7 +11357,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_scada_server_scadaapihandler_do_get",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": ".do_get()"
     },
@@ -11300,7 +11369,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_scada_server_scadaapihandler_do_post",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": ".do_post()"
     },
@@ -11324,8 +11393,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_scada_server_main",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 142,
+      "community_name": "HistorianTSDB",
       "norm_label": "main()"
     },
     {
@@ -11336,7 +11405,7 @@
       "_origin": "ast",
       "id": "network_scada_server_rationale_87",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "ejecuta una ronda individual de consulta a los plcs ot (directo o via dpi..."
     },
     {
@@ -11346,8 +11415,8 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "network_scada_server_rationale_140",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 142,
+      "community_name": "HistorianTSDB",
       "norm_label": "hilo de fondo que consulta periodicamente los plcs ot."
     },
     {
@@ -11543,8 +11612,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_sdn_controller",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "sdn_controller.py"
     },
     {
@@ -11555,8 +11624,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_sdn_controller_run_ovs_cmd",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 185,
+      "community_name": "Architecture \u2014 the big picture",
       "norm_label": "run_ovs_cmd()"
     },
     {
@@ -11567,8 +11636,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_sdn_controller_apply_sdn_flow_rules",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "apply_sdn_flow_rules()"
     },
     {
@@ -11579,8 +11648,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_sdn_controller_apply_circuit_breaker",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "apply_circuit_breaker()"
     },
     {
@@ -11591,8 +11660,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_sdn_controller_main",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "main()"
     },
     {
@@ -11602,8 +11671,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "network_sdn_controller_rationale_25",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 185,
+      "community_name": "Architecture \u2014 the big picture",
       "norm_label": "ejecuta un comando ovs-ofctl de forma segura."
     },
     {
@@ -11613,8 +11682,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "network_sdn_controller_rationale_36",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "aplica la matriz de microsegmentacion openflow en los switches ovs s3 (ot) y s5..."
     },
     {
@@ -11624,8 +11693,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "network_sdn_controller_rationale_75",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": "dispara una regla circuit breaker dinamica para aislar un host en caso de..."
     },
     {
@@ -11999,7 +12068,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "test_dpi_and_scada.py"
     },
     {
@@ -12012,7 +12081,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "testdpiproxyandscadawatchdog"
     },
     {
@@ -12024,7 +12093,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_setupclass",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".setupclass()"
     },
     {
@@ -12036,7 +12105,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_teardownclass",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".teardownclass()"
     },
     {
@@ -12048,7 +12117,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_test_modbus_dpi_filter_read_and_write",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".test_modbus_dpi_filter_read_and_write()"
     },
     {
@@ -12060,7 +12129,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_test_multi_plc_unit_id_routing",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".test_multi_plc_unit_id_routing()"
     },
     {
@@ -12071,7 +12140,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_py_patch",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "patch"
     },
     {
@@ -12083,7 +12152,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_test_scada_watchdog_loss_of_view",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".test_scada_watchdog_loss_of_view()"
     },
     {
@@ -12095,7 +12164,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_testdpiproxyandscadawatchdog_test_scada_proxy_polling_unit_ids",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": ".test_scada_proxy_polling_unit_ids()"
     },
     {
@@ -12106,7 +12175,7 @@
       "_origin": "ast",
       "id": "network_tests_test_dpi_and_scada_rationale_94",
       "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community_name": "ModbusDpiEngine",
       "norm_label": "verifica que use_modbus_proxy=1 dirija las peticiones al proxy con unit id..."
     },
     {
@@ -12116,7 +12185,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_tests_test_flag_service",
-      "community": 40,
+      "community": 35,
       "community_name": "test_flag_service.py",
       "norm_label": "test_flag_service.py"
     },
@@ -12127,8 +12196,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_py_fixture",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 103,
+      "community_name": "ThreadedFlagServer",
       "norm_label": "fixture"
     },
     {
@@ -12139,8 +12208,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_temp_historian",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 103,
+      "community_name": "ThreadedFlagServer",
       "norm_label": "temp_historian()"
     },
     {
@@ -12151,8 +12220,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_hmac_determinism_and_uniqueness",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "test_hmac_determinism_and_uniqueness()"
     },
     {
@@ -12164,7 +12233,7 @@
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_rate_limiter",
       "community": 40,
-      "community_name": "test_flag_service.py",
+      "community_name": "RateLimiter",
       "norm_label": "test_rate_limiter()"
     },
     {
@@ -12175,8 +12244,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_checker_historian_condition",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 94,
+      "community_name": "ConditionChecker",
       "norm_label": "test_checker_historian_condition()"
     },
     {
@@ -12187,8 +12256,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_checker_scada_sector_status",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 94,
+      "community_name": "ConditionChecker",
       "norm_label": "test_checker_scada_sector_status()"
     },
     {
@@ -12199,8 +12268,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_flag_server",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 103,
+      "community_name": "ThreadedFlagServer",
       "norm_label": "test_flag_server()"
     },
     {
@@ -12211,7 +12280,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_flag_service_test_flag_server_endpoints",
-      "community": 40,
+      "community": 35,
       "community_name": "test_flag_service.py",
       "norm_label": "test_flag_server_endpoints()"
     },
@@ -12222,7 +12291,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_1",
-      "community": 40,
+      "community": 35,
       "community_name": "test_flag_service.py",
       "norm_label": "tests unitarios y de integracion para network/flag_service.py (fase 1 - roadmap)"
     },
@@ -12233,8 +12302,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_32",
-      "community": 174,
-      "community_name": "generate_flag_hmac",
+      "community": 35,
+      "community_name": "test_flag_service.py",
       "norm_label": "verifica que el hmac sea determinista con la misma semilla y distinto con otra."
     },
     {
@@ -12245,7 +12314,7 @@
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_59",
       "community": 40,
-      "community_name": "test_flag_service.py",
+      "community_name": "RateLimiter",
       "norm_label": "verifica que el limitador de tasa bloquee intentos excesivos."
     },
     {
@@ -12255,8 +12324,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_74",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 94,
+      "community_name": "ConditionChecker",
       "norm_label": "verifica la evaluacion del oraculo de estado fisico sobre el historian tsdb."
     },
     {
@@ -12266,8 +12335,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_101",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 94,
+      "community_name": "ConditionChecker",
       "norm_label": "verifica la evaluacion del oraculo de estado de sector scada."
     },
     {
@@ -12277,8 +12346,8 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_122",
-      "community": 40,
-      "community_name": "test_flag_service.py",
+      "community": 103,
+      "community_name": "ThreadedFlagServer",
       "norm_label": "inicia un threadedflagserver en un puerto efimero de test."
     },
     {
@@ -12288,7 +12357,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "network_tests_test_flag_service_rationale_146",
-      "community": 40,
+      "community": 35,
       "community_name": "test_flag_service.py",
       "norm_label": "prueba los endpoints http /health, /api/flag/mint, /api/flag/submit y..."
     },
@@ -12299,7 +12368,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_tests_test_historian",
-      "community": 36,
+      "community": 142,
       "community_name": "HistorianTSDB",
       "norm_label": "test_historian.py"
     },
@@ -13688,7 +13757,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration",
-      "community": 5,
+      "community": 187,
       "community_name": "SCADAAPIHandler",
       "norm_label": "test_scada_http_strict_integration.py"
     },
@@ -13701,8 +13770,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "testscadahttpstrictintegration"
     },
     {
@@ -13713,8 +13782,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_setup",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".setup()"
     },
     {
@@ -13725,8 +13794,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_teardown",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".teardown()"
     },
     {
@@ -13737,8 +13806,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_http_request",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "._http_request()"
     },
     {
@@ -13749,8 +13818,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_test_unauthenticated_request_returns_401",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".test_unauthenticated_request_returns_401()"
     },
     {
@@ -13761,8 +13830,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_test_flat_token_under_strict_auth_returns_403",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".test_flat_token_under_strict_auth_returns_403()"
     },
     {
@@ -13773,8 +13842,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_test_operator_role_forbidden_on_control_write_returns_403",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".test_operator_role_forbidden_on_control_write_returns_403()"
     },
     {
@@ -13785,8 +13854,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_test_engineer_role_allowed_on_control_write_returns_200",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".test_engineer_role_allowed_on_control_write_returns_200()"
     },
     {
@@ -13797,8 +13866,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_testscadahttpstrictintegration_test_whoami_endpoint_under_strict_auth",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": ".test_whoami_endpoint_under_strict_auth()"
     },
     {
@@ -13808,8 +13877,8 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_rationale_77",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "peticion post a /api/control/write sin header authorization debe retornar 401."
     },
     {
@@ -13819,8 +13888,8 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_rationale_88",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "en strict_auth=1, un token legado plano sin prefijo de rol debe ser rechazado..."
     },
     {
@@ -13830,8 +13899,8 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_rationale_100",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "rol operator autenticado validamente no tiene permiso para escribir control ->..."
     },
     {
@@ -13841,8 +13910,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_rationale_112",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "rol engineer autenticado tiene permiso para control/write -> 200 y confirmacion."
     },
     {
@@ -13852,8 +13921,8 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "network_tests_test_scada_http_strict_integration_rationale_127",
-      "community": 5,
-      "community_name": "SCADAAPIHandler",
+      "community": 174,
+      "community_name": "TestScadaHttpStrictIntegration",
       "norm_label": "endpoint /api/whoami confirma identidad y bandera strict_auth."
     },
     {
@@ -14162,8 +14231,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "network_tests_test_sdn_and_dnp3_sa_testsdnanddnp3sa_test_sdn_circuit_breaker_helper",
-      "community": 50,
-      "community_name": "Dnp3OutstationState",
+      "community": 26,
+      "community_name": "LiveSdnDefense",
       "norm_label": ".test_sdn_circuit_breaker_helper()"
     },
     {
@@ -14580,7 +14649,7 @@
       "_origin": "ast",
       "id": "network_topology_customcli_do_pingall",
       "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "norm_label": ".do_pingall()"
     },
     {
@@ -16200,8 +16269,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "physical_water_epanet_solver_epanethydraulicsolver_compute_head_loss",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": ".compute_head_loss()"
     },
     {
@@ -16212,8 +16281,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "physical_water_epanet_solver_epanethydraulicsolver_compute_pump_head",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": ".compute_pump_head()"
     },
     {
@@ -16224,8 +16293,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "physical_water_epanet_solver_epanethydraulicsolver_solve_network",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": ".solve_network()"
     },
     {
@@ -16246,8 +16315,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "physical_water_epanet_solver_rationale_56",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": "calcula la perdida de friccion en la tuberia usando hazen-williams."
     },
     {
@@ -16257,8 +16326,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "physical_water_epanet_solver_rationale_66",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": "calcula la presion generada por la bomba segun su curva tdh."
     },
     {
@@ -16268,8 +16337,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "physical_water_epanet_solver_rationale_73",
-      "community": 60,
-      "community_name": "create_federate",
+      "community": 188,
+      "community_name": ".solve_network",
       "norm_label": "calcula el estado hidraulico de la red. retorna (flow_m3_s, pressure_bar,..."
     },
     {
@@ -16718,8 +16787,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_dnp3_emulator_dnp3server_init",
-      "community": 43,
-      "community_name": "Architecture \u2014 the big picture",
+      "community": 50,
+      "community_name": "Dnp3OutstationState",
       "norm_label": ".__init__()"
     },
     {
@@ -17067,8 +17136,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_iec61850dataset_increment_seq",
-      "community": 167,
-      "community_name": "IEC61850DataSet",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": ".increment_seq()"
     },
     {
@@ -17079,8 +17148,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_iec61850dataset_get_state",
-      "community": 167,
-      "community_name": "IEC61850DataSet",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": ".get_state()"
     },
     {
@@ -17129,8 +17198,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_iec61850svencoder",
-      "community": 100,
-      "community_name": "spoof_goose_trip",
+      "community": 176,
+      "community_name": ".decode",
       "norm_label": "iec61850svencoder"
     },
     {
@@ -17165,8 +17234,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_is_multicast_addr",
-      "community": 100,
-      "community_name": "spoof_goose_trip",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": "is_multicast_addr()"
     },
     {
@@ -17238,8 +17307,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_iec61850server_publish_sv_sample",
-      "community": 167,
-      "community_name": "IEC61850DataSet",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": ".publish_sv_sample()"
     },
     {
@@ -17250,8 +17319,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_iec61850_emulator_iec61850server_listen_loop",
-      "community": 181,
-      "community_name": "Iec61850Server",
+      "community": 176,
+      "community_name": ".decode",
       "norm_label": "._listen_loop()"
     },
     {
@@ -17329,8 +17398,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "plc_iec61850_emulator_rationale_174",
-      "community": 100,
-      "community_name": "spoof_goose_trip",
+      "community": 176,
+      "community_name": ".decode",
       "norm_label": "codificador/decodificador binario para sampled values (sv)."
     },
     {
@@ -17362,8 +17431,8 @@
       "source_location": "L353",
       "_origin": "ast",
       "id": "plc_iec61850_emulator_rationale_353",
-      "community": 167,
-      "community_name": "IEC61850DataSet",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": "publica una muestra sv de voltaje y corriente hacia sv_dest."
     },
     {
@@ -17373,8 +17442,8 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "plc_iec61850_emulator_rationale_372",
-      "community": 181,
-      "community_name": "Iec61850Server",
+      "community": 176,
+      "community_name": ".decode",
       "norm_label": "hilo receptor de mensajes goose entrantes en la subestacion."
     },
     {
@@ -17717,7 +17786,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "opcua_emulator.py"
     },
     {
@@ -17730,7 +17799,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "opcuanodespace"
     },
     {
@@ -17742,7 +17811,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace_init",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".__init__()"
     },
     {
@@ -17754,7 +17823,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace_read",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": ".read()"
     },
     {
@@ -17765,7 +17834,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_py_any",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": "any"
     },
     {
@@ -17777,7 +17846,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace_write",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": ".write()"
     },
     {
@@ -17789,7 +17858,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace_browse",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".browse()"
     },
     {
@@ -17801,7 +17870,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuanodespace_all_values",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": ".all_values()"
     },
     {
@@ -17814,7 +17883,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "opcuaserver"
     },
     {
@@ -17826,7 +17895,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver_init",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".__init__()"
     },
     {
@@ -17838,7 +17907,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver_start",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".start()"
     },
     {
@@ -17850,7 +17919,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver_stop",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".stop()"
     },
     {
@@ -17956,8 +18025,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver_svc_read",
-      "community": 184,
-      "community_name": "._svc_read",
+      "community": 47,
+      "community_name": "socket",
       "norm_label": "._svc_read()"
     },
     {
@@ -17968,8 +18037,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaserver_svc_browse",
-      "community": 34,
-      "community_name": "._send_msg",
+      "community": 47,
+      "community_name": "socket",
       "norm_label": "._svc_browse()"
     },
     {
@@ -17993,8 +18062,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": "opcuaclient"
     },
     {
@@ -18005,8 +18074,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_init",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": ".__init__()"
     },
     {
@@ -18018,7 +18087,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_connect",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": ".connect()"
     },
     {
@@ -18030,7 +18099,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_read_node",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": ".read_node()"
     },
     {
@@ -18042,7 +18111,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_browse",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": ".browse()"
     },
     {
@@ -18054,7 +18123,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_write_node",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": ".write_node()"
     },
     {
@@ -18066,7 +18135,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_get_endpoints",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": ".get_endpoints()"
     },
     {
@@ -18077,8 +18146,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_close",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 47,
+      "community_name": "socket",
       "norm_label": ".close()"
     },
     {
@@ -18090,7 +18159,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_send_msg",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "._send_msg()"
     },
     {
@@ -18102,7 +18171,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_recv_msg",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "._recv_msg()"
     },
     {
@@ -18114,7 +18183,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_opcuaclient_recv_exactly",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "._recv_exactly()"
     },
     {
@@ -18126,7 +18195,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_main",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "main()"
     },
     {
@@ -18137,7 +18206,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_91",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "espacio de nodos opc ua en memoria. thread-safe."
     },
     {
@@ -18148,7 +18217,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_100",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": "lee el valor actual de un nodo."
     },
     {
@@ -18159,7 +18228,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_110",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": "escribe el valor de un nodo. retorna true si el nodo existe."
     },
     {
@@ -18170,7 +18239,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_118",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "lista todos los nodos disponibles."
     },
     {
@@ -18181,7 +18250,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_127",
       "community": 184,
-      "community_name": "._svc_read",
+      "community_name": ".read",
       "norm_label": "retorna snapshot completo del espacio de nodos por sector."
     },
     {
@@ -18192,7 +18261,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_141",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "servidor tcp que emula el protocolo ua/tcp de opc ua. suficiente para..."
     },
     {
@@ -18203,7 +18272,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_160",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "arranca el servidor. bloqueante \u2014 llamar desde un hilo."
     },
     {
@@ -18290,8 +18359,8 @@
       "source_location": "L302",
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_302",
-      "community": 184,
-      "community_name": "._svc_read",
+      "community": 47,
+      "community_name": "socket",
       "norm_label": "lee el valor de un nodo del espacio opc ua."
     },
     {
@@ -18301,8 +18370,8 @@
       "source_location": "L327",
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_327",
-      "community": 34,
-      "community_name": "._send_msg",
+      "community": 47,
+      "community_name": "socket",
       "norm_label": "lista todos los nodos del espacio opc ua."
     },
     {
@@ -18323,8 +18392,8 @@
       "source_location": "L351",
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_351",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": "cliente opc ua tcp minimo para pruebas de integracion. replica exactamente el..."
     },
     {
@@ -18335,7 +18404,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_363",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "establece conexion y realiza handshake hel/ack + opensecurechannel."
     },
     {
@@ -18346,7 +18415,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_384",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "lee el valor de un nodo opc ua."
     },
     {
@@ -18357,7 +18426,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_409",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "lista nodos disponibles en el servidor."
     },
     {
@@ -18368,7 +18437,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_423",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "escribe un valor numerico a un nodo opc ua sobre la red."
     },
     {
@@ -18379,7 +18448,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_435",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "consulta los endpoints disponibles (getendpoints)."
     },
     {
@@ -18390,7 +18459,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_457",
       "community": 34,
-      "community_name": "._send_msg",
+      "community_name": "OpcUaClient",
       "norm_label": "recibe un mensaje ua/tcp. retorna (tipo, body) o none."
     },
     {
@@ -18401,7 +18470,7 @@
       "_origin": "ast",
       "id": "plc_opcua_emulator_rationale_480",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "punto de entrada standalone del emulador opc ua."
     },
     {
@@ -18441,7 +18510,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "plc_tests_emulator_harness",
-      "community": 38,
+      "community": 48,
       "community_name": "_emulator_harness.py",
       "norm_label": "_emulator_harness.py"
     },
@@ -18453,8 +18522,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_running_iec61850_server",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": "running_iec61850_server()"
     },
     {
@@ -18465,8 +18534,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_running_opcua_server",
-      "community": 3,
-      "community_name": "OtActiveScan",
+      "community": 48,
+      "community_name": "_emulator_harness.py",
       "norm_label": "running_opcua_server()"
     },
     {
@@ -18547,8 +18616,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_running_ad_dc",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 54,
+      "community_name": "KerberoastAttack",
       "norm_label": "running_ad_dc()"
     },
     {
@@ -18570,8 +18639,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_rationale_22",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 181,
+      "community_name": "Iec61850Server",
       "norm_label": "inicia un iec61850server en puerto alto y asegura stop() en finally."
     },
     {
@@ -18581,8 +18650,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_rationale_38",
-      "community": 3,
-      "community_name": "OtActiveScan",
+      "community": 48,
+      "community_name": "_emulator_harness.py",
       "norm_label": "inicia un opcuaserver en puerto alto y asegura stop() en finally."
     },
     {
@@ -18636,8 +18705,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "plc_tests_emulator_harness_rationale_135",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 54,
+      "community_name": "KerberoastAttack",
       "norm_label": "inicia emulador ad dc con kerberos y ldap en puertos altos."
     },
     {
@@ -18800,8 +18869,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "plc_tests_test_dnp3_ad_testdnp3andaddcemulators",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": "testdnp3andaddcemulators"
     },
     {
@@ -18812,8 +18881,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_dnp3_ad_testdnp3andaddcemulators_setupclass",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".setupclass()"
     },
     {
@@ -18824,8 +18893,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_dnp3_ad_testdnp3andaddcemulators_teardownclass",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".teardownclass()"
     },
     {
@@ -18836,8 +18905,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_dnp3_ad_testdnp3andaddcemulators_test_dnp3_telemetry_and_crob",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".test_dnp3_telemetry_and_crob()"
     },
     {
@@ -18848,8 +18917,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_dnp3_ad_testdnp3andaddcemulators_test_ad_dc_ports",
-      "community": 38,
-      "community_name": "_emulator_harness.py",
+      "community": 31,
+      "community_name": "KerberosServerThread",
       "norm_label": ".test_ad_dc_ports()"
     },
     {
@@ -19064,7 +19133,7 @@
       "_origin": "ast",
       "id": "plc_tests_test_opcua",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": "test_opcua.py"
     },
     {
@@ -19185,8 +19254,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_opcua_testopcuaserverclient_setupclass",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 18,
+      "community_name": "TestOpcUaServerClient",
       "norm_label": ".setupclass()"
     },
     {
@@ -19549,8 +19618,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "plc_tests_test_protocols_fidelity",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": "test_protocols_fidelity.py"
     },
     {
@@ -19562,8 +19631,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "plc_tests_test_protocols_fidelity_testprotocolfidelityphase3",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": "testprotocolfidelityphase3"
     },
     {
@@ -19575,7 +19644,7 @@
       "_origin": "ast",
       "id": "plc_tests_test_protocols_fidelity_testprotocolfidelityphase3_setupclass",
       "community": 48,
-      "community_name": "OpcUaServer",
+      "community_name": "_emulator_harness.py",
       "norm_label": ".setupclass()"
     },
     {
@@ -19586,8 +19655,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_protocols_fidelity_testprotocolfidelityphase3_teardownclass",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": ".teardownclass()"
     },
     {
@@ -19598,8 +19667,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "plc_tests_test_protocols_fidelity_testprotocolfidelityphase3_test_opcua_write_node_over_network",
-      "community": 48,
-      "community_name": "OpcUaServer",
+      "community": 34,
+      "community_name": "OpcUaClient",
       "norm_label": ".test_opcua_write_node_over_network()"
     },
     {
@@ -20215,7 +20284,7 @@
       "_origin": "ast",
       "id": "scripts_profile_resources_rationale_188",
       "community": 15,
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "norm_label": "rss maximo del propio proceso via `resource.getrusage` (stdlib, sin..."
     },
     {
@@ -20226,7 +20295,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "run_scenario.py"
     },
     {
@@ -20238,7 +20307,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_validate_manifest",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "validate_manifest()"
     },
     {
@@ -20250,7 +20319,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_run_checks",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "run_checks()"
     },
     {
@@ -20261,7 +20330,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_py_path",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "path"
     },
     {
@@ -20273,7 +20342,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_submit_flag",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "submit_flag()"
     },
     {
@@ -20285,7 +20354,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_show_scorecard",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "show_scorecard()"
     },
     {
@@ -20297,7 +20366,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_main",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "main()"
     },
     {
@@ -20308,7 +20377,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_rationale_44",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "valida el manifiesto del escenario contra schema.json."
     },
     {
@@ -20319,7 +20388,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_rationale_90",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "ejecuta los checks del escenario y muestra el estado y las flags obtenidas."
     },
     {
@@ -20330,7 +20399,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_rationale_204",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "envia una flag para verificacion."
     },
     {
@@ -20341,7 +20410,7 @@
       "_origin": "ast",
       "id": "scripts_run_scenario_rationale_252",
       "community": 35,
-      "community_name": "run_scenario.py",
+      "community_name": "test_flag_service.py",
       "norm_label": "consulta y muestra el scoreboard y metricas."
     },
     {
@@ -20367,7 +20436,7 @@
       "_origin": "ast",
       "id": "scripts_validate_e2e",
       "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "norm_label": "validate_e2e.sh"
     },
     {
@@ -20382,7 +20451,7 @@
       "_origin": "ast",
       "id": "scripts_validate_e2e_sh__entry",
       "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "norm_label": "validate_e2e.sh script"
     },
     {
@@ -20397,7 +20466,7 @@
       "_origin": "ast",
       "id": "scripts_validate_e2e_cleanup",
       "community": 39,
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "norm_label": "cleanup()"
     },
     {
@@ -21470,7 +21539,7 @@
       "community": 43,
       "norm_label": "citylab - project structure",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "amazonq_rules_memory_bank_structure_doc"
     },
     {
@@ -21485,7 +21554,7 @@
       "community": 43,
       "norm_label": "directory organization",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "amazonq_rules_memory_bank_structure_directory_organization"
     },
     {
@@ -21500,7 +21569,7 @@
       "community": 43,
       "norm_label": "core components",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "amazonq_rules_memory_bank_structure_core_components"
     },
     {
@@ -21515,7 +21584,7 @@
       "community": 43,
       "norm_label": "architectural patterns",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "amazonq_rules_memory_bank_structure_architectural_patterns"
     },
     {
@@ -21530,7 +21599,7 @@
       "community": 43,
       "norm_label": "file naming conventions",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "amazonq_rules_memory_bank_structure_file_naming_conventions"
     },
     {
@@ -21662,10 +21731,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 38,
       "norm_label": "claude.md",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "claude_doc"
     },
     {
@@ -21677,10 +21746,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 38,
       "norm_label": "what this is",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "claude_what_this_is"
     },
     {
@@ -21692,10 +21761,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 38,
       "norm_label": "golden rule \u2014 intentional vulnerabilities",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "claude_golden_rule_intentional_vuln"
     },
     {
@@ -21710,7 +21779,7 @@
       "community": 39,
       "norm_label": "commands",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "claude_commands"
     },
     {
@@ -21722,7 +21791,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 185,
       "norm_label": "architecture \u2014 the big picture",
       "_origin": "semantic",
       "community_name": "Architecture \u2014 the big picture",
@@ -21737,10 +21806,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 38,
       "norm_label": "gotchas",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "claude_gotchas"
     },
     {
@@ -21830,7 +21899,7 @@
       "community": 43,
       "norm_label": "\ud83d\udee1\ufe0f arquitectura del cyber range citylab (iec 62443 / co-simulacion ciberfisica)",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_doc"
     },
     {
@@ -21845,7 +21914,7 @@
       "community": 43,
       "norm_label": "\ud83d\udcd1 tabla de contenidos",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_tabla_de_contenidos"
     },
     {
@@ -21860,7 +21929,7 @@
       "community": 43,
       "norm_label": "1. vision general del sistema y filosofia de diseno",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_1_visi_n_general_del_sistema"
     },
     {
@@ -21875,7 +21944,7 @@
       "community": 43,
       "norm_label": "2. estructura del proyecto y modulos de codigo",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_2_estructura_del_proyecto_y_m"
     },
     {
@@ -21887,10 +21956,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 39,
+      "community": 43,
       "norm_label": "3. topologia de red y microsegmentacion (iec 62443)",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_3_topolog_a_de_red_y_microseg"
     },
     {
@@ -21905,7 +21974,7 @@
       "community": 43,
       "norm_label": "4. capa ciberfisica y co-simulacion helics",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_4_capa_ciberf_sica_y_co_simul"
     },
     {
@@ -21920,7 +21989,7 @@
       "community": 43,
       "norm_label": "5. capa de emulacion de dispositivos de campo (ot)",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_5_capa_de_emulaci_n_de_dispos"
     },
     {
@@ -21950,7 +22019,7 @@
       "community": 43,
       "norm_label": "7. pipeline de seguridad: siem central y defensa dinamica sdn",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_7_pipeline_de_seguridad_siem"
     },
     {
@@ -21965,7 +22034,7 @@
       "community": 43,
       "norm_label": "8. matriz integral de puertos, conduits y variables de entorno",
       "_origin": "semantic",
-      "community_name": "Architecture \u2014 the big picture",
+      "community_name": "\ud83d\udee1\ufe0f Arquitectura del Cyber Range CityLab (IEC 62443 / Co-Simulaci\u00f3n Ciberf\u00edsica)",
       "id": "docs_architecture_8_matriz_integral_de_puertos"
     },
     {
@@ -21977,10 +22046,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "especificacion de requisitos de software (ers)",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_ers_doc"
     },
     {
@@ -21992,10 +22061,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "proyecto: cyber range ciberfisico multisectorial (citylab)",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_ers_proyecto_cyber_range_ciberf_s"
     },
     {
@@ -22007,10 +22076,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 170,
+      "community": 38,
       "norm_label": "1. introduccion",
       "_origin": "semantic",
-      "community_name": "\ud83d\udee1\ufe0f Federado 05 \u2014 Sistema de Seguridad SIS / ESD (SIL-3) (`fed_sis.py`)",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_ers_1_introducci_n"
     },
     {
@@ -22022,10 +22091,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "2. descripcion general",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_ers_2_descripci_n_general"
     },
     {
@@ -22052,10 +22121,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "4. requisitos no funcionales (rnf)",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_ers_4_requisitos_no_funcionales"
     },
     {
@@ -22067,10 +22136,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\u2705 reporte de cierre de auditoria \u2014 citylab cyber range",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_doc"
     },
     {
@@ -22082,10 +22151,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "programa de remediacion iec 62443 \u00b7 cierre de 3 semanas",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_programa_de_remediaci_n_iec_62"
     },
     {
@@ -22097,10 +22166,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\ud83d\udcc8 evolucion del grafo de conocimiento",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_evoluci_n_del_grafo_de_conoc"
     },
     {
@@ -22112,10 +22181,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\ud83d\udd12 scorecard de seguridad: inicial vs final",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_scorecard_de_seguridad_inic"
     },
     {
@@ -22142,10 +22211,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\ud83d\udd0d registro de riesgo residual",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_registro_de_riesgo_residual"
     },
     {
@@ -22157,10 +22226,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\ud83c\udfaf decisiones de diseno pedagogico ctf (hallazgos intencionales)",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_decisiones_de_dise_o_pedag_g"
     },
     {
@@ -22172,10 +22241,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 38,
       "norm_label": "\ud83e\uddea verificacion final del sistema",
       "_origin": "semantic",
-      "community_name": "3. Requisitos Funcionales Espec\u00edficos",
+      "community_name": "Especificaci\u00f3n de Requisitos de Software (ERS)",
       "id": "docs_iec62443_citylab_audit_closure_verificaci_n_final_del_siste"
     },
     {
@@ -22190,7 +22259,7 @@
       "community": 39,
       "norm_label": "\ud83c\udfaf roadmap \u2014 medicion del aprendizaje y contencion del laboratorio",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_doc"
     },
     {
@@ -22205,7 +22274,7 @@
       "community": 39,
       "norm_label": "\ud83d\udcd1 tabla de contenidos",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_tabla_de_contenidos"
     },
     {
@@ -22217,10 +22286,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 39,
       "norm_label": "1. contexto y justificacion",
       "_origin": "semantic",
-      "community_name": "CityLab - Development Guidelines",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_1_contexto_y_justificaci_n"
     },
     {
@@ -22235,7 +22304,7 @@
       "community": 39,
       "norm_label": "2. objetivos estrategicos y metricas de exito",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_2_objetivos_estrat_gicos_y_m"
     },
     {
@@ -22250,7 +22319,7 @@
       "community": 39,
       "norm_label": "3. fase 0 \u2014 cimientos: manifiestos de escenario y semilla de sesion",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_3_fase_0_cimientos_manifie"
     },
     {
@@ -22265,7 +22334,7 @@
       "community": 39,
       "norm_label": "4. fase 1 \u2014 servicio de flags verificables (scoring server-side)",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_4_fase_1_servicio_de_flags"
     },
     {
@@ -22280,7 +22349,7 @@
       "community": 39,
       "norm_label": "5. fase 2 \u2014 contencion: egress, namespaces y jaula probada",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_5_fase_2_contenci_n_egress"
     },
     {
@@ -22295,7 +22364,7 @@
       "community": 39,
       "norm_label": "6. fase 3 \u2014 ciclo de vida por cgroups y secretos fuera del repo",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_6_fase_3_ciclo_de_vida_por"
     },
     {
@@ -22325,7 +22394,7 @@
       "community": 39,
       "norm_label": "8. fase 5 \u2014 migracion masiva de escenarios y anti-memorizacion",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_8_fase_5_migraci_n_masiva_d"
     },
     {
@@ -22340,7 +22409,7 @@
       "community": 39,
       "norm_label": "9. dependencias, riesgos y mitigaciones",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_9_dependencias_riesgos_y_mit"
     },
     {
@@ -22355,7 +22424,7 @@
       "community": 39,
       "norm_label": "10. lo que este plan no persigue",
       "_origin": "semantic",
-      "community_name": "\ud83c\udfaf Roadmap \u2014 Medici\u00f3n del Aprendizaje y Contenci\u00f3n del Laboratorio",
+      "community_name": "cmd_down",
       "id": "docs_roadmaps_plan_medicion_y_contencion_10_lo_que_este_plan_no_persig"
     },
     {
@@ -22367,10 +22436,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\ud83d\udcd8 federado 01 \u2014 sector agua swat (tratamiento y distribucion multi-etapa)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_doc"
     },
     {
@@ -22397,10 +22466,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\u2699\ufe0f 2. arquitectura de codigo y flujo de trabajo",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_2_arquitectura_de_c_digo_y"
     },
     {
@@ -22412,10 +22481,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\ud83e\uddee 3. modelo fisico e interdependencia ciberfisica",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_3_modelo_f_sico_e_interdepe"
     },
     {
@@ -22427,10 +22496,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\ud83d\uddfa\ufe0f 4. mapa de registros modbus tcp (plc agua `10.0.3.10:502`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_4_mapa_de_registros_modbus"
     },
     {
@@ -22442,10 +22511,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\ud83d\udce1 5. interfaz de co-simulacion helics",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_5_interfaz_de_co_simulaci_n"
     },
     {
@@ -22457,10 +22526,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 60,
       "norm_label": "\ud83d\udcbe 6. presupuesto de recursos y memoria ram",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "create_federate",
       "id": "docs_federates_01_water_treatment_federate_6_presupuesto_de_recursos_y"
     },
     {
@@ -22580,7 +22649,7 @@
       "community": 15,
       "norm_label": "\ud83d\udea6 federado 03 \u2014 sector transporte y trafico urbano (`fed_transport.py`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_doc"
     },
     {
@@ -22595,7 +22664,7 @@
       "community": 15,
       "norm_label": "\ud83d\udccc 1. vision general del modulo",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_1_visi_n_general_del_m_dulo"
     },
     {
@@ -22610,7 +22679,7 @@
       "community": 15,
       "norm_label": "\u2699\ufe0f 2. arquitectura de codigo y flujo de trabajo",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_2_arquitectura_de_c_digo_y"
     },
     {
@@ -22625,7 +22694,7 @@
       "community": 15,
       "norm_label": "\ud83e\uddee 3. modelo fisico de congestion e interdependencia",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_3_modelo_f_sico_de_congesti"
     },
     {
@@ -22640,7 +22709,7 @@
       "community": 15,
       "norm_label": "\ud83d\uddfa\ufe0f 4. mapa de registros modbus tcp (plc transporte `10.0.3.14:502`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_4_mapa_de_registros_modbus"
     },
     {
@@ -22655,7 +22724,7 @@
       "community": 15,
       "norm_label": "\ud83d\udce1 5. interfaz helics pub-sub",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_5_interfaz_helics_pub_sub"
     },
     {
@@ -22670,7 +22739,7 @@
       "community": 15,
       "norm_label": "\ud83d\udcbe 6. presupuesto de recursos y memoria ram",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_03_transport_traffic_federate_6_presupuesto_de_recursos_y"
     },
     {
@@ -22682,10 +22751,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\ud83c\udfe5 federado 04 \u2014 sector hospital carga critica y sistema ats/ups (`fed_hospital.p",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_doc"
     },
     {
@@ -22712,10 +22781,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\u2699\ufe0f 2. arquitectura de codigo y maquina de estados de energia",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_2_arquitectura_de_c_digo_y"
     },
     {
@@ -22727,10 +22796,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\ud83e\uddee 3. modelo fisico de descarga de baterias y generador",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_3_modelo_f_sico_de_descarga"
     },
     {
@@ -22742,10 +22811,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\ud83d\uddfa\ufe0f 4. mapa de registros modbus tcp (plc hospital `10.0.3.15:502`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_4_mapa_de_registros_modbus"
     },
     {
@@ -22757,10 +22826,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\ud83d\udce1 5. interfaz helics pub-sub",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_5_interfaz_helics_pub_sub"
     },
     {
@@ -22772,10 +22841,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 15,
+      "community": 186,
       "norm_label": "\ud83d\udcbe 6. presupuesto de recursos y memoria ram",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "\ud83c\udfe5 Federado 04 \u2014 Sector Hospital Carga Cr\u00edtica y Sistema ATS/UPS (`fed_hospital.p",
       "id": "docs_federates_04_hospital_critical_power_federate_6_presupuesto_de_recursos_y"
     },
     {
@@ -22802,10 +22871,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 25,
+      "community": 170,
       "norm_label": "\ud83d\udccc 1. vision general del modulo",
       "_origin": "semantic",
-      "community_name": "SafetyInstrumentedLogic",
+      "community_name": "\ud83d\udee1\ufe0f Federado 05 \u2014 Sistema de Seguridad SIS / ESD (SIL-3) (`fed_sis.py`)",
       "id": "docs_federates_05_safety_instrumented_system_sis_federate_1_visi_n_general_del_m_dulo"
     },
     {
@@ -22862,10 +22931,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 170,
+      "community": 15,
       "norm_label": "\ud83d\udcbe 5. presupuesto de recursos y memoria ram",
       "_origin": "semantic",
-      "community_name": "\ud83d\udee1\ufe0f Federado 05 \u2014 Sistema de Seguridad SIS / ESD (SIL-3) (`fed_sis.py`)",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_05_safety_instrumented_system_sis_federate_5_presupuesto_de_recursos_y"
     },
     {
@@ -22880,7 +22949,7 @@
       "community": 15,
       "norm_label": "\ud83d\udcca federado 06 \u2014 observer y logger de co-simulacion helics (`fed_logger.py`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_doc"
     },
     {
@@ -22895,7 +22964,7 @@
       "community": 15,
       "norm_label": "\ud83d\udccc 1. vision general del modulo",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_1_visi_n_general_del_m_dulo"
     },
     {
@@ -22910,7 +22979,7 @@
       "community": 15,
       "norm_label": "\u2699\ufe0f 2. arquitectura de captura y registro de eventos",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_2_arquitectura_de_captura"
     },
     {
@@ -22925,7 +22994,7 @@
       "community": 15,
       "norm_label": "\ud83d\uddfa\ufe0f 3. esquema del archivo csv de eventos (`cascading_events.csv`)",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_3_esquema_del_archivo_csv"
     },
     {
@@ -22937,10 +23006,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 170,
+      "community": 15,
       "norm_label": "\ud83d\udce1 4. suscripciones helics",
       "_origin": "semantic",
-      "community_name": "\ud83d\udee1\ufe0f Federado 05 \u2014 Sistema de Seguridad SIS / ESD (SIL-3) (`fed_sis.py`)",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_4_suscripciones_helics"
     },
     {
@@ -22955,7 +23024,7 @@
       "community": 15,
       "norm_label": "\ud83d\udcbe 5. presupuesto de recursos y memoria ram",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "docs_federates_06_helics_logger_observer_federate_5_presupuesto_de_recursos_y"
     },
     {
@@ -23072,10 +23141,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\ud83d\udee1\ufe0f infraestructura 08 \u2014 siem central, sdn controller y active directory dc",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_doc"
     },
     {
@@ -23087,10 +23156,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\ud83d\udccc 1. vision general del modulo",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_1_visi_n_general_del_m_dulo"
     },
     {
@@ -23102,10 +23171,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\u2699\ufe0f 2. arquitectura de reenvio asincrono y deteccion siem",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_2_arquitectura_de_reenv_o"
     },
     {
@@ -23117,10 +23186,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\ud83d\udee1\ufe0f 3. reglas de correlacion siem en codigo (`network/siem_pipeline.py`)",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_3_reglas_de_correlaci_n_si"
     },
     {
@@ -23132,10 +23201,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\ud83d\udd00 4. matriz de flujos openflow microsegmentacion ovs (`s3` ot / `s5` honeypot)",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_4_matriz_de_flujos_openflow"
     },
     {
@@ -23147,10 +23216,10 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 50,
+      "community": 185,
       "norm_label": "\ud83d\udcbe 5. presupuesto de recursos y rendimiento",
       "_origin": "semantic",
-      "community_name": "Dnp3OutstationState",
+      "community_name": "Architecture \u2014 the big picture",
       "id": "docs_federates_08_siem_sdn_active_directory_infrastructure_5_presupuesto_de_recursos_y"
     },
     {
@@ -23255,7 +23324,7 @@
       "community": 15,
       "norm_label": "=== red / emulacion ===",
       "_origin": "semantic",
-      "community_name": "cmd_down",
+      "community_name": "RSS m\u00e1ximo del propio proceso v\u00eda `resource.getrusage` (stdlib, sin\u2026",
       "id": "requirements_doc"
     },
     {
@@ -34465,7 +34534,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "attacker/attack_red_vs_blue_match.py",
-      "source_location": "L76",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast",
       "source": "attacker_attack_red_vs_blue_match",
@@ -34524,7 +34593,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "attacker/attack_red_vs_blue_match.py",
-      "source_location": "L77",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast",
       "source": "attacker_attack_red_vs_blue_match_main",
@@ -34604,6 +34673,42 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_evasion_fallback_scoring",
+      "target": "attacker_attack_red_vs_blue_match_redvsbluematch"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_not_rewarded_when_fully_mitigated",
+      "target": "attacker_attack_red_vs_blue_match_redvsbluematch"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_offensive_scoring",
+      "target": "attacker_attack_red_vs_blue_match_redvsbluematch"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
       "source_file": "attacker/attack_red_vs_blue_match.py",
       "source_location": "L37",
       "weight": 1.0,
@@ -34616,7 +34721,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "attacker/attack_red_vs_blue_match.py",
-      "source_location": "L78",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "attacker_attack_red_vs_blue_match_main",
@@ -39619,6 +39724,72 @@
       "_origin": "ast",
       "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue",
       "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_blue_match_execution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L108",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_evasion_fallback_scoring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_not_rewarded_when_fully_mitigated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_offensive_scoring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_rationale_19",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_offensive_scoring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_rationale_65",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_not_rewarded_when_fully_mitigated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "attacker/tests/test_scenario_27_red_blue.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "attacker_tests_test_scenario_27_red_blue_rationale_109",
+      "target": "attacker_tests_test_scenario_27_red_blue_testscenario27redblue_test_red_team_evasion_fallback_scoring",
       "confidence_score": 1.0
     },
     {
@@ -70889,5 +71060,5 @@
       "source_file": "docs/scenarios/scenario_26_apt_campaign_sandworm_emulation.md"
     }
   ],
-  "built_at_commit": "d6d91fe7ac8215d27cb8035d99cfbf8cc2728869"
+  "built_at_commit": "f82ac110a69e84c9069290652fd0de30928d5708"
 }
