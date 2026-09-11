@@ -1,9 +1,16 @@
-# CityLab — Cyber Range Ciberfísico Multisectorial (Fase 9 Ciudad Completa)
+# 🏙️ CityLab — Cyber Range Ciberfísico Multisectorial (Fase 9 Ciudad Completa)
+
+[![Standard](https://img.shields.io/badge/Standard-IEC%2062443%20%7C%20NIST%20800--82r3-blue.svg)](https://www.isa.org/standards-and-publications/isa-standards/isa-standards-committees/isa62443)
+[![Purdue Model](https://img.shields.io/badge/Architecture-Purdue%20PERA%20(L0--L4)-orange.svg)](#-arquitectura-de-red-iec-62443)
+[![Tests](https://img.shields.io/badge/Tests-265%20PASS%20(100%25)-brightgreen.svg)](#4-ejecutar-la-bater%C3%ADa-completa-de-pruebas-265-tests)
+[![Stack](https://img.shields.io/badge/Stack-Mininet%20%7C%20OVS%20%7C%20Python-purple.svg)](#-arquitectura-de-red-iec-62443)
+[![Co-Simulation](https://img.shields.io/badge/Co--Simulation-HELICS%203.x%20(11%20Feds)-red.svg)](https://helics.org/)
+[![Memory](https://img.shields.io/badge/RAM%20Footprint-%3C1.5%20GB-success.svg)](#6-medir-el-consumo-real-de-recursos)
 
 **CityLab** es un entorno de entrenamiento ciberfísico (*Cyber Range*) 100% basado en software, diseñado para simular ataques ofensivos (Red Team / Hacking Ético) y monitoreo defensivo (Blue Team) sobre infraestructuras críticas urbanas e interdependencias ciberfísicas en cascada.
 
 - **0% Sobrecarga de Máquinas Virtuales**: Ejecución nativa en Linux mediante Mininet y procesos distribuidos.
-- **Eficiencia de Recursos**: Consumo de memoria RAM total $<8.0\text{ GB}$ para la ciudad completa.
+- **Eficiencia de Recursos**: Consumo de memoria RAM total $<1.5\text{ GB}$ base ($<8.0\text{ GB}$ con ciudad completa en estrés).
 - **Co-Simulación Multisectorial**: Coordinación temporal a tiempo real vía **HELICS 3.x** (hasta 11 federados).
 - **Estándar Industrial**: Segmentación de red alineada con **IEC 62443** (Zonas Corporate, DMZ, Celda OT, PAW EWS y Decoy Honeypot).
 - **Visualizador 2D Airgapped**: Dashboard interactivo vectorial SVG/CSS en tiempo real (puerto `:8090`), 100% offline sin dependencias externas.

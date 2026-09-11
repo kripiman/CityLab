@@ -174,5 +174,6 @@ kimi-debug-session_*.zip
 !.cursor/rules/
 .opencode/
 .windsurf/
+.offline-markdown-preview/
 AGENTS.md
 
