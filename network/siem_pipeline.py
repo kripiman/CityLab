@@ -47,6 +47,22 @@ def forward_event_to_central_siem(event_dict: Dict[str, Any], siem_url: Optional
     except Exception as exc:
         LOGGER.debug('[SIEM-FORWARD] No se pudo reenviar evento al SIEM central (%s): %s', url, exc)
 
+def forward_alert_to_visualizer(alert_dict: Dict[str, Any], viz_url: Optional[str] = None) -> None:
+    """Reenvía asíncronamente una alerta correlacionada SOC hacia el Visualizador 2D (:8090)."""
+    url = (viz_url or os.getenv('VIZ_HTTP_URL', 'http://127.0.0.1:8090')).rstrip('/')
+    try:
+        data = json.dumps(alert_dict).encode('utf-8')
+        req = urllib.request.Request(
+            f"{url}/api/viz/soc",
+            data=data,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        with urllib.request.urlopen(req, timeout=1.0) as _:
+            pass
+    except Exception as exc:
+        LOGGER.debug('[SIEM-VIZ] No se pudo reenviar alerta al visualizador (%s): %s', url, exc)
+
 
 @dataclass
 class EcsEvent:
@@ -129,6 +145,7 @@ class SiemCorrelationEngine:
             if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
                 self.active_alerts.append(alert)
                 LOGGER.critical('[SIEM-CORRELATION] ¡ALERTA SOC CRÍTICA! %s desde IP %s', alert['name'], event.source_ip)
+                threading.Thread(target=forward_alert_to_visualizer, args=(alert,), daemon=True).start()
 
         # Regla 2: Inyección / Spoofing GOOSE IEC 61850 (Industroyer2 Pattern)
         if event.event_category == 'process_control' and ('GOOSE' in event.message.upper() or event.service_name == 'iec61850_emulator'):
@@ -143,6 +160,7 @@ class SiemCorrelationEngine:
             if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
                 self.active_alerts.append(alert)
                 LOGGER.critical('[SIEM-CORRELATION] ¡ALERTA SOC CRÍTICA! %s desde IP %s', alert['name'], event.source_ip)
+                threading.Thread(target=forward_alert_to_visualizer, args=(alert,), daemon=True).start()
 
         # Regla 3: Alerta de Inspección Pasiva Zeek / Suricata Coincidente
         if 'zeek' in event.service_name or 'suricata' in event.service_name:
@@ -158,6 +176,7 @@ class SiemCorrelationEngine:
                 if not any(a['name'] == alert['name'] and a['attacker_ip'] == alert['attacker_ip'] for a in self.active_alerts):
                     self.active_alerts.append(alert)
                     LOGGER.info('[SIEM-PASSIVE] Alerta SOC inspección pasiva desde IP %s', event.source_ip)
+                    threading.Thread(target=forward_alert_to_visualizer, args=(alert,), daemon=True).start()
 
     def ingest_zeek_log(self, raw_entry: Dict[str, Any] | str) -> EcsEvent:
         """Ingiere y normaliza un registro de log Zeek (conn.log, notice.log, modbus.log)."""

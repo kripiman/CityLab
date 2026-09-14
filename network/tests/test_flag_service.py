@@ -117,6 +117,59 @@ def test_checker_scada_sector_status(temp_historian):
     assert passed is True
 
 
+def test_checker_viz_condition(temp_historian):
+    """Verifica el oráculo de estado del visualizador 2D para sectores extendidos (hospital, desal, etc.)."""
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    from socketserver import ThreadingMixIn
+
+    class MockVizHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            frame = {
+                "city_sectors": {
+                    "hospital": {"generator_active": True, "powered": False},
+                    "desal": {"pump_trip": True, "power_kw": 0.0},
+                    "transport": {"traffic_light": "RED", "railway_gate": "CLOSED"},
+                    "lighting": {"power_kw": 0.0, "blackout": True}
+                }
+            }
+            self.wfile.write(json.dumps(frame).encode('utf-8'))
+
+        def log_message(self, *args):
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), MockVizHandler)
+    port = server.server_address[1]
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    try:
+        checker = ConditionChecker(historian=temp_historian, viz_url=f"http://127.0.0.1:{port}")
+
+        # 1. Hospital ON_UPS -> debe pasar
+        ok, msg = checker.evaluate({"type": "viz_sector_status", "sector": "hospital", "expect": "ON_UPS"})
+        assert ok is True
+        assert "respaldo activo" in msg
+
+        # 2. Desal TRIP -> debe pasar
+        ok, msg = checker.evaluate({"type": "viz_sector_status", "sector": "desal", "expect": "TRIP"})
+        assert ok is True
+        assert "disparo" in msg
+
+        # 3. Transport RED -> debe pasar
+        ok, msg = checker.evaluate({"type": "viz_sector_status", "sector": "transport", "expect": "RED"})
+        assert ok is True
+
+        # 4. Sector inexistente -> debe fallar controladamente
+        ok, msg = checker.evaluate({"type": "viz_sector_status", "sector": "unknown_sector", "expect": "TRIP"})
+        assert ok is False
+        assert "no encontrado" in msg
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
 @pytest.fixture
 def test_flag_server(tmp_path):
     """Inicia un ThreadedFlagServer en un puerto efímero de test."""

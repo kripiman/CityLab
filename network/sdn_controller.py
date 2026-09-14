@@ -71,9 +71,38 @@ def apply_sdn_flow_rules() -> bool:
     return success
 
 
+def notify_visualizer_sdn_mitigation(offending_ip: str, rule: str = "DoS / Rate-Limit Exceeded", viz_url: str = "") -> None:
+    """Notifica al servidor visualizador 2D (:8090) sobre una acción de mitigación SDN / aislamiento de host."""
+    import os
+    import json
+    import time
+    import urllib.request
+    url = (viz_url or os.getenv('VIZ_HTTP_URL', 'http://127.0.0.1:8090')).rstrip('/')
+    try:
+        data = json.dumps({
+            'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'action': 'ISOLATE_HOST',
+            'offending_ip': offending_ip,
+            'mechanism': 'OpenFlow Circuit Breaker (Switch s3 OT)',
+            'rule': rule
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            f"{url}/api/viz/sdn",
+            data=data,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        with urllib.request.urlopen(req, timeout=1.0) as _:
+            pass
+    except Exception as exc:
+        LOGGER.debug('[SDN-VIZ] No se pudo notificar mitigación al visualizador (%s): %s', url, exc)
+
+
 def apply_circuit_breaker(offending_ip: str) -> bool:
     """Dispara una regla Circuit Breaker dinámica para aislar un host en caso de DoS/Flooding (>50 pkt/s)."""
+    import threading
     LOGGER.warning("[CIRCUIT-BREAKER] Aislando host %s por exceso de tasa de tráfico en switch OT", offending_ip)
+    threading.Thread(target=notify_visualizer_sdn_mitigation, args=(offending_ip,), daemon=True).start()
     return run_ovs_cmd(f"ovs-ofctl add-flow s3 'priority=500,dl_type=0x0800,nw_src={offending_ip},actions=drop'")
 
 

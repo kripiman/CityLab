@@ -48,7 +48,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["http_status", "historian_condition", "scada_sector_status", "siem_alert", "openflow_rule"]
+                "enum": ["http_status", "historian_condition", "scada_sector_status", "siem_alert", "openflow_rule", "viz_sector_status", "viz_condition"]
               },
               "url": { "type": "string" },
               "expect": { "type": ["integer", "string", "number", "boolean", "object"] },

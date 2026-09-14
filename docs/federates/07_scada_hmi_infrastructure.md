@@ -87,6 +87,11 @@ El cluster SCADA HA implementa arquitectura Primary/Standby:
 | `POST` | `/api/ha/heartbeat` | SCADA HA (`:8080`) | Recepción de latido entre nodos SCADA |
 | `POST` | `/api/ha/sync` | SCADA HA (`:8080`) | Sincronización de estado entre SCADA Primario y Standby |
 | `GET` | `/api/history` | SCADA / Historian (`:8080`) | Consulta de series temporales históricas almacenadas en SQLite WAL |
+| `GET` | `/` ó `/index.html` | HMI Server (`:8085`) | Dashboard industrial interactivo P&ID (Water, Gas, Elec, Transport) con consola de alarmas y mandos operacionales |
+| `GET` | `/api/hmi/overview` | HMI Server (`:8085`) | Estado consolidado P&ID de los 4 sectores supervisados (RF-06.2) y salud del sistema |
+| `GET` | `/api/hmi/alarms` | HMI Server (`:8085`) | Registro activo de alarmas de proceso industrial (Loss of View, Trips) |
+| `GET` | `/api/history` ó `/api/hmi/history` | HMI Server (`:8085`) | Consulta de series temporales históricas de proceso persistidas en Historian |
+| `POST` | `/api/hmi/control` | HMI Server (`:8085`) | Envío de mandos operacionales manuales (START, STOP, OPEN, CLOSE, TRIP) al SCADA con token RBAC |
 | `GET` | `/` ó `/index.html` | Viz Server (`:8090`) | Dashboard interactivo 2D SVG ciberfísico airgapped |
 | `GET` | `/api/viz/frame` | Viz Server (`:8090`) | Cuadro de renderizado en tiempo real de 8 sectores |
 | `GET` | `/api/viz/history` | Viz Server (`:8090`) | Histórico de cuadros para reproductor de tendencias |

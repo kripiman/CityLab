@@ -81,10 +81,12 @@ class ConditionChecker:
         historian: Optional[HistorianTSDB] = None,
         scada_url: str = "http://10.0.2.20:8080",
         siem_url: str = "http://10.0.2.20:8514",
+        viz_url: str = "http://10.0.2.20:8090",
     ):
         self.historian = historian or HistorianTSDB()
         self.scada_url = scada_url.rstrip('/')
         self.siem_url = siem_url.rstrip('/')
+        self.viz_url = viz_url.rstrip('/')
 
     def evaluate(self, check_def: Dict[str, Any]) -> Tuple[bool, str]:
         """Evalúa una definición de check y retorna (éxito, mensaje/detalle)."""
@@ -99,6 +101,8 @@ class ConditionChecker:
             return self._check_siem_alert(check_def)
         elif check_type == "openflow_rule":
             return self._check_openflow_rule(check_def)
+        elif check_type in ("viz_sector_status", "viz_condition"):
+            return self._check_viz_condition(check_def)
         else:
             return False, f"Tipo de check desconocido: {check_type}"
 
@@ -284,6 +288,52 @@ class ConditionChecker:
             return False, f"Patrón '{pattern}' no encontrado en flujos de switch {switch}"
         except Exception as exc:
             return False, f"Error ejecutando ovs-ofctl: {exc}"
+
+    def _check_viz_condition(self, check: Dict[str, Any]) -> Tuple[bool, str]:
+        sector = check.get("sector", "")
+        expect = str(check.get("expect", "")).upper()
+        field = check.get("field", "")
+        url = check.get("url") or f"{self.viz_url}/api/viz/frame"
+        timeout = float(check.get("timeout", 2.0))
+
+        if not sector:
+            return False, "Falta sector para check viz_sector_status"
+
+        try:
+            req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                city_sectors = data.get("city_sectors", {})
+                if sector not in city_sectors:
+                    return False, f"Sector '{sector}' no encontrado en visualizador"
+                sec_data = city_sectors[sector]
+
+                if field:
+                    actual = sec_data.get(field)
+                    if str(actual).upper() == expect:
+                        return True, f"Visualizador: sector '{sector}' campo '{field}'={actual} coincide con '{expect}'"
+                    return False, f"Visualizador: sector '{sector}' campo '{field}'={actual}, esperado '{expect}'"
+
+                if expect in ("ON_UPS", "GENERATOR_ACTIVE"):
+                    if sec_data.get("generator_active") or not sec_data.get("powered", True):
+                        return True, f"Visualizador: sector '{sector}' con respaldo activo / ON UPS"
+                    return False, f"Visualizador: sector '{sector}' en suministro normal"
+                elif expect in ("TRIP", "PUMP_TRIP", "DISPARO"):
+                    if sec_data.get("pump_trip") or sec_data.get("sis_trip") or sec_data.get("alert"):
+                        return True, f"Visualizador: sector '{sector}' con disparo o alerta activa"
+                    return False, f"Visualizador: sector '{sector}' en estado normal"
+                elif expect in ("BLACKOUT", "APAGON"):
+                    if sec_data.get("blackout") or sec_data.get("power_kw", 1) == 0:
+                        return True, f"Visualizador: sector '{sector}' en apagón"
+                    return False, f"Visualizador: sector '{sector}' energizado"
+                elif expect in ("RED", "CONGESTION", "CLOSED"):
+                    if sec_data.get("traffic_light") == "RED" or sec_data.get("railway_gate") == "CLOSED":
+                        return True, f"Visualizador: sector '{sector}' semáforo en rojo o barrera cerrada"
+                    return False, f"Visualizador: sector '{sector}' tráfico normal"
+
+                return False, f"Visualizador: condición '{expect}' no verificable para '{sector}'"
+        except Exception as exc:
+            return False, f"Fallo al consultar Visualizador en {url}: {exc}"
 
 
 # ---------------------------------------------------------------------- #

@@ -95,6 +95,27 @@ class TestHmiServer(unittest.TestCase):
                 os.environ['STRICT_AUTH'] = old_strict
             rbac_mod._rbac.reload()
 
+    def test_hmi_overview_with_live_scada_actuator_mapping(self) -> None:
+        engine = IndustrialHmiEngine(scada_url='http://127.0.0.1:18080')
+        engine.fetch_scada_status = lambda: {
+            'status': 'ONLINE',
+            'sectors': {
+                'water': {'status': 'ONLINE', 'actuator_running': True, 'fault': False},
+                'gas': {'status': 'ONLINE', 'actuator_running': False, 'fault': False},
+                'elec': {'status': 'ONLINE', 'actuator_running': True, 'fault': False},
+                'transport': {'status': 'ONLINE', 'actuator_running': False, 'fault': False},
+            }
+        }
+        ov = engine.get_overview()
+        proc = ov['process_diagram']
+        self.assertTrue(proc['water_sector']['p1_state'])
+        self.assertEqual(proc['water_sector']['t1_level'], 10.0)
+        self.assertFalse(proc['gas_sector']['valve_open'])
+        self.assertEqual(proc['gas_sector']['pressure_psi'], 145.0)
+        self.assertTrue(proc['elec_sector']['breaker_closed'])
+        self.assertFalse(proc['transport_sector']['gate_open'])
+
 
 if __name__ == '__main__':
     unittest.main()
+

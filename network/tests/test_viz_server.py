@@ -115,6 +115,66 @@ class TestVizServer(unittest.TestCase):
         self.assertEqual(initial['city_sectors']['gas']['pressure_psi'], 145.0)
         self.assertEqual(initial['city_sectors']['elec']['grid_voltage'], 230.0)
 
+    def test_blue_team_soc_and_sdn_integration(self) -> None:
+        """Verifica la ingesta y persistencia de alertas SOC y mitigaciones SDN en viz_server."""
+        VizRequestHandler.engine = self.engine
+        server = ThreadedVizServer(('127.0.0.1', 0), VizRequestHandler)
+        port = server.server_address[1]
+
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+
+        try:
+            # 1. Enviar alerta SOC
+            alert_payload = json.dumps({
+                'alert_id': 'SOC-ALT-0042',
+                'name': 'Inyección Modbus Detectada por DPI',
+                'severity': 'CRITICAL',
+                'attacker_ip': '10.0.1.99'
+            }).encode('utf-8')
+            req_soc = urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/viz/soc",
+                data=alert_payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req_soc, timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                res = json.loads(resp.read().decode('utf-8'))
+                self.assertEqual(res['status'], 'RECORDED')
+
+            # 2. Enviar mitigación SDN
+            sdn_payload = json.dumps({
+                'action': 'ISOLATE_HOST',
+                'offending_ip': '10.0.1.99',
+                'mechanism': 'OpenFlow Circuit Breaker',
+                'rule': 'Rate limit'
+            }).encode('utf-8')
+            req_sdn = urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/viz/sdn",
+                data=sdn_payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req_sdn, timeout=2.0) as resp:
+                self.assertEqual(resp.status, 200)
+                res = json.loads(resp.read().decode('utf-8'))
+                self.assertEqual(res['status'], 'RECORDED')
+
+            # 3. Verificar que /api/viz/frame contiene ambas
+            req_frame = urllib.request.Request(f"http://127.0.0.1:{port}/api/viz/frame")
+            with urllib.request.urlopen(req_frame, timeout=2.0) as resp:
+                frame = json.loads(resp.read().decode('utf-8'))
+                self.assertIn('soc_alerts', frame)
+                self.assertEqual(len(frame['soc_alerts']), 1)
+                self.assertEqual(frame['soc_alerts'][0]['alert_id'], 'SOC-ALT-0042')
+                self.assertIn('sdn_mitigations', frame)
+                self.assertEqual(len(frame['sdn_mitigations']), 1)
+                self.assertEqual(frame['sdn_mitigations'][0]['offending_ip'], '10.0.1.99')
+        finally:
+            server.shutdown()
+            server.server_close()
+
 
 if __name__ == '__main__':
     unittest.main()

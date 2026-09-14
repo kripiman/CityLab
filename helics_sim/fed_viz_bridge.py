@@ -165,7 +165,13 @@ class VizBridgeEngine:
         return sectors
 
     def update_metrics_from_scada(self, scada_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """Mapea telemetría SCADA REST (/api/telemetry) a esquemas del visualizador."""
+        """Mapea telemetría SCADA REST (/api/telemetry) a esquemas del visualizador.
+
+        En modo standalone (sin broker HELICS), el SCADA primario solo encuesta los 4 sectores
+        críticos (water, gas, elec, transport conforme a RF-06.2 / CTF F-06).
+        Para evitar sectores 'congelados', este método deriva la cascada ciberfísica sobre los
+        sectores desacoplados (hospital, desal, lighting, safety) a partir del estado de la red eléctrica.
+        """
         sectors: Dict[str, Dict[str, Any]] = {}
         raw_sectors = scada_data.get('sectors', {})
 
@@ -201,6 +207,40 @@ class VizBridgeEngine:
                     'powered': status == 'ONLINE',
                     'generator_active': running or fault,
                 }
+
+        # Cascada ciberfísica standalone para sectores desacoplados de SCADA primario (F-06):
+        elec_blackout = sectors.get('elec', {}).get('blackout', False)
+
+        if 'hospital' not in sectors:
+            sectors['hospital'] = {
+                'powered': not elec_blackout,
+                'generator_active': elec_blackout,
+                'standalone_decoupled': True,
+            }
+
+        if 'desal' not in sectors:
+            sectors['desal'] = {
+                'pump_trip': elec_blackout,
+                'power_kw': 0.0 if elec_blackout else 45.0,
+                'tank_level_pct': 75.0,
+                'standalone_decoupled': True,
+            }
+
+        if 'lighting' not in sectors:
+            sectors['lighting'] = {
+                'power_kw': 0.0 if elec_blackout else 120.0,
+                'standalone_decoupled': True,
+            }
+
+        if 'safety' not in sectors:
+            # Si hay blackout o anomalías simultáneas agua+gas, el SIS registra disparo preventivo
+            gas_alert = sectors.get('gas', {}).get('alert', False)
+            water_alert = sectors.get('water', {}).get('alert', False)
+            sis_tripped = elec_blackout or (gas_alert and water_alert)
+            sectors['safety'] = {
+                'sis_trip': sis_tripped,
+                'standalone_decoupled': True,
+            }
 
         for sec, payload in sectors.items():
             if sec not in self.state_buffer:

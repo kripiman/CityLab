@@ -28,3 +28,10 @@ objectives:
     type: scada_sector_status
     sector: water
     expect: LOSS_OF_VIEW
+- id: FLAG_4
+  desc: Respaldo de emergencia hospitalario activado por apagón (ON UPS)
+  points: 150
+  check:
+    type: viz_sector_status
+    sector: hospital
+    expect: ON_UPS

@@ -35,9 +35,37 @@ class CityVisualizerStateEngine:
                 'desal': {'power_kw': 45.0, 'tank_level_pct': 75.0, 'pump_trip': False},
                 'lighting': {'power_kw': 120.0},
                 'safety': {'sis_trip': False}
-            }
+            },
+            'soc_alerts': [],
+            'sdn_mitigations': []
         }
         self.frame_history: List[Dict[str, Any]] = []
+
+    def record_soc_alert(self, alert: Dict[str, Any]) -> None:
+        """Registra una alerta SOC / SIEM correlacionada para visualización Blue Team."""
+        if 'soc_alerts' not in self.state:
+            self.state['soc_alerts'] = []
+        self.state['soc_alerts'].insert(0, alert)
+        if len(self.state['soc_alerts']) > 25:
+            self.state['soc_alerts'].pop()
+        self.state['timestamp'] = time.time()
+        frame_copy = json.loads(json.dumps(self.state))
+        self.frame_history.append(frame_copy)
+        if len(self.frame_history) > 100:
+            self.frame_history.pop(0)
+
+    def record_sdn_mitigation(self, mitigation: Dict[str, Any]) -> None:
+        """Registra una acción de mitigación SDN (aislamiento host) en la topología."""
+        if 'sdn_mitigations' not in self.state:
+            self.state['sdn_mitigations'] = []
+        self.state['sdn_mitigations'].insert(0, mitigation)
+        if len(self.state['sdn_mitigations']) > 25:
+            self.state['sdn_mitigations'].pop()
+        self.state['timestamp'] = time.time()
+        frame_copy = json.loads(json.dumps(self.state))
+        self.frame_history.append(frame_copy)
+        if len(self.frame_history) > 100:
+            self.frame_history.pop(0)
 
     def update_sector_state(self, sector: str, payload: Dict[str, Any]) -> bool:
         if sector in self.state['city_sectors']:
@@ -395,6 +423,24 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     </div>
   </div>
 
+  <!-- 9. BLUE TEAM / SOC & SDN OPERATIONS PANEL -->
+  <div id="blue-team-panel" style="background: #0f1522; border: 1px solid #1a233a; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #192236; padding-bottom: 6px;">
+      <span style="font-size: 0.9rem; font-weight: 600; color: #64b5f6;">🛡️ Blue Team — Alertas SOC Correlacionadas (SIEM) & Mitigaciones SDN</span>
+      <span id="badge-soc-summary" class="badge badge-ok">0 AMENAZAS DETECTADAS</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+      <div>
+        <div style="font-size: 0.75rem; color: #78909c; margin-bottom: 6px; font-weight: bold;">🚨 ALERTAS CORRELACIONADAS SOC (SIEM):</div>
+        <div id="soc-alerts-list" style="font-size: 0.72rem; color: #90a4ae; min-height: 40px; background: #080c14; padding: 8px; border-radius: 4px; border: 1px solid #151d30;">Sin incidentes de seguridad correlacionados.</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: #78909c; margin-bottom: 6px; font-weight: bold;">⚡ MITIGACIONES ACTIVAS SDN (CIRCUIT BREAKER):</div>
+        <div id="sdn-mitigations-list" style="font-size: 0.72rem; color: #90a4ae; min-height: 40px; background: #080c14; padding: 8px; border-radius: 4px; border: 1px solid #151d30;">Sin aislamientos activos (Tráfico normal OpenFlow).</div>
+      </div>
+    </div>
+  </div>
+
   <div id="raw-container">
     <h3 style="font-size: 0.85rem; color: #78909c; margin-bottom: 6px;">Payload JSON de Telemetría (/api/viz/frame)</h3>
     <pre id="viewport"></pre>
@@ -486,6 +532,9 @@ class VizRequestHandler(BaseHTTPRequestHandler):
         if (h.generator_active) {
           b.className = 'badge badge-warn'; b.innerText = 'ON UPS';
           srcTxt.innerText = 'UPS'; srcTxt.setAttribute('fill', '#ffab00');
+        } else if (h.standalone_decoupled) {
+          b.className = 'badge badge-ok'; b.innerText = 'OK (STANDALONE)';
+          srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#00e676');
         } else {
           b.className = 'badge badge-ok'; b.innerText = 'OK';
           srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#00e676');
@@ -501,6 +550,8 @@ class VizRequestHandler(BaseHTTPRequestHandler):
         if (d.pump_trip) {
           b.className = 'badge badge-crit'; b.innerText = 'TRIP';
           critical = true;
+        } else if (d.standalone_decoupled) {
+          b.className = 'badge badge-ok'; b.innerText = 'OK (STANDALONE)';
         } else {
           b.className = 'badge badge-ok'; b.innerText = 'OK';
         }
@@ -509,7 +560,23 @@ class VizRequestHandler(BaseHTTPRequestHandler):
       // 7. Lighting
       if (sectors.lighting) {
         const l = sectors.lighting;
-        document.getElementById('val-light-kw').innerText = Number(l.power_kw || 120).toFixed(0) + ' kW';
+        const kw = Number(l.power_kw ?? 120);
+        document.getElementById('val-light-kw').innerText = kw.toFixed(0) + ' kW';
+        const b = document.getElementById('badge-light');
+        const lamp = document.getElementById('svg-lamp-glow');
+        if (b) {
+          if (kw === 0 || l.blackout) {
+            b.className = 'badge badge-crit'; b.innerText = 'APAGÓN';
+            if (lamp) lamp.setAttribute('opacity', '0.1');
+            critical = true;
+          } else if (l.standalone_decoupled) {
+            b.className = 'badge badge-ok'; b.innerText = 'OK (STANDALONE)';
+            if (lamp) lamp.setAttribute('opacity', '0.85');
+          } else {
+            b.className = 'badge badge-ok'; b.innerText = 'OK';
+            if (lamp) lamp.setAttribute('opacity', '0.85');
+          }
+        }
       }
 
       // 8. Safety / SIS
@@ -526,6 +593,12 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           border.setAttribute('stroke', '#ff1744');
           centerTxt.setAttribute('fill', '#ff1744');
           critical = true;
+        } else if (s.standalone_decoupled) {
+          document.getElementById('val-sis-trip').innerText = 'ARMED (STANDALONE)';
+          b.className = 'badge badge-ok'; b.innerText = 'ARMED (STANDALONE)';
+          bTop.className = 'badge badge-ok'; bTop.innerText = 'SIS SIL-3: OK';
+          border.setAttribute('stroke', '#00e676');
+          centerTxt.setAttribute('fill', '#00e676');
         } else {
           document.getElementById('val-sis-trip').innerText = 'NO ACTIVO';
           b.className = 'badge badge-ok'; b.innerText = 'ARMED';
@@ -535,14 +608,48 @@ class VizRequestHandler(BaseHTTPRequestHandler):
         }
       }
 
-      // Banner Superior
+      // Blue Team / SOC Alerts & SDN Mitigations
+      const socAlerts = data.soc_alerts || [];
+      const sdnMitigations = data.sdn_mitigations || [];
       const socBadge = document.getElementById('badge-soc');
-      if (critical) {
+      const socSummBadge = document.getElementById('badge-soc-summary');
+      const socList = document.getElementById('soc-alerts-list');
+      const sdnList = document.getElementById('sdn-mitigations-list');
+
+      if (socAlerts.length > 0) {
+        const top = socAlerts[0];
         socBadge.className = 'badge badge-crit';
-        socBadge.innerText = 'INCIDENTE ACTIVO';
+        socBadge.innerText = 'SOC: ' + (top.name ? top.name.substring(0, 26) : top.alert_id) + ' [IP: ' + (top.attacker_ip || 'UNK') + ']';
+        socSummBadge.className = 'badge badge-crit';
+        socSummBadge.innerText = socAlerts.length + ' AMENAZA(S) SOC';
+        socList.innerHTML = socAlerts.slice(0, 3).map(a =>
+          `<div style="margin-bottom: 6px; border-left: 3px solid #ff1744; padding-left: 8px;">` +
+          `<strong style="color: #ff5252;">${a.alert_id || 'ALERTA'}</strong>: ${a.name} ` +
+          `<span style="color: #ffab00;">(Atacante IP: ${a.attacker_ip})</span>` +
+          `</div>`
+        ).join('');
       } else {
-        socBadge.className = 'badge badge-ok';
-        socBadge.innerText = 'SISTEMA NORMAL';
+        socSummBadge.className = 'badge badge-ok';
+        socSummBadge.innerText = '0 AMENAZAS DETECTADAS';
+        socList.innerText = 'Sin incidentes de seguridad correlacionados.';
+        if (critical) {
+          socBadge.className = 'badge badge-crit';
+          socBadge.innerText = 'INCIDENTE FÍSICO ACTIVO';
+        } else {
+          socBadge.className = 'badge badge-ok';
+          socBadge.innerText = 'SISTEMA NORMAL';
+        }
+      }
+
+      if (sdnMitigations.length > 0) {
+        sdnList.innerHTML = sdnMitigations.slice(0, 3).map(m =>
+          `<div style="margin-bottom: 6px; border-left: 3px solid #00e5ff; padding-left: 8px;">` +
+          `<strong style="color: #00e5ff;">${m.mechanism || 'SDN Circuit Breaker'}</strong>: ` +
+          `Host <span style="color: #ff1744; font-weight: bold;">${m.offending_ip}</span> aislado (${m.rule || 'Flood/DoS'})` +
+          `</div>`
+        ).join('');
+      } else {
+        sdnList.innerText = 'Sin aislamientos activos (Tráfico normal OpenFlow).';
       }
 
       // Actualizar viewport crudo
@@ -590,6 +697,24 @@ class VizRequestHandler(BaseHTTPRequestHandler):
                         self._send_json({'status': 'ERROR', 'message': f'unknown sector: {sector}'}, status=400)
                 else:
                     self._send_json({'status': 'ERROR', 'message': 'invalid sector or payload'}, status=400)
+            except Exception as e:
+                self._send_json({'status': 'ERROR', 'message': str(e)}, status=400)
+        elif self.path == '/api/viz/soc':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body_bytes = self.rfile.read(content_length)
+            try:
+                alert_data = json.loads(body_bytes.decode('utf-8'))
+                self.engine.record_soc_alert(alert_data)
+                self._send_json({'status': 'RECORDED', 'alert_id': alert_data.get('alert_id', 'SOC-ALT')})
+            except Exception as e:
+                self._send_json({'status': 'ERROR', 'message': str(e)}, status=400)
+        elif self.path == '/api/viz/sdn':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body_bytes = self.rfile.read(content_length)
+            try:
+                mitigation_data = json.loads(body_bytes.decode('utf-8'))
+                self.engine.record_sdn_mitigation(mitigation_data)
+                self._send_json({'status': 'RECORDED', 'mitigation': mitigation_data.get('action', 'SDN_ACTION')})
             except Exception as e:
                 self._send_json({'status': 'ERROR', 'message': str(e)}, status=400)
         else:

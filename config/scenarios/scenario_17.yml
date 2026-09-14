@@ -13,3 +13,10 @@ objectives:
     type: http_status
     url: http://10.0.2.20:8080/api/telemetry
     expect: 200
+- id: FLAG_2
+  desc: Verificación de disponibilidad del servicio HMI (:8085) vía endpoint REST /api/hmi/overview
+  points: 100
+  check:
+    type: http_status
+    url: http://10.0.2.20:8085/api/hmi/overview
+    expect: 200

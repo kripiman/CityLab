@@ -36,8 +36,7 @@ class MockScadaHandler(BaseHTTPRequestHandler):
                         "water": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]},
                         "gas": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]},
                         "elec": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]},
-                        "transport": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]},
-                        "hospital": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]}
+                        "transport": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False, True, False]}
                     }
                 }
                 self.wfile.write(json.dumps(payload).encode("utf-8"))
@@ -121,13 +120,44 @@ class TestFedVizBridge(unittest.TestCase):
             "sectors": {
                 "water": {"status": "ONLINE", "actuator_running": True, "fault": False},
                 "gas": {"status": "LOSS_OF_VIEW", "actuator_running": False, "fault": True},
+                "elec": {"status": "ONLINE", "actuator_running": True, "fault": False, "coils": [True, False]},
+                "transport": {"status": "ONLINE", "actuator_running": True, "fault": False},
             }
         }
         sectors = self.engine.update_metrics_from_scada(scada_data)
-        self.assertIn("water", sectors)
+        # Todos los 8 sectores deben existir para evitar cards congeladas
+        for expected_sec in ("water", "gas", "elec", "transport", "hospital", "desal", "lighting", "safety"):
+            self.assertIn(expected_sec, sectors)
+
         self.assertTrue(sectors["water"]["pump_running"])
-        self.assertIn("gas", sectors)
         self.assertTrue(sectors["gas"]["alert"])
+        self.assertFalse(sectors["elec"]["blackout"])
+        # Sectores desacoplados operan en modo normal cuando no hay blackout
+        self.assertTrue(sectors["hospital"]["powered"])
+        self.assertFalse(sectors["hospital"]["generator_active"])
+        self.assertFalse(sectors["desal"]["pump_trip"])
+        self.assertEqual(sectors["lighting"]["power_kw"], 120.0)
+        self.assertFalse(sectors["safety"]["sis_trip"])
+
+    def test_scada_metrics_standalone_electrical_cascade(self) -> None:
+        """Verifica que un apagón en elec propague cascada ciberfísica a hospital, desal y lighting en standalone."""
+        scada_blackout = {
+            "sectors": {
+                "water": {"status": "ONLINE", "actuator_running": False, "fault": False},
+                "gas": {"status": "ONLINE", "actuator_running": True, "fault": False},
+                "elec": {"status": "ONLINE", "actuator_running": False, "fault": True, "coils": [False]},
+                "transport": {"status": "ONLINE", "actuator_running": False, "fault": True},
+            }
+        }
+        sectors = self.engine.update_metrics_from_scada(scada_blackout)
+        self.assertTrue(sectors["elec"]["blackout"])
+        # Cascada a sectores desacoplados
+        self.assertFalse(sectors["hospital"]["powered"])
+        self.assertTrue(sectors["hospital"]["generator_active"])
+        self.assertTrue(sectors["desal"]["pump_trip"])
+        self.assertEqual(sectors["desal"]["power_kw"], 0.0)
+        self.assertEqual(sectors["lighting"]["power_kw"], 0.0)
+        self.assertTrue(sectors["safety"]["sis_trip"])
 
     def test_throttling_rate_limiting(self) -> None:
         self.engine.state_buffer = {"water": {"tank_level": 12.0}}

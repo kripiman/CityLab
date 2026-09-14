@@ -8,18 +8,18 @@
 
 ## 1. Breve del Escenario (Storyline)
 
-El estudiante explora la interfaz de supervisión industrial HMI P&ID que se ejecuta en el puerto HTTP `:8085` (`10.0.2.20:8085` en Mininet o `127.0.0.1:8085` en local). Aprende a consultar el estado del proceso mediante las llamadas REST (`/api/telemetry` y `/api/history`) e interactuar con la visualización web.
+El estudiante explora la interfaz de supervisión industrial HMI P&ID que se ejecuta en el puerto HTTP `:8085` (`10.0.2.20:8085` en Mininet o `127.0.0.1:8085` en local), así como el servidor central SCADA en `:8080`. Aprende a consultar el estado del proceso mediante las llamadas REST del HMI (`/api/hmi/overview`, `/api/hmi/alarms` e `/api/history`) y del SCADA Server (`/api/telemetry`), e interactuar con la visualización web P&ID.
 
 ---
 
 ## 2. Cadena de Trabajo Paso a Paso
 
-### Paso 1: Exploración REST API HMI
+### Paso 1: Exploración REST API HMI y SCADA
 1. Ejecutar `attacker/attack_scada_tour.py`:
    ```bash
    python3 attacker/attack_scada_tour.py --url http://10.0.2.20:8085
    ```
-2. Verificar la recepción del esquema JSON con las presiones, niveles de tanques y alarmas.
+2. Verificar la recepción del esquema JSON vía `/api/hmi/overview` con el diagrama P&ID, presiones, niveles de tanques y alarmas. Para telemetría bruta de sondeo Modbus, consultar `http://10.0.2.20:8080/api/telemetry`.
 
 ---
 
