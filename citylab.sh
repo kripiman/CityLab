@@ -48,6 +48,15 @@ cmd_up() {
     export CITYLAB_SESSION_SEED="${CITYLAB_SESSION_SEED:-$(python3 -c 'import secrets; print(secrets.token_hex(16))' 2>/dev/null || date +%s%N)}"
     c_info "Semilla de sesión generada: ${CITYLAB_SESSION_SEED:0:8}..."
 
+    # Configuración de entorno gráfico para CityLab Desktop GUI (X11)
+    export DISPLAY="${CITYLAB_DISPLAY:-${DISPLAY:-:0}}"
+    if [ -z "${XAUTHORITY:-}" ] && [ -n "${SUDO_USER:-}" ]; then
+        local user_home
+        user_home="$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)"
+        [ -n "$user_home" ] && export XAUTHORITY="${CITYLAB_XAUTHORITY:-$user_home/.Xauthority}"
+    fi
+    c_info "Para visualización gráfica nativa vía X11/root: xhost +SI:localuser:root"
+
     local script="$BASE_DIR/run_phase${phase}.sh"
     if [ ! -x "$script" ]; then
         c_err "No existe la fase $phase ($script). Fases disponibles: 1, 2, 3."
@@ -70,7 +79,7 @@ cmd_down() {
         done < "/tmp/citylab_daemons.pids"
         rm -f "/tmp/citylab_daemons.pids"
     fi
-    local citylab_procs="modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|hmi_server.py|viz_server.py|siem_pipeline.py|modbus_proxy.py|flag_service.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|fed_viz_bridge.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
+    local citylab_procs="modbus_emulator.py|dnp3_emulator.py|iec61850_emulator.py|opcua_emulator.py|honeypot_server.py|ad_dc_emulator.py|scada_server.py|hmi_server.py|viz_server.py|citylab_gui.py|siem_pipeline.py|modbus_proxy.py|flag_service.py|fed_icssim.py|fed_transport.py|fed_hospital.py|fed_logger.py|fed_desal.py|fed_lighting.py|fed_sis.py|fed_viz_bridge.py|gridlabd_federate.py|fed_gridmock.py|helics_broker"
     pkill -15 -f "$citylab_procs" 2>/dev/null || true
     sleep 0.2
     pkill -9 -f "$citylab_procs" 2>/dev/null || true
@@ -123,7 +132,7 @@ cmd_status() {
         helics_broker fed_icssim fed_transport fed_hospital fed_logger fed_desal
         fed_lighting fed_sis fed_viz_bridge gridlabd_federate modbus_emulator dnp3_emulator
         iec61850_emulator opcua_emulator honeypot_server ad_dc_emulator
-        modbus_proxy scada_server hmi_server viz_server siem_pipeline sdn_controller flag_service
+        modbus_proxy scada_server hmi_server viz_server citylab_gui siem_pipeline sdn_controller flag_service
     )
     for pat in "${patterns[@]}"; do
         local n

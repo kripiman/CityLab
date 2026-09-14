@@ -96,12 +96,19 @@ CityLab lee más de 50 variables de entorno internas (multiprotocolo, HA, SIEM, 
 sudo ./citylab.sh up
 ```
 
-### 2. Abrir el Visualizador 2D SVG Airgapped
-Una vez iniciado el laboratorio, accede desde cualquier navegador web en la red DMZ o host local:
-```
-http://10.0.2.20:8090        # Desde dentro de la topología Mininet
-http://127.0.0.1:8090        # En ejecuciones locales o de desarrollo
-```
+### 2. Acceder a los Dashboards (Web y Desktop Nativo)
+Una vez iniciado el laboratorio (`sudo ./citylab.sh up`), ambos dashboards web son accesibles directamente desde tu navegador:
+- **Visualizador Urbano 2D SVG**: [http://10.0.2.20:8090](http://10.0.2.20:8090) (o `http://127.0.0.1:8090` en modo local/mock).
+- **HMI Industrial OpenSCADA**: [http://10.0.2.20:8085](http://10.0.2.20:8085) (diagrama P&ID, mandos y consola de alarmas).
+
+> **Enrutamiento DMZ**: El host anfitrión adquiere automáticamente una interfaz directa (`10.0.2.2/24`) en el switch DMZ `s2` (el mismo mecanismo utilizado en `s3` para la co-simulación de la Celda OT), permitiendo acceso HTTP directo hacia `h_scada` (`10.0.2.20`).
+
+- **Aplicación Desktop Nativa (`network/citylab_gui.py`)**:
+  Se despliega en ventana dividida (HMI a la izquierda / Visualizador 2D a la derecha). Para entornos X11 bajo sudo, autoriza el acceso gráfico local antes de iniciar:
+  ```bash
+  xhost +SI:localuser:root
+  ```
+  *(En entornos headless/servidor sin display, puede omitirse con `AUTO_START_GUI=0 sudo ./citylab.sh up`).*
 
 ### 3. Co-Simulación HELICS sin root (Fase 7 — 10 federados, incluye SIS SIL-3)
 ```bash

@@ -25,7 +25,7 @@ install_pip_pkgs() {
 if [[ $id =~ (fedora|nobara|rhel) ]]; then
   echo "[+] Using dnf for Fedora/Nobara/RHEL"
   dnf install -y epel-release || true
-  dnf install -y git python3-pip openvswitch mininet nmap hydra wireshark-cli tmux nano vim openssh-server sshpass || {
+  dnf install -y git python3-pip python3-tkinter openvswitch mininet nmap hydra wireshark-cli tmux nano vim openssh-server sshpass || {
     echo "dnf install failed; attempting Mininet install from source"
     git clone https://github.com/mininet/mininet.git /tmp/mininet
     /tmp/mininet/util/install.sh -a
@@ -37,7 +37,7 @@ if [[ $id =~ (fedora|nobara|rhel) ]]; then
 elif [[ $id =~ (ubuntu|debian|linuxmint) ]]; then
   echo "[+] Using apt for Debian/Ubuntu/Mint"
   apt update
-  apt install -y git python3-pip mininet openvswitch-switch nmap hydra tshark tmux nano vim openssh-server sshpass || {
+  apt install -y git python3-pip python3-tk mininet openvswitch-switch nmap hydra tshark tmux nano vim openssh-server sshpass || {
     echo "apt install failed for mininet/openvswitch; please install manually" >&2
   }
   systemctl enable --now openvswitch || true
@@ -46,7 +46,7 @@ elif [[ $id =~ (ubuntu|debian|linuxmint) ]]; then
 
 elif [[ $id =~ (arch|manjaro) ]]; then
   echo "[+] Using pacman for Arch/Manjaro"
-  pacman -Syu --needed --noconfirm base-devel git python-pip openvswitch nmap hydra wireshark-cli tmux nano vim openssh sshpass || true
+  pacman -Syu --needed --noconfirm base-devel git python-pip tk openvswitch nmap hydra wireshark-cli tmux nano vim openssh sshpass || true
   # Try to install mininet via AUR helper if present
   if command -v yay >/dev/null 2>&1; then
     yay -S --noconfirm mininet || true

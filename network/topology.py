@@ -408,6 +408,11 @@ def main() -> int:
         os.system('ip addr add 10.0.3.2/24 dev s3 2>/dev/null || true')
         os.system('ip link set s3 up')
 
+        # Configure switch s2 interface on the host to allow root/desktop processes (browser, GUI)
+        # to communicate directly with DMZ services (like h_scada 10.0.2.20).
+        os.system('ip addr add 10.0.2.2/24 dev s2 2>/dev/null || true')
+        os.system('ip link set s2 up')
+
         fw = net.get('fw')
         apply_fw_configuration(fw)
         configure_host_routes(net)
@@ -521,6 +526,19 @@ def main() -> int:
                 print('[*] h_scada (10.0.2.20): viz_server spawned on :8090')
             except Exception as exc:
                 print(f'[WARN] viz_server auto-start skipped: {exc}')
+
+            # Auto-start CityLab Native Desktop Dashboard (GUI) en DMZ (h_scada)
+            auto_gui = os.environ.get('AUTO_START_GUI', '1')
+            if auto_gui == '1':
+                try:
+                    gui_script = os.path.join(repo_root, 'network', 'citylab_gui.py')
+                    disp_env = os.getenv('DISPLAY', ':0')
+                    xauth_env = os.getenv('XAUTHORITY', '')
+                    xauth_prefix = f'XAUTHORITY={xauth_env}' if xauth_env else ''
+                    scada.cmd(f'nohup env PYTHONPATH={repo_root} DISPLAY={disp_env} {xauth_prefix} {py_bin} {gui_script} > /tmp/h_citylab_gui.log 2>&1 & echo $! >> /tmp/citylab_daemons.pids')
+                    print('[*] h_scada: citylab_gui desktop dashboard spawned')
+                except Exception as exc:
+                    print(f'[WARN] citylab_gui auto-start skipped: {exc}')
 
             # Auto-start SOC / SIEM Central Pipeline en DMZ (h_scada @ 10.0.2.20:8514)
             try:
