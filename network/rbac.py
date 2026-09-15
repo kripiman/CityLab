@@ -43,9 +43,9 @@ ROLE_PERMISSIONS: Dict[str, set] = {
     'auditor':  {'/health', '/', '/api/telemetry', '/api/history', '/api/history/snapshot',
                  '/api/whoami'},
     'operator': {'/health', '/', '/api/telemetry', '/api/history', '/api/history/snapshot',
-                 '/api/control/read', '/api/whoami'},
+                 '/api/control/read', '/api/control', '/api/whoami'},
     'engineer': {'/health', '/', '/api/telemetry', '/api/history', '/api/history/snapshot',
-                 '/api/control/read', '/api/control/write', '/api/whoami'},
+                 '/api/control/read', '/api/control/write', '/api/control', '/api/whoami'},
 }
 
 # Wildcard: si el endpoint no está en ningún conjunto pero el rol es 'engineer', permite.

@@ -180,6 +180,10 @@ class IndustrialHmiEngine:
             )
             with urllib.request.urlopen(req, timeout=2.0) as resp:
                 body = json.loads(resp.read().decode('utf-8'))
+                try:
+                    self.fetch_scada_status()
+                except Exception:
+                    pass
                 return {'success': True, 'scada_response': body}
         except urllib.error.HTTPError as e:
             return {'success': False, 'error': f"HTTP {e.code}: {e.reason}"}

@@ -100,8 +100,8 @@
     "semantic_hash": "428fa10f13e026c68a8a62b5a28d5d83"
   },
   "network/scada_server.py": {
-    "mtime": 1789138629.11581,
-    "ast_hash": "b41396a6e3329bb23cf1db49decc4dbe",
+    "mtime": 1789441572.9583504,
+    "ast_hash": "43c31968b646913c67b7920e99419e88",
     "semantic_hash": ""
   },
   "network/sdn_controller.py": {
@@ -505,14 +505,14 @@
     "semantic_hash": "6501536c92e60204812bc0c95ad64ae5"
   },
   "network/hmi_server.py": {
-    "mtime": 1789421048.45614,
-    "ast_hash": "65f42ba2f46e1a13eb66e195fb3b006d",
+    "mtime": 1789441586.0163405,
+    "ast_hash": "3d7cf3e9bd7fb77bf7da26d79b75bce1",
     "semantic_hash": ""
   },
   "network/rbac.py": {
-    "mtime": 1788911617.142864,
-    "ast_hash": "b6575078c70d9c0e32968cf3aabf8e20",
-    "semantic_hash": "b6575078c70d9c0e32968cf3aabf8e20"
+    "mtime": 1789441481.7324197,
+    "ast_hash": "96b270bcac6474298c88de0a61c2093e",
+    "semantic_hash": ""
   },
   "network/scada_ha.py": {
     "mtime": 1788911617.142891,
@@ -1307,6 +1307,16 @@
   "network/tests/test_citylab_gui.py": {
     "mtime": 1789426714.4336655,
     "ast_hash": "5c3dabe58fdbf79bacc4532caba79b72",
+    "semantic_hash": ""
+  },
+  "network/tests/test_scada_control.py": {
+    "mtime": 1789442397.3201392,
+    "ast_hash": "cd40a1cdbc8490cdc0e7e5c62870c927",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260914_231334_auditoria_final__3_correcciones_sobre_citylab_gui.md": {
+    "mtime": 1789427614.8975484,
+    "ast_hash": "56423e696f944685ba8881938ee48e92",
     "semantic_hash": ""
   }
 }

@@ -22,7 +22,7 @@ import os
 import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Dict, Any
+from typing import Dict, Any, Tuple, Optional, List
 from urllib.parse import urlparse, parse_qs
 
 from network.historian import HistorianTSDB
@@ -46,10 +46,17 @@ LOGGER = logging.getLogger('scada_server')
 # primario de SCADA es un diseño educativo intencional (Loss of Primary SCADA Visibility)
 # conforme a la especificación ERS RF-06.2 y escenario CTF F-06.
 PLC_CONFIGS = {
-    'water':     ('10.0.3.10', 502),
-    'gas':       ('10.0.3.12', 502),
-    'elec':      ('10.0.3.13', 502),
-    'transport': ('10.0.3.14', 502),
+    'water':     (os.getenv('PLC_WATER_HOST', '10.0.3.10'), int(os.getenv('PLC_WATER_PORT', '502'))),
+    'gas':       (os.getenv('PLC_GAS_HOST', '10.0.3.12'), int(os.getenv('PLC_GAS_PORT', '502'))),
+    'elec':      (os.getenv('PLC_ELEC_HOST', '10.0.3.13'), int(os.getenv('PLC_ELEC_PORT', '502'))),
+    'transport': (os.getenv('PLC_TRANSPORT_HOST', '10.0.3.14'), int(os.getenv('PLC_TRANSPORT_PORT', '502'))),
+}
+
+# Activos secundarios de campo atacables / controlables
+SECONDARY_PLC_CONFIGS = {
+    'hospital':  (os.getenv('PLC_HOSP_HOST', '10.0.3.15'), int(os.getenv('PLC_HOSP_PORT', '502'))),
+    'desal':     (os.getenv('PLC_DESAL_HOST', '10.0.3.16'), int(os.getenv('PLC_DESAL_PORT', '502'))),
+    'lighting':  (os.getenv('PLC_LIGHTING_HOST', '10.0.3.17'), int(os.getenv('PLC_LIGHTING_PORT', '502'))),
 }
 
 # Estado global SCADA (telemetría en tiempo real)
@@ -75,7 +82,9 @@ SECTOR_UNIT_IDS: Dict[str, int] = {
     'gas':       2,
     'elec':      3,
     'transport': 4,
-    'hospital':  5
+    'hospital':  5,
+    'desal':     1,
+    'lighting':  1,
 }
 
 USE_MODBUS_PROXY = os.getenv('USE_MODBUS_PROXY', '0') == '1'
@@ -141,6 +150,263 @@ def poll_plcs() -> None:
     while True:
         poll_plcs_once()
         time.sleep(2.0)
+
+
+def _modbus_write_coil(client: ModbusTcpClient, addr: int, value: bool, unit_id: int) -> Any:
+    try:
+        return client.write_coil(addr, bool(value), unit=unit_id)
+    except TypeError:
+        return client.write_coil(addr, bool(value), slave=unit_id)
+
+
+def _modbus_write_register(client: ModbusTcpClient, addr: int, value: int, unit_id: int) -> Any:
+    try:
+        return client.write_register(addr, int(value), unit=unit_id)
+    except TypeError:
+        return client.write_register(addr, int(value), slave=unit_id)
+
+
+def _normalize_target(target_raw: str) -> List[str]:
+    raw = (target_raw or 'all').strip().lower()
+    if raw.startswith('sector_'):
+        raw = raw[7:]
+    if raw in ('power', 'electricity'):
+        raw = 'elec'
+    if raw == 'all':
+        return list(PLC_CONFIGS.keys())
+    if raw in PLC_CONFIGS or raw in SECONDARY_PLC_CONFIGS:
+        return [raw]
+    for key in list(PLC_CONFIGS.keys()) + list(SECONDARY_PLC_CONFIGS.keys()):
+        if key in raw:
+            return [key]
+    return [raw]
+
+
+def _determine_control_coils(sector: str, action: str, body: Dict[str, Any]) -> Tuple[Dict[int, bool], Dict[int, int]]:
+    """Determina los coils y registros a escribir según el sector y la acción.
+
+    Retorna:
+      (coils_to_write: Dict[int, bool], registers_to_write: Dict[int, int])
+    """
+    coils: Dict[int, bool] = {}
+    regs: Dict[int, int] = {}
+
+    # 1. Soporte explícito para escrituras de bajo nivel
+    if 'coils' in body and isinstance(body['coils'], list):
+        for idx, val in enumerate(body['coils']):
+            coils[idx] = bool(val)
+        return coils, regs
+    if 'coil' in body and 'value' in body:
+        coils[int(body['coil'])] = bool(body['value'])
+        return coils, regs
+    if 'address' in body and 'value' in body:
+        addr = int(body['address'])
+        val = body['value']
+        act_lower = str(action).lower()
+        if 'register' in act_lower or 'hr' in act_lower or 'holding' in act_lower:
+            regs[addr] = int(val)
+        else:
+            coils[addr] = bool(val)
+        return coils, regs
+
+    # 2. Acciones semánticas de alto nivel
+    act = str(action).strip().upper()
+
+    # Emergencia o parada general
+    if act in ('EMERGENCY_SHUTDOWN', 'SHUTDOWN', 'TRIP_ALL'):
+        coils[0] = False
+        coils[1] = True
+        return coils, regs
+
+    if act in ('RESET', 'FAULT_RESET', 'CLEAR'):
+        coils[0] = False
+        coils[1] = False
+        return coils, regs
+
+    if act in ('FAULT', 'INJECT_FAULT'):
+        coils[0] = True
+        coils[1] = True
+        return coils, regs
+
+    # Sector: Water (bomba P-101)
+    if sector == 'water':
+        if act in ('START', 'START_PUMP', 'RUN', 'ON', 'ENABLE', '1', 'TRUE'):
+            coils[0] = True
+            coils[1] = False
+        elif act in ('STOP', 'STOP_PUMP', 'OFF', 'DISABLE', '0', 'FALSE', 'TRIP'):
+            coils[0] = False
+            coils[1] = True
+
+    # Sector: Gas (válvula XV-201: OPEN = gas fluye, CLOSE = corte)
+    elif sector == 'gas':
+        if act in ('OPEN', 'OPEN_VALVE', 'START', 'RUN', 'ON', 'ENABLE', '1', 'TRUE'):
+            coils[0] = True
+            coils[1] = False
+        elif act in ('CLOSE', 'CLOSE_VALVE', 'STOP', 'OFF', 'DISABLE', '0', 'FALSE', 'TRIP'):
+            coils[0] = False
+            coils[1] = True
+
+    # Sector: Elec (disyuntor CB-52: CLOSE = circuito cerrado/energizado, TRIP/OPEN = desconexión)
+    elif sector == 'elec':
+        if act in ('CLOSE', 'CLOSE_BREAKER', 'START', 'RUN', 'ON', 'ENABLE', '1', 'TRUE'):
+            coils[0] = True
+            coils[1] = False
+        elif act in ('TRIP', 'OPEN', 'OPEN_BREAKER', 'STOP', 'OFF', 'DISABLE', '0', 'FALSE'):
+            coils[0] = False
+            coils[1] = True
+
+    # Sector: Transport (barrera/semáforo: OPEN_GATE = paso abierto, CLOSE_GATE = paso cerrado)
+    elif sector == 'transport':
+        if act in ('OPEN_GATE', 'OPEN', 'START', 'RUN', 'ON', 'ENABLE', '1', 'TRUE'):
+            coils[0] = True
+            coils[1] = False
+        elif act in ('CLOSE_GATE', 'CLOSE', 'STOP', 'OFF', 'DISABLE', '0', 'FALSE', 'TRIP'):
+            coils[0] = False
+            coils[1] = True
+
+    # Sectores secundarios (hospital, desal, lighting, etc.) o genéricos
+    else:
+        if act in ('START', 'OPEN', 'CLOSE_BREAKER', 'RUN', 'ON', 'ENABLE', '1', 'TRUE'):
+            coils[0] = True
+            coils[1] = False
+        elif act in ('STOP', 'CLOSE', 'TRIP', 'OPEN_BREAKER', 'OFF', 'DISABLE', '0', 'FALSE'):
+            coils[0] = False
+            coils[1] = True
+
+    if not coils and not regs and act == 'WRITE_COIL':
+        coils[0] = True
+        coils[1] = False
+
+    return coils, regs
+
+
+def execute_modbus_control(
+    action: str,
+    target: str = 'all',
+    body_extra: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Ejecuta una acción de control escribiendo directamente sobre los coils Modbus del PLC correspondiente."""
+    body = body_extra or {}
+    targets = _normalize_target(target)
+    results: Dict[str, Any] = {}
+    all_configs = dict(PLC_CONFIGS)
+    all_configs.update(SECONDARY_PLC_CONFIGS)
+    timestamp = time.time()
+
+    any_connected = False
+
+    for sec in targets:
+        coils_to_write, regs_to_write = _determine_control_coils(sec, action, body)
+        if not coils_to_write and not regs_to_write:
+            results[sec] = {'status': 'SKIPPED', 'reason': f"Unrecognized action '{action}' for sector '{sec}'"}
+            continue
+
+        cfg = all_configs.get(sec)
+        if not cfg:
+            results[sec] = {'status': 'UNKNOWN_TARGET', 'reason': f"No PLC config for sector '{sec}'"}
+            continue
+
+        direct_ip, direct_port = cfg
+        ip = MODBUS_PROXY_HOST if USE_MODBUS_PROXY else direct_ip
+        port = MODBUS_PROXY_PORT if USE_MODBUS_PROXY else direct_port
+        unit_id = SECTOR_UNIT_IDS.get(sec, 1)
+
+        client = ModbusTcpClient(ip, port=port, timeout=0.25)
+        connected = False
+        try:
+            connected = bool(client.connect())
+        except Exception as exc:
+            LOGGER.debug("Error conectando a PLC %s (%s:%d): %s", sec, ip, port, exc)
+            connected = False
+
+        if connected:
+            any_connected = True
+            sec_res: Dict[str, Any] = {'connected': True, 'coils_written': {}, 'registers_written': {}}
+            try:
+                for addr, val in coils_to_write.items():
+                    rr = _modbus_write_coil(client, addr, val, unit_id)
+                    sec_res['coils_written'][addr] = not (rr and rr.isError())
+                for addr, val in regs_to_write.items():
+                    rr = _modbus_write_register(client, addr, val, unit_id)
+                    sec_res['registers_written'][addr] = not (rr and rr.isError())
+                sec_res['status'] = 'SUCCESS'
+                LOGGER.info("Control ejecutado en PLC %s (%s:%d): %s -> coils=%s regs=%s",
+                            sec, ip, port, action, coils_to_write, regs_to_write)
+            except Exception as exc:
+                LOGGER.warning("Error escribiendo en PLC %s: %s", sec, exc)
+                sec_res['status'] = 'WRITE_ERROR'
+                sec_res['error'] = str(exc)
+            finally:
+                try:
+                    client.close()
+                except Exception:
+                    pass
+            results[sec] = sec_res
+        else:
+            LOGGER.warning("PLC %s inalcanzable en %s:%d (actualizando estado local)", sec, ip, port)
+            results[sec] = {
+                'status': 'PLC_UNREACHABLE',
+                'ip': ip,
+                'port': port,
+                'coils_intended': coils_to_write,
+                'registers_intended': regs_to_write
+            }
+
+        # Actualizar telemetría local de forma inmediata
+        if sec in scada_state['sectors'] and isinstance(scada_state['sectors'][sec], dict):
+            sec_state = scada_state['sectors'][sec]
+            if 0 in coils_to_write:
+                sec_state['start_cmd'] = coils_to_write[0]
+            if 1 in coils_to_write:
+                sec_state['stop_cmd'] = coils_to_write[1]
+            if 0 in coils_to_write and 1 in coils_to_write:
+                sec_state['fault'] = bool(coils_to_write[0] and coils_to_write[1])
+            if 'coils' in sec_state and isinstance(sec_state['coils'], list):
+                while len(sec_state['coils']) < 4:
+                    sec_state['coils'].append(False)
+                for c_addr, c_val in coils_to_write.items():
+                    if c_addr < len(sec_state['coils']):
+                        sec_state['coils'][c_addr] = c_val
+            # Si el PLC no está conectado (modo test/simulación), reflejar actuator_running optimista
+            if not connected:
+                if coils_to_write.get(0) and not coils_to_write.get(1):
+                    sec_state['actuator_running'] = True
+                elif coils_to_write.get(1) and not coils_to_write.get(0):
+                    sec_state['actuator_running'] = False
+        else:
+            scada_state['sectors'][sec] = {
+                'status': 'ONLINE' if connected else 'SIMULATED',
+                'coils': [coils_to_write.get(0, False), coils_to_write.get(1, False),
+                          coils_to_write.get(0, False) and not coils_to_write.get(1, False),
+                          bool(coils_to_write.get(0) and coils_to_write.get(1))],
+                'start_cmd': coils_to_write.get(0, False),
+                'stop_cmd': coils_to_write.get(1, False),
+                'actuator_running': coils_to_write.get(0, False) and not coils_to_write.get(1, False),
+                'fault': bool(coils_to_write.get(0) and coils_to_write.get(1)),
+                'consecutive_failures': 0 if connected else 1
+            }
+
+        # Registrar evento en Historian
+        try:
+            _historian.write(sec, 'control_action', action, timestamp)
+        except Exception:
+            pass
+
+    scada_state['last_update'] = timestamp
+
+    # Si conectamos a algún PLC real, lanzar sondeo rápido para refrescar coils
+    if any_connected:
+        try:
+            threading.Thread(target=poll_plcs_once, daemon=True).start()
+        except Exception:
+            pass
+
+    return {
+        'status': 'SUCCESS',
+        'action_executed': action,
+        'target': target,
+        'results': results
+    }
 
 
 class SCADAAPIHandler(BaseHTTPRequestHandler):
@@ -295,16 +561,22 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             return
 
         if parsed.path in ('/api/control', '/api/control/write'):
+            action = body_json.get('action', 'write')
+            target = body_json.get('target', 'all')
+            ctrl_result = execute_modbus_control(action=action, target=target, body_extra=body_json)
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('X-SCADA-Role', role)
             self.end_headers()
-            self.wfile.write(json.dumps({
+            resp_payload = {
                 'status': 'SUCCESS',
-                'action_executed': body_json.get('action', 'write'),
-                'target': body_json.get('target', 'all'),
-                'role': role
-            }).encode('utf-8'))
+                'action_executed': action,
+                'target': target,
+                'role': role,
+                'details': ctrl_result.get('results', {})
+            }
+            self.wfile.write(json.dumps(resp_payload).encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()
