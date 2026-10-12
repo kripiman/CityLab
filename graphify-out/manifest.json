@@ -100,8 +100,8 @@
     "semantic_hash": "428fa10f13e026c68a8a62b5a28d5d83"
   },
   "network/scada_server.py": {
-    "mtime": 1789441572.9583504,
-    "ast_hash": "43c31968b646913c67b7920e99419e88",
+    "mtime": 1789445230.1500192,
+    "ast_hash": "fb96e565ada4abb9e873c8143625a8b0",
     "semantic_hash": ""
   },
   "network/sdn_controller.py": {
@@ -505,8 +505,8 @@
     "semantic_hash": "6501536c92e60204812bc0c95ad64ae5"
   },
   "network/hmi_server.py": {
-    "mtime": 1789441586.0163405,
-    "ast_hash": "3d7cf3e9bd7fb77bf7da26d79b75bce1",
+    "mtime": 1789445238.7407737,
+    "ast_hash": "53ac9a93abe3f2997380a6f96439ac64",
     "semantic_hash": ""
   },
   "network/rbac.py": {
@@ -530,8 +530,8 @@
     "semantic_hash": "80a58fa3a81d783184836f02dc78c411"
   },
   "network/tests/test_hmi.py": {
-    "mtime": 1789421060.520138,
-    "ast_hash": "5824e92b8fd1ddb79b5907dfe12dacf9",
+    "mtime": 1789445419.964858,
+    "ast_hash": "e604384e5a3006e2ebe1064a3243e5a8",
     "semantic_hash": ""
   },
   "network/tests/test_rbac.py": {
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789424909.3126185,
-    "ast_hash": "586a095583e73ed0bdfccba049738b06",
+    "mtime": 1789481341.3078356,
+    "ast_hash": "14f129e0988bc29d98e814cbf1302903",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -700,8 +700,8 @@
     "semantic_hash": "39edb346abbadccdd77b4f15c65df956"
   },
   "docs/OPERATIONS.md": {
-    "mtime": 1788911640.43241,
-    "ast_hash": "e4dc232e271791ca5b87eca161cb2fe4",
+    "mtime": 1789482534.03284,
+    "ast_hash": "a471a57b5289585e7078805f0f09fe28",
     "semantic_hash": ""
   },
   "docs/Roadmaps/PROMPT_AUDITOR.md": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": "8124f2270eb286cc7f3496ff04916c03"
   },
   "network/tests/test_scada_http_strict_integration.py": {
-    "mtime": 1788911617.1433382,
-    "ast_hash": "447310a3363f996865c7fa0f27b6d394",
+    "mtime": 1789445415.5148637,
+    "ast_hash": "603138c7b031d58b1e80f3d76eb59d36",
     "semantic_hash": ""
   },
   "docs/Audits/PLAN_REMEDIACION_QA_20260901.md": {
@@ -1300,8 +1300,8 @@
     "semantic_hash": ""
   },
   "network/citylab_gui.py": {
-    "mtime": 1789426699.8266563,
-    "ast_hash": "b79b351dd3560245815491c5bbf47297",
+    "mtime": 1789445253.991165,
+    "ast_hash": "6e64056f57aa75b61c341188d06283dc",
     "semantic_hash": ""
   },
   "network/tests/test_citylab_gui.py": {
@@ -1310,13 +1310,18 @@
     "semantic_hash": ""
   },
   "network/tests/test_scada_control.py": {
-    "mtime": 1789442397.3201392,
-    "ast_hash": "cd40a1cdbc8490cdc0e7e5c62870c927",
+    "mtime": 1789445885.2092733,
+    "ast_hash": "d58f5ed8b3d5ed506ed0d8178d3f9adb",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260914_231334_auditoria_final__3_correcciones_sobre_citylab_gui.md": {
     "mtime": 1789427614.8975484,
     "ast_hash": "56423e696f944685ba8881938ee48e92",
+    "semantic_hash": ""
+  },
+  "docs/EWS_PIVOT_GUIDE.md": {
+    "mtime": 1789482082.618411,
+    "ast_hash": "e34e110dd1d86c7065836e3f72f29bf5",
     "semantic_hash": ""
   }
 }
