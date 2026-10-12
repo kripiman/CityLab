@@ -136,6 +136,36 @@ tail -f logs/cascading_events.csv
 sudo ./citylab.sh down             # mata federados/emuladores/servicios + mn -c
 ```
 
+### 8. Ejecutar un Escenario CTF paso a paso
+
+Cada uno de los 29 escenarios (`docs/scenarios/scenario_NN_*.md`) requiere el laboratorio arriba **y** que los comandos de ataque se ejecuten *dentro* del namespace Mininet correcto — nunca desde tu shell normal, porque la IP de origen que ven el firewall y el Proxy DPI Modbus depende de qué host los ejecuta.
+
+1. **Terminal A** — levantar el laboratorio y dejar la consola interactiva abierta:
+   ```bash
+   sudo ./citylab.sh up
+   ```
+   Esto deja el prompt `mininet>` disponible en esa misma terminal.
+
+2. **Leer el escenario** (`docs/scenarios/scenario_NN_*.md`) para saber desde qué host debe salir el ataque (`h_attacker`, `h_corp`, `h_ews`, etc. — normalmente el host del segmento de red que la narrativa del escenario asigna al Red Team) y qué script/target usa.
+
+3. **Terminal B** (u otra pestaña) — o directamente en el prompt `mininet>` de la Terminal A, ejecutar el ataque *dentro* del namespace indicado:
+   ```
+   mininet> h_attacker python3 attacker/attack_NN_*.py
+   ```
+   Ejecutar el mismo comando fuera de Mininet (en tu shell real) no reproduce el escenario: la IP de origen sería la del host anfitrión, no la del namespace atacante, y la segmentación IEC 62443 (firewall + Proxy DPI Modbus) la trata distinto o directamente no la deja pasar.
+
+4. **Verificar el impacto** desde los dashboards (`http://10.0.2.20:8090`, `:8085`) o vía API:
+   ```bash
+   curl -s http://10.0.2.20:8090/api/viz/frame | jq .
+   ```
+
+5. **Validar la flag del escenario**:
+   ```bash
+   python3 scripts/run_scenario.py --id NN --check
+   ```
+
+> **Caso particular — escribir Modbus real (COMP-01)**: el Proxy DPI Modbus solo acepta escrituras desde `h_ews` (`10.0.4.30`); comandos de control emitidos desde la HMI/app nativa (que salen de `h_scada`) se muestran como rechazados en pantalla, no en silencio. Ver la **[Guía de Pivote a EWS](docs/EWS_PIVOT_GUIDE.md)** para operar desde `h_ews` vía consola Mininet.
+
 ---
 
 ## 🗂️ Estructura del Proyecto
@@ -217,6 +247,7 @@ CityLab/
 - 🛠️ **[Guía de Operaciones y Playbook](docs/OPERATIONS.md)**: Manual de despliegue, scripts de automatización, puertos y comandos de ataque.
 - 🎨 **[Infraestructura de Visualización 2D y Telemetría](docs/federates/09_viz_bridge_and_2d_dashboard.md)**: Manual del puente HELICS/SCADA y dashboard SVG reactivo.
 - 🛡️ **[Currículo de 29 Escenarios CTF](docs/scenarios/SCENARIO_CURRICULUM_ROADMAP.md)**: Catálogo completo de desafíos Red Team / Blue Team.
+- 🔑 **[Guía de Pivote a EWS (COMP-01)](docs/EWS_PIVOT_GUIDE.md)**: Cómo operar desde la Estación de Ingeniería para escrituras Modbus reales, y por qué SCADA solo puede leer.
 - 🔍 **[Planes y Auditorías de Calidad](docs/Audits/)**: Remediación QA 2026-09-01, Plan Visualizador 2D Fase 9 y Roadmap de Alta Fidelidad.
 - 🧠 **[Grafo de Conocimiento (`graphify-out/`)](graphify-out/GRAPH_REPORT.md)**: Mapa navegable del código y la documentación, generado con `graphify` (god nodes, comunidades, relaciones cruzadas).
 

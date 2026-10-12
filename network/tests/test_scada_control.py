@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import struct
 import threading
 import time
 import unittest
@@ -14,6 +15,7 @@ from typing import Any, Dict
 
 from network.citylab_gui import HmiClient
 from network.hmi_server import HmiRequestHandler, ThreadedHmiServer
+from network.modbus_proxy import ModbusDpiEngine
 from network.scada_server import (
     PLC_CONFIGS,
     SCADAAPIHandler,
@@ -98,6 +100,9 @@ class TestScadaControlIntegration(unittest.TestCase):
     """Pruebas de integración con servidores Modbus y HTTP reales."""
 
     _port_mb = 15031
+    _port_mb_rbac = 15033
+    _port_mb_denied = 15032
+    _port_mb_e2e = 15034
     _port_scada = 18095
     _port_hmi = 18096
 
@@ -192,43 +197,53 @@ class TestScadaControlIntegration(unittest.TestCase):
             self.assertEqual(coils_after_stop[1], 1)
 
     def test_rbac_roles_on_control_and_write(self) -> None:
-        """Verifica permisos de rol para /api/control y /api/control/write."""
-        # 1. Operator tiene acceso a /api/control (operación)
-        status, res = self._post(
-            '/api/control',
-            {'action': 'START', 'target': 'water'},
-            auth='Bearer operator:OP_TOKEN_2026'
-        )
-        self.assertEqual(status, 200)
-        self.assertEqual(res.get('status'), 'SUCCESS')
-        self.assertEqual(res.get('role'), 'operator')
+        """Verifica permisos de rol para /api/control y /api/control/write.
 
-        # 2. Operator no tiene acceso a /api/control/write (calibración/configuración) -> 403
-        status, res = self._post(
-            '/api/control/write',
-            {'action': 'START', 'target': 'water'},
-            auth='Bearer operator:OP_TOKEN_2026'
-        )
-        self.assertEqual(status, 403)
-        self.assertEqual(res.get('error'), 'forbidden')
+        Corre contra un PLC Modbus real (no solo el gate de RBAC) para que la
+        aserción de 'status' == SUCCESS del caso operator sea genuina y no dependa
+        de que el status de nivel superior quede en 'SUCCESS' sin verificar nada.
+        """
+        PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb_rbac)
+        try:
+          with running_modbus_server(host='127.0.0.1', port=self._port_mb_rbac, plant_type='water'):
+            # 1. Operator tiene acceso a /api/control (operación) y el PLC ejecuta el comando
+            status, res = self._post(
+                '/api/control',
+                {'action': 'START', 'target': 'water'},
+                auth='Bearer operator:OP_TOKEN_2026'
+            )
+            self.assertEqual(status, 200)
+            self.assertEqual(res.get('status'), 'SUCCESS')
+            self.assertEqual(res.get('role'), 'operator')
 
-        # 3. Auditor no tiene acceso a /api/control -> 403
-        status, res = self._post(
-            '/api/control',
-            {'action': 'START', 'target': 'water'},
-            auth='Bearer auditor:AUD_TOKEN_2026'
-        )
-        self.assertEqual(status, 403)
-        self.assertEqual(res.get('error'), 'forbidden')
+            # 2. Operator no tiene acceso a /api/control/write (calibración/configuración) -> 403
+            status, res = self._post(
+                '/api/control/write',
+                {'action': 'START', 'target': 'water'},
+                auth='Bearer operator:OP_TOKEN_2026'
+            )
+            self.assertEqual(status, 403)
+            self.assertEqual(res.get('error'), 'forbidden')
 
-        # 4. Petición sin auth -> 401
-        status, res = self._post(
-            '/api/control',
-            {'action': 'START', 'target': 'water'},
-            auth=''
-        )
-        self.assertEqual(status, 401)
-        self.assertEqual(res.get('error'), 'unauthorized')
+            # 3. Auditor no tiene acceso a /api/control -> 403
+            status, res = self._post(
+                '/api/control',
+                {'action': 'START', 'target': 'water'},
+                auth='Bearer auditor:AUD_TOKEN_2026'
+            )
+            self.assertEqual(status, 403)
+            self.assertEqual(res.get('error'), 'forbidden')
+
+            # 4. Petición sin auth -> 401
+            status, res = self._post(
+                '/api/control',
+                {'action': 'START', 'target': 'water'},
+                auth=''
+            )
+            self.assertEqual(status, 401)
+            self.assertEqual(res.get('error'), 'unauthorized')
+        finally:
+            PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb)
 
     def test_end_to_end_gui_client_to_modbus(self) -> None:
         """Verifica la cadena completa: HmiClient -> HmiRequestHandler -> SCADA -> Modbus Server."""
@@ -239,8 +254,9 @@ class TestScadaControlIntegration(unittest.TestCase):
         hmi_thread = threading.Thread(target=hmi_server.serve_forever, daemon=True)
         hmi_thread.start()
 
+        PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb_e2e)
         try:
-            with running_modbus_server(host='127.0.0.1', port=self._port_mb, plant_type='water') as (_, ctx):
+            with running_modbus_server(host='127.0.0.1', port=self._port_mb_e2e, plant_type='water') as (_, ctx):
                 gui_client = HmiClient(f"http://127.0.0.1:{self._port_hmi}")
 
                 # El cliente envía 'START' a 'water'
@@ -263,6 +279,67 @@ class TestScadaControlIntegration(unittest.TestCase):
         finally:
             hmi_server.shutdown()
             hmi_server.server_close()
+            PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb)
+
+    def test_write_denied_by_out_of_range_reports_write_denied_status(self) -> None:
+        """Una escritura rechazada por el PLC (direccion fuera de rango, 0-99 configuradas
+        en plc/modbus_emulator.py) debe reportarse como WRITE_DENIED con motivo explicito
+        -- nunca como 'SUCCESS' silencioso que le mienta al operador."""
+        PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb_denied)
+        try:
+            with running_modbus_server(host='127.0.0.1', port=self._port_mb_denied, plant_type='water'):
+                result = execute_modbus_control(
+                    action='write_coil',
+                    target='water',
+                    body_extra={'coil': 150, 'value': True},
+                )
+            water = result['results']['water']
+            self.assertEqual(water.get('status'), 'WRITE_DENIED')
+            self.assertIn('reason', water)
+            self.assertFalse(water['coils_written'].get(150, True))
+        finally:
+            PLC_CONFIGS['water'] = ('127.0.0.1', self._port_mb)
+
+
+class TestModbusDpiEngine(unittest.TestCase):
+    """Pruebas unitarias del motor de inspección DPI (network/modbus_proxy.py),
+    sin sockets: valida directamente la política COMP-01 (IEC 62443 SR 3.5)."""
+
+    @staticmethod
+    def _write_coil_packet(unit_id: int = 1, addr: int = 0, turn_on: bool = True) -> bytes:
+        value = 0xFF00 if turn_on else 0x0000
+        mbap = struct.pack('>HHHB', 1, 0, 6, unit_id)
+        pdu = struct.pack('>BHH', 5, addr, value)  # FC=5 Write Single Coil
+        return mbap + pdu
+
+    def setUp(self) -> None:
+        self.engine = ModbusDpiEngine()
+
+    def test_write_from_scada_is_denied(self) -> None:
+        """SCADA (10.0.2.20) no esta en ALLOWED_WRITE_SOURCES: debe rechazarse."""
+        allowed, reason = self.engine.inspect_and_filter(
+            src_ip='10.0.2.20', dst_ip='10.0.3.10', packet=self._write_coil_packet()
+        )
+        self.assertFalse(allowed)
+        self.assertEqual(reason, 'UNAUTHORIZED_WRITE_SOURCE_NOT_EWS')
+
+    def test_write_from_ews_is_allowed(self) -> None:
+        """EWS (10.0.4.30) es la unica fuente autorizada a escribir."""
+        allowed, reason = self.engine.inspect_and_filter(
+            src_ip='10.0.4.30', dst_ip='10.0.3.10', packet=self._write_coil_packet()
+        )
+        self.assertTrue(allowed)
+        self.assertEqual(reason, 'ALLOWED')
+
+    def test_read_from_scada_is_allowed(self) -> None:
+        """SCADA si puede leer (FC1..4) -- la restriccion es solo sobre escritura."""
+        mbap = struct.pack('>HHHB', 1, 0, 6, 1)
+        pdu = struct.pack('>BHH', 1, 0, 4)  # FC=1 Read Coils
+        allowed, reason = self.engine.inspect_and_filter(
+            src_ip='10.0.2.20', dst_ip='10.0.3.10', packet=mbap + pdu
+        )
+        self.assertTrue(allowed)
+        self.assertEqual(reason, 'ALLOWED')
 
 
 if __name__ == '__main__':

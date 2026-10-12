@@ -180,10 +180,23 @@ class IndustrialHmiEngine:
             )
             with urllib.request.urlopen(req, timeout=2.0) as resp:
                 body = json.loads(resp.read().decode('utf-8'))
-                try:
-                    self.fetch_scada_status()
-                except Exception:
-                    pass
+                # HTTP 200 solo confirma que SCADA proceso la solicitud, no que el PLC
+                # ejecuto el comando (p.ej. el Proxy DPI puede haberlo rechazado). Revisar
+                # el detalle por sector antes de reportar exito al operador.
+                details = body.get('details', {})
+                if isinstance(details, dict) and details and not all(
+                    d.get('status') == 'SUCCESS' for d in details.values() if isinstance(d, dict)
+                ):
+                    reasons = [
+                        d.get('reason') or d.get('error') or d.get('status')
+                        for d in details.values()
+                        if isinstance(d, dict) and d.get('status') != 'SUCCESS'
+                    ]
+                    return {
+                        'success': False,
+                        'error': '; '.join(str(r) for r in reasons if r) or 'Comando no ejecutado',
+                        'scada_response': body,
+                    }
                 return {'success': True, 'scada_response': body}
         except urllib.error.HTTPError as e:
             return {'success': False, 'error': f"HTTP {e.code}: {e.reason}"}

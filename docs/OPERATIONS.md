@@ -67,6 +67,26 @@ curl -s -X POST http://10.0.2.20:8080/api/control \
 python3 helics_sim/fed_viz_bridge.py --standalone --viz-url http://127.0.0.1:8090
 ```
 
+> **Nota — escritura Modbus real requiere origen EWS**: con `USE_MODBUS_PROXY=1` (default bajo `sudo ./citylab.sh up`), el Proxy DPI Modbus solo acepta escrituras (FC5/6/15/16) desde `h_ews` (`10.0.4.30`) — `h_scada` (de donde salen la HMI web y la app de escritorio) puede leer pero no escribir (control COMP-01, IEC 62443 SR 3.5). Un botón de control rechazado por esto lo indica explícitamente en pantalla. Ver **[Guía de Pivote a EWS](EWS_PIVOT_GUIDE.md)** para operar desde EWS.
+
+### Shell Interactiva Completa por Host (`clear`, `nano`, `vim`, tab-completion, Ctrl+C)
+
+El prompt `mininet>` en sí **no** sirve para esto: cada `mininet> h_X <comando>` es un relay de un solo comando (`Node.cmd()` espera un sentinel de fin y recién ahí devuelve la salida) — no hay un pty interactivo recibiendo tus teclas en vivo, así que programas de pantalla completa (`nano`, `vim`, `htop`, `less`) fallan o cuelgan ahí. Para una terminal de verdad, dos métodos nativos de Mininet, sin código nuevo:
+
+**Opción 1 — `xterm` desde el prompt** (requiere X11; ya es prerrequisito del proyecto vía `xhost +SI:localuser:root`):
+```
+mininet> xterm h_ews
+```
+Abre una ventana de terminal real adjunta al namespace de red de `h_ews` (o cualquier host). Todo funciona como en tu terminal normal: `clear`, `nano`, `vim`, historial, tab-completion, Ctrl+C.
+
+**Opción 2 — adjuntar tu terminal actual** (desde un shell real, fuera del prompt `mininet>`):
+```bash
+sudo mnexec -a $(pgrep -f 'mininet:h_ews') bash
+```
+`mnexec -a <pid>` (ver `mnexec -h`) adjunta al namespace de red y mount del pid dado y ejecuta el comando directo sobre tu stdin/stdout/stderr reales — sin relay, sin pty intermedio. Los hosts de Mininet en este proyecto no tienen filesystem propio (`network/topology.py` no usa `privateDirs` ni `chroot` ni `cls=` en ningún host) — comparten el filesystem real de la máquina, solo cambia el namespace de red, así que cualquier shell/binario instalado en el sistema (`bash`, `nano`, `vim` — confirmado presentes; `zsh`/`htop` no vienen instalados por defecto) funciona igual ahí adentro. `exit` o Ctrl+D te devuelve a tu terminal normal sin afectar la red ni el host.
+
+Reemplazá `h_ews` por cualquier otro host (`h_scada`, `h_attacker`, `h_plc`, etc.) según lo que necesites inspeccionar o editar.
+
 ---
 
 ## 3. Pruebas y Validación Automatizada

@@ -583,6 +583,20 @@ class CityLabDashboardApp:
         self.alarm_tree.column('msg', width=260, stretch=True)
         self.alarm_tree.pack(fill=tk.BOTH, expand=True)
 
+        # Resultado del ultimo mando enviado (exito real vs. rechazo del Proxy DPI/PLC)
+        self.lbl_control_result = tk.Label(
+            parent,
+            text="Sin comandos enviados todavia.",
+            bg=BG_CARD,
+            fg=TEXT_MUTED,
+            justify=tk.LEFT,
+            anchor=tk.W,
+            wraplength=520,
+            padx=8,
+            pady=6
+        )
+        self.lbl_control_result.pack(fill=tk.X, pady=(6, 0))
+
     # ------------------------------------------------------------------------
     # Construcción Panel Derecho: Visualizador 2D Multisectorial & Blue Team
     # ------------------------------------------------------------------------
@@ -668,8 +682,22 @@ class CityLabDashboardApp:
             res = self.hmi_client.send_control(action, target)
             if not res.get('success'):
                 LOGGER.warning("Comando %s/%s rechazado: %s", action, target, res.get('error'))
+            # Tkinter no es thread-safe: marshaling del resultado al hilo principal via .after().
+            self.root.after(0, lambda: self._show_control_result(action, target, res))
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def _show_control_result(self, action: str, target: str, res: Dict[str, Any]) -> None:
+        if res.get('success'):
+            self.lbl_control_result.config(
+                text=f"✅ {action} -> {target}: ejecutado en el PLC.",
+                fg=ACCENT_GREEN
+            )
+        else:
+            self.lbl_control_result.config(
+                text=f"⛔ {action} -> {target}: {res.get('error', 'rechazado')}",
+                fg=ACCENT_RED
+            )
 
     # ------------------------------------------------------------------------
     # Bucle Principal de Renderizado GUI (Hilos seguros)

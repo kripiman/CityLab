@@ -117,7 +117,10 @@ class TestScadaHttpStrictIntegration(unittest.TestCase):
             data={'action': 'emergency_shutdown', 'target': 'sector_power'}
         )
         self.assertEqual(status, 200)
-        self.assertEqual(body.get('status'), 'SUCCESS')
+        # 'status' ahora refleja si el PLC real ejecuto el comando; en un entorno sin
+        # los PLCs de Mininet accesibles, PLC_UNREACHABLE es la respuesta honesta
+        # esperada. Lo que este test de RBAC verifica es la autorizacion (200 + rol).
+        self.assertIn(body.get('status'), ('SUCCESS', 'PLC_UNREACHABLE'))
         self.assertEqual(body.get('role'), 'engineer')
         self.assertEqual(body.get('action_executed'), 'emergency_shutdown')
         self.assertEqual(body.get('target'), 'sector_power')

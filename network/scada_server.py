@@ -319,23 +319,54 @@ def execute_modbus_control(
             LOGGER.debug("Error conectando a PLC %s (%s:%d): %s", sec, ip, port, exc)
             connected = False
 
+        write_denied = False
+
         if connected:
             any_connected = True
             sec_res: Dict[str, Any] = {'connected': True, 'coils_written': {}, 'registers_written': {}}
             try:
+                last_exc_code: Optional[int] = None
                 for addr, val in coils_to_write.items():
                     rr = _modbus_write_coil(client, addr, val, unit_id)
-                    sec_res['coils_written'][addr] = not (rr and rr.isError())
+                    ok = not (rr and rr.isError())
+                    sec_res['coils_written'][addr] = ok
+                    if not ok:
+                        write_denied = True
+                        last_exc_code = getattr(rr, 'exception_code', last_exc_code)
                 for addr, val in regs_to_write.items():
                     rr = _modbus_write_register(client, addr, val, unit_id)
-                    sec_res['registers_written'][addr] = not (rr and rr.isError())
-                sec_res['status'] = 'SUCCESS'
-                LOGGER.info("Control ejecutado en PLC %s (%s:%d): %s -> coils=%s regs=%s",
-                            sec, ip, port, action, coils_to_write, regs_to_write)
+                    ok = not (rr and rr.isError())
+                    sec_res['registers_written'][addr] = ok
+                    if not ok:
+                        write_denied = True
+                        last_exc_code = getattr(rr, 'exception_code', last_exc_code)
+
+                if write_denied:
+                    # No confundir "el PLC respondio" (connected=True, sin excepcion de socket)
+                    # con "el PLC ejecuto el comando": el Proxy DPI (COMP-01, IEC 62443 SR 3.5)
+                    # responde con una Modbus Exception 0x01 (Illegal Function) cuando el origen
+                    # no es EWS, y eso NO debe reportarse como SUCCESS.
+                    sec_res['status'] = 'WRITE_DENIED'
+                    exc_txt = f' (Modbus Exception 0x{last_exc_code:02X})' if last_exc_code is not None else ''
+                    if USE_MODBUS_PROXY:
+                        sec_res['reason'] = (
+                            f"Escritura rechazada por el Proxy DPI Modbus{exc_txt}: solo el EWS "
+                            f"(10.0.4.30) esta autorizado a escribir coils (IEC 62443 SR 3.5, COMP-01). "
+                            f"SCADA (10.0.2.20) queda restringido a monitoreo. Ver docs/EWS_PIVOT_GUIDE.md."
+                        )
+                    else:
+                        sec_res['reason'] = f"El PLC rechazo la escritura{exc_txt}."
+                    LOGGER.warning("Control DENEGADO en PLC %s (%s:%d): %s -> %s",
+                                   sec, ip, port, action, sec_res['reason'])
+                else:
+                    sec_res['status'] = 'SUCCESS'
+                    LOGGER.info("Control ejecutado en PLC %s (%s:%d): %s -> coils=%s regs=%s",
+                                sec, ip, port, action, coils_to_write, regs_to_write)
             except Exception as exc:
                 LOGGER.warning("Error escribiendo en PLC %s: %s", sec, exc)
                 sec_res['status'] = 'WRITE_ERROR'
                 sec_res['error'] = str(exc)
+                write_denied = True
             finally:
                 try:
                     client.close()
@@ -352,39 +383,42 @@ def execute_modbus_control(
                 'registers_intended': regs_to_write
             }
 
-        # Actualizar telemetría local de forma inmediata
-        if sec in scada_state['sectors'] and isinstance(scada_state['sectors'][sec], dict):
-            sec_state = scada_state['sectors'][sec]
-            if 0 in coils_to_write:
-                sec_state['start_cmd'] = coils_to_write[0]
-            if 1 in coils_to_write:
-                sec_state['stop_cmd'] = coils_to_write[1]
-            if 0 in coils_to_write and 1 in coils_to_write:
-                sec_state['fault'] = bool(coils_to_write[0] and coils_to_write[1])
-            if 'coils' in sec_state and isinstance(sec_state['coils'], list):
-                while len(sec_state['coils']) < 4:
-                    sec_state['coils'].append(False)
-                for c_addr, c_val in coils_to_write.items():
-                    if c_addr < len(sec_state['coils']):
-                        sec_state['coils'][c_addr] = c_val
-            # Si el PLC no está conectado (modo test/simulación), reflejar actuator_running optimista
-            if not connected:
-                if coils_to_write.get(0) and not coils_to_write.get(1):
-                    sec_state['actuator_running'] = True
-                elif coils_to_write.get(1) and not coils_to_write.get(0):
-                    sec_state['actuator_running'] = False
-        else:
-            scada_state['sectors'][sec] = {
-                'status': 'ONLINE' if connected else 'SIMULATED',
-                'coils': [coils_to_write.get(0, False), coils_to_write.get(1, False),
-                          coils_to_write.get(0, False) and not coils_to_write.get(1, False),
-                          bool(coils_to_write.get(0) and coils_to_write.get(1))],
-                'start_cmd': coils_to_write.get(0, False),
-                'stop_cmd': coils_to_write.get(1, False),
-                'actuator_running': coils_to_write.get(0, False) and not coils_to_write.get(1, False),
-                'fault': bool(coils_to_write.get(0) and coils_to_write.get(1)),
-                'consecutive_failures': 0 if connected else 1
-            }
+        # Actualizar telemetría local de forma inmediata -- solo si el comando realmente se
+        # aplico (o no hay PLC alcanzable, modo simulado). Si el proxy denego la escritura,
+        # el estado local NO debe reflejar el comando: seria mentirle al operador.
+        if (connected and not write_denied) or not connected:
+            if sec in scada_state['sectors'] and isinstance(scada_state['sectors'][sec], dict):
+                sec_state = scada_state['sectors'][sec]
+                if 0 in coils_to_write:
+                    sec_state['start_cmd'] = coils_to_write[0]
+                if 1 in coils_to_write:
+                    sec_state['stop_cmd'] = coils_to_write[1]
+                if 0 in coils_to_write and 1 in coils_to_write:
+                    sec_state['fault'] = bool(coils_to_write[0] and coils_to_write[1])
+                if 'coils' in sec_state and isinstance(sec_state['coils'], list):
+                    while len(sec_state['coils']) < 4:
+                        sec_state['coils'].append(False)
+                    for c_addr, c_val in coils_to_write.items():
+                        if c_addr < len(sec_state['coils']):
+                            sec_state['coils'][c_addr] = c_val
+                # Si el PLC no está conectado (modo test/simulación), reflejar actuator_running optimista
+                if not connected:
+                    if coils_to_write.get(0) and not coils_to_write.get(1):
+                        sec_state['actuator_running'] = True
+                    elif coils_to_write.get(1) and not coils_to_write.get(0):
+                        sec_state['actuator_running'] = False
+            else:
+                scada_state['sectors'][sec] = {
+                    'status': 'ONLINE' if connected else 'SIMULATED',
+                    'coils': [coils_to_write.get(0, False), coils_to_write.get(1, False),
+                              coils_to_write.get(0, False) and not coils_to_write.get(1, False),
+                              bool(coils_to_write.get(0) and coils_to_write.get(1))],
+                    'start_cmd': coils_to_write.get(0, False),
+                    'stop_cmd': coils_to_write.get(1, False),
+                    'actuator_running': coils_to_write.get(0, False) and not coils_to_write.get(1, False),
+                    'fault': bool(coils_to_write.get(0) and coils_to_write.get(1)),
+                    'consecutive_failures': 0 if connected else 1
+                }
 
         # Registrar evento en Historian
         try:
@@ -564,13 +598,22 @@ class SCADAAPIHandler(BaseHTTPRequestHandler):
             action = body_json.get('action', 'write')
             target = body_json.get('target', 'all')
             ctrl_result = execute_modbus_control(action=action, target=target, body_extra=body_json)
+            sector_results = ctrl_result.get('results', {})
+            # El HTTP 200 solo confirma que SCADA proceso la solicitud -- 'status' debe
+            # reflejar si el/los PLC realmente ejecutaron el comando o si el Proxy DPI
+            # (u otro fallo) lo rechazo, para que HMI/GUI no reporten un exito falso.
+            overall_status = 'SUCCESS' if all(
+                r.get('status') == 'SUCCESS' for r in sector_results.values()
+            ) else 'PARTIAL_FAILURE' if any(
+                r.get('status') == 'SUCCESS' for r in sector_results.values()
+            ) else (next((r.get('status') for r in sector_results.values()), 'NO_TARGETS'))
 
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('X-SCADA-Role', role)
             self.end_headers()
             resp_payload = {
-                'status': 'SUCCESS',
+                'status': overall_status,
                 'action_executed': action,
                 'target': target,
                 'role': role,
