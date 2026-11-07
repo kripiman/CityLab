@@ -80,8 +80,8 @@
     "semantic_hash": "490c367faf761c1806a42ce5f49cfe83"
   },
   "install_deps.sh": {
-    "mtime": 1789426670.1696258,
-    "ast_hash": "4247c059d8dd4cad7d04bdf7a696361d",
+    "mtime": 1794071047.7518444,
+    "ast_hash": "be9501aa5193dc20d2c9e815fdc4ed80",
     "semantic_hash": ""
   },
   "network/__init__.py": {
@@ -500,9 +500,9 @@
     "semantic_hash": "41264a5483097a94c6e49ed0425d6097"
   },
   "network/historian.py": {
-    "mtime": 1788911617.1427288,
-    "ast_hash": "6501536c92e60204812bc0c95ad64ae5",
-    "semantic_hash": "6501536c92e60204812bc0c95ad64ae5"
+    "mtime": 1794071047.7518444,
+    "ast_hash": "d273d55a5ed656a59470ea82356721f5",
+    "semantic_hash": ""
   },
   "network/hmi_server.py": {
     "mtime": 1789445238.7407737,
@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "network/rbac.py": {
-    "mtime": 1789441481.7324197,
-    "ast_hash": "96b270bcac6474298c88de0a61c2093e",
+    "mtime": 1794071047.7518444,
+    "ast_hash": "54f4c205ec7488f24282acf442ae159c",
     "semantic_hash": ""
   },
   "network/scada_ha.py": {
@@ -600,14 +600,14 @@
     "semantic_hash": "e857e16d4e4434fae98bdae2be9a4900"
   },
   "plc/iec61850_emulator.py": {
-    "mtime": 1788911617.144137,
-    "ast_hash": "03d439517a2480dbe2ab830f7fb81ac9",
-    "semantic_hash": "03d439517a2480dbe2ab830f7fb81ac9"
+    "mtime": 1794071047.7518444,
+    "ast_hash": "236b7e09718a12bf901507c872073132",
+    "semantic_hash": ""
   },
   "plc/opcua_emulator.py": {
-    "mtime": 1788911617.1442435,
-    "ast_hash": "4a469ce729198e7952d425338978592d",
-    "semantic_hash": "4a469ce729198e7952d425338978592d"
+    "mtime": 1794071047.7518444,
+    "ast_hash": "a6bac4c520077f19006884b7eca4dc99",
+    "semantic_hash": ""
   },
   "plc/tests/test_bacnet.py": {
     "mtime": 1788911617.1443214,
@@ -675,8 +675,8 @@
     "semantic_hash": "cceced69f98870064e4bded7dcffdb62"
   },
   "CLAUDE.md": {
-    "mtime": 1789424898.5516067,
-    "ast_hash": "b54b6122960b375abd3e754bada5b8f2",
+    "mtime": 1794071047.7518444,
+    "ast_hash": "63a0cd504d7de19af607a57970c62737",
     "semantic_hash": ""
   },
   "README.md": {
@@ -1025,8 +1025,8 @@
     "semantic_hash": ""
   },
   "network/flag_service.py": {
-    "mtime": 1789416828.005331,
-    "ast_hash": "46d90f106cf04534b4317d24c3542d75",
+    "mtime": 1794071047.7518444,
+    "ast_hash": "3394d56ffa5a843530cda83bca1787b9",
     "semantic_hash": ""
   },
   "network/scoreboard.py": {
@@ -1300,8 +1300,8 @@
     "semantic_hash": ""
   },
   "network/citylab_gui.py": {
-    "mtime": 1789445253.991165,
-    "ast_hash": "6e64056f57aa75b61c341188d06283dc",
+    "mtime": 1794071047.7518444,
+    "ast_hash": "97846f497e7d9213a122d705ec9f2652",
     "semantic_hash": ""
   },
   "network/tests/test_citylab_gui.py": {
@@ -1322,6 +1322,16 @@
   "docs/EWS_PIVOT_GUIDE.md": {
     "mtime": 1789482082.618411,
     "ast_hash": "e34e110dd1d86c7065836e3f72f29bf5",
+    "semantic_hash": ""
+  },
+  "network/gui_clients.py": {
+    "mtime": 1794071047.7518444,
+    "ast_hash": "0260317bcba78367187935d9bbbf7da5",
+    "semantic_hash": ""
+  },
+  "network/gui_view_state.py": {
+    "mtime": 1794071047.7518444,
+    "ast_hash": "93a0c47a2be4ad846019c38f36f46788",
     "semantic_hash": ""
   }
 }
