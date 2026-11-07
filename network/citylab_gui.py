@@ -46,18 +46,20 @@ from network.gui_clients import (
 from network.gui_view_state import derive_hmi_view_state, derive_viz_view_state
 
 
-# CAPA 3: Aplicación de Escritorio Nativa (Tkinter / Dark SCADA Theme)
-
-BG_MAIN = '#0a0d14'
-BG_CARD = '#101522'
-BG_HEADER = '#161c2e'
-TEXT_COLOR = '#e2e8f0'
-TEXT_MUTED = '#94a3b8'
-ACCENT_CYAN = '#00e5ff'
-ACCENT_GREEN = '#00e676'
-ACCENT_RED = '#ff1744'
-ACCENT_AMBER = '#ffab00'
-BORDER_COLOR = '#1e293b'
+# CAPA 3: Aplicación de Escritorio Nativa (Tkinter). Paleta ISA-101 compartida desde
+# ui_theme; ACCENT_GREEN se mapea a gris neutro para que el estado normal no use color.
+from network.ui_theme import (
+    BG_MAIN,
+    BG_CARD,
+    BG_HEADER,
+    TEXT_COLOR,
+    TEXT_MUTED,
+    ACCENT_CYAN,
+    ACCENT_GREEN,
+    ACCENT_RED,
+    ACCENT_AMBER,
+    BORDER_COLOR,
+)
 
 
 class CityLabDashboardApp:

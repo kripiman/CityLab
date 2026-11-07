@@ -15,6 +15,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from typing import Any, Dict, List, Optional, Sequence
 
+from network import ui_theme
+
 LOGGER = logging.getLogger('viz_server')
 
 DEFAULT_VIZ_PORT = 8090
@@ -102,87 +104,12 @@ class VizRequestHandler(BaseHTTPRequestHandler):
   <meta charset="utf-8">
   <title>CityLab 2D/3D City Visualizer</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #080a10;
-      color: #e0e6ed;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      padding: 16px;
-      line-height: 1.4;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #1f293d;
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 1.4rem;
-      color: #00e5ff;
-      letter-spacing: 0.5px;
-    }
-    .sub {
-      color: #78909c;
-      font-size: 0.8rem;
-    }
-    .status-bar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-ok { background: #003314; color: #00e676; border: 1px solid #00e676; }
-    .badge-warn { background: #332600; color: #ffab00; border: 1px solid #ffab00; }
-    .badge-crit { background: #330009; color: #ff1744; border: 1px solid #ff1744; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0.4; } }
-    .btn {
-      background: #161b26;
-      color: #00e5ff;
-      border: 1px solid #00e5ff;
-      padding: 5px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.75rem;
-    }
-    .btn:hover { background: #00e5ff; color: #080a10; }
+""" + ui_theme.SHARED_CSS + """
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 14px;
       margin-bottom: 16px;
-    }
-    .card {
-      background: #0f131d;
-      border: 1px solid #1c2436;
-      border-radius: 6px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card:hover { border-color: #00e5ff; }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #161c2b;
-      padding-bottom: 6px;
-    }
-    .card-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #90caf9;
     }
     .canvas-wrap {
       display: flex;
@@ -195,23 +122,23 @@ class VizRequestHandler(BaseHTTPRequestHandler):
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
-      background: #090c14;
+      background: var(--canvas);
       padding: 6px;
       border-radius: 4px;
       font-size: 0.75rem;
     }
-    .metric-label { color: #607d8b; }
-    .metric-val { color: #cfd8dc; font-weight: bold; text-align: right; }
+    .metric-label { color: var(--fg-dim); }
+    .metric-val { color: var(--fg); font-weight: bold; text-align: right; }
     #raw-container {
       display: none;
       margin-top: 12px;
-      border: 1px solid #263238;
+      border: 1px solid var(--line);
       border-radius: 6px;
-      background: #05070a;
+      background: var(--surface);
       padding: 12px;
     }
     #viewport {
-      color: #00e676;
+      color: var(--fg-dim);
       font-size: 0.75rem;
       max-height: 250px;
       overflow-y: auto;
@@ -221,7 +148,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
 <body>
   <header>
     <div>
-      <h1>🌃 CityLab 2D/3D Presentational Visualizer</h1>
+      <h1>CityLab 2D/3D Presentational Visualizer</h1>
       <div class="sub">IEC 62443 DMZ Real-Time Cyber-Physical Urban Twin & Threat Operations</div>
     </div>
     <div class="status-bar">
@@ -235,19 +162,19 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 1. AGUA -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">💧 Tratamiento de Agua (SWaT)</span>
+        <span class="card-title">Tratamiento de Agua (SWaT)</span>
         <span id="badge-water" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
         <svg width="220" height="110" viewBox="0 0 220 110">
           <rect x="20" y="20" width="60" height="70" rx="3" fill="#121a29" stroke="#37474f" stroke-width="2"/>
-          <rect id="svg-water-fill-t1" x="22" y="55" width="56" height="33" rx="2" fill="#00b0ff" opacity="0.75"/>
+          <rect id="svg-water-fill-t1" x="22" y="55" width="56" height="33" rx="2" fill="#527a93" opacity="0.75"/>
           <text x="50" y="15" fill="#78909c" font-size="9" text-anchor="middle">Tanque T1</text>
           <rect x="110" y="20" width="60" height="70" rx="3" fill="#121a29" stroke="#37474f" stroke-width="2"/>
-          <rect id="svg-water-fill-t2" x="112" y="45" width="56" height="43" rx="2" fill="#00e5ff" opacity="0.75"/>
+          <rect id="svg-water-fill-t2" x="112" y="45" width="56" height="43" rx="2" fill="#527a93" opacity="0.75"/>
           <text x="140" y="15" fill="#78909c" font-size="9" text-anchor="middle">Tanque T2</text>
-          <circle id="svg-pump-body" cx="195" cy="55" r="14" fill="#162238" stroke="#00e676" stroke-width="2"/>
-          <path id="svg-pump-rotor" d="M195 45 L195 65 M185 55 L205 55" stroke="#00e676" stroke-width="2"/>
+          <circle id="svg-pump-body" cx="195" cy="55" r="14" fill="#162238" stroke="#96a1ae" stroke-width="2"/>
+          <path id="svg-pump-rotor" d="M195 45 L195 65 M185 55 L205 55" stroke="#96a1ae" stroke-width="2"/>
           <text x="195" y="80" fill="#78909c" font-size="8" text-anchor="middle">P101</text>
         </svg>
       </div>
@@ -260,7 +187,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 2. GAS -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🔥 Distribución de Gas</span>
+        <span class="card-title">Distribución de Gas</span>
         <span id="badge-gas" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
@@ -275,9 +202,9 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           <circle cx="90" cy="55" r="4" fill="#fff"/>
           <text x="90" y="80" fill="#78909c" font-size="8" text-anchor="middle">PSI x10</text>
           <g id="svg-gas-valve-grp" transform="translate(165, 40)">
-            <polygon points="0,5 15,20 0,35" fill="#00e676"/>
-            <polygon points="30,5 15,20 30,35" fill="#00e676"/>
-            <rect x="13" y="0" width="4" height="20" fill="#00e676"/>
+            <polygon points="0,5 15,20 0,35" fill="#96a1ae"/>
+            <polygon points="30,5 15,20 30,35" fill="#96a1ae"/>
+            <rect x="13" y="0" width="4" height="20" fill="#96a1ae"/>
             <text x="15" y="48" fill="#78909c" font-size="8" text-anchor="middle">V-101</text>
           </g>
         </svg>
@@ -291,18 +218,18 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 3. ELECTRICO -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">⚡ Subestación Eléctrica</span>
+        <span class="card-title">Subestación Eléctrica</span>
         <span id="badge-elec" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
         <svg width="220" height="110" viewBox="0 0 220 110">
-          <line x1="20" y1="55" x2="65" y2="55" stroke="#00e5ff" stroke-width="3"/>
-          <circle cx="65" cy="55" r="4" fill="#00e5ff"/>
+          <line x1="20" y1="55" x2="65" y2="55" stroke="#96a1ae" stroke-width="3"/>
+          <circle cx="65" cy="55" r="4" fill="#96a1ae"/>
           <g id="svg-breaker-state">
-            <line id="svg-breaker-arm" x1="65" y1="55" x2="115" y2="55" stroke="#00e676" stroke-width="3"/>
+            <line id="svg-breaker-arm" x1="65" y1="55" x2="115" y2="55" stroke="#96a1ae" stroke-width="3"/>
           </g>
-          <circle cx="115" cy="55" r="4" fill="#00e5ff"/>
-          <line x1="115" y1="55" x2="160" y2="55" stroke="#00e5ff" stroke-width="3"/>
+          <circle cx="115" cy="55" r="4" fill="#96a1ae"/>
+          <line x1="115" y1="55" x2="160" y2="55" stroke="#96a1ae" stroke-width="3"/>
           <text x="90" y="30" fill="#78909c" font-size="9" text-anchor="middle">XCBR1</text>
           <path d="M175 40 L195 55 L175 70 Z" fill="#ffab00" opacity="0.8"/>
           <text x="185" y="90" fill="#78909c" font-size="8" text-anchor="middle">Carga</text>
@@ -317,7 +244,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 4. TRANSPORTE -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🚦 Red Vial y Tráfico</span>
+        <span class="card-title">Red Vial y Tráfico</span>
         <span id="badge-trans" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
@@ -327,7 +254,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           <circle id="tl-amber" cx="45" cy="52" r="9" fill="#332600"/>
           <circle id="tl-green" cx="45" cy="79" r="9" fill="#00e676"/>
           <rect x="90" y="45" width="110" height="15" rx="3" fill="#121a29" stroke="#37474f"/>
-          <rect id="svg-cong-bar" x="92" y="47" width="20" height="11" rx="2" fill="#00e676"/>
+          <rect id="svg-cong-bar" x="92" y="47" width="20" height="11" rx="2" fill="#96a1ae"/>
           <text x="145" y="35" fill="#78909c" font-size="8" text-anchor="middle">Congestión</text>
           <text id="val-trans-gate" x="145" y="80" fill="#cfd8dc" font-size="9" text-anchor="middle">Barrera: ABIERTA</text>
         </svg>
@@ -341,7 +268,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 5. HOSPITAL -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🏥 Hospital Municipal</span>
+        <span class="card-title">Hospital Municipal</span>
         <span id="badge-hosp" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
@@ -350,8 +277,8 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           <path d="M110 35 L110 55 M100 45 L120 45" stroke="#ff1744" stroke-width="4"/>
           <text x="110" y="75" fill="#78909c" font-size="8" text-anchor="middle">UCI / ATS</text>
           <g id="svg-hosp-source" transform="translate(160, 35)">
-            <circle cx="20" cy="20" r="16" fill="#162238" stroke="#00e676" stroke-width="2"/>
-            <text id="svg-hosp-src-txt" x="20" y="23" fill="#00e676" font-size="8" text-anchor="middle">RED</text>
+            <circle cx="20" cy="20" r="16" fill="#162238" stroke="#96a1ae" stroke-width="2"/>
+            <text id="svg-hosp-src-txt" x="20" y="23" fill="#96a1ae" font-size="8" text-anchor="middle">RED</text>
           </g>
         </svg>
       </div>
@@ -364,16 +291,16 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 6. DESALINIZADORA -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🌊 Planta Desalinizadora</span>
+        <span class="card-title">Planta Desalinizadora</span>
         <span id="badge-desal" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
         <svg width="220" height="110" viewBox="0 0 220 110">
           <rect x="35" y="20" width="70" height="70" rx="3" fill="#121a29" stroke="#37474f" stroke-width="2"/>
-          <rect id="svg-desal-fill" x="37" y="45" width="66" height="43" rx="2" fill="#00b4d8" opacity="0.75"/>
+          <rect id="svg-desal-fill" x="37" y="45" width="66" height="43" rx="2" fill="#527a93" opacity="0.75"/>
           <text x="70" y="15" fill="#78909c" font-size="8" text-anchor="middle">Tanque Osmosis</text>
-          <circle id="svg-desal-pump" cx="155" cy="55" r="16" fill="#162238" stroke="#00e676" stroke-width="2"/>
-          <path d="M155 42 L155 68 M142 55 L168 55" stroke="#00e676" stroke-width="2"/>
+          <circle id="svg-desal-pump" cx="155" cy="55" r="16" fill="#162238" stroke="#96a1ae" stroke-width="2"/>
+          <path d="M155 42 L155 68 M142 55 L168 55" stroke="#96a1ae" stroke-width="2"/>
           <text x="155" y="85" fill="#78909c" font-size="8" text-anchor="middle">HP-Pump</text>
         </svg>
       </div>
@@ -386,7 +313,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 7. ALUMBRADO -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">💡 Alumbrado Inteligente</span>
+        <span class="card-title">Alumbrado Inteligente</span>
         <span id="badge-light" class="badge badge-ok">OK</span>
       </div>
       <div class="canvas-wrap">
@@ -406,13 +333,13 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     <!-- 8. SEGURIDAD SIS SIL-3 -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🛡️ Sistema SIS SIL-3</span>
+        <span class="card-title">Sistema SIS SIL-3</span>
         <span id="badge-sis-card" class="badge badge-ok">ARMED</span>
       </div>
       <div class="canvas-wrap">
         <svg width="220" height="110" viewBox="0 0 220 110">
-          <polygon points="110,15 170,45 170,80 110,100 50,80 50,45" fill="#121a29" stroke="#00e676" stroke-width="2" id="svg-shield-border"/>
-          <text id="svg-sis-center-txt" x="110" y="60" fill="#00e676" font-size="12" font-weight="bold" text-anchor="middle">SIL-3</text>
+          <polygon points="110,15 170,45 170,80 110,100 50,80 50,45" fill="#121a29" stroke="#96a1ae" stroke-width="2" id="svg-shield-border"/>
+          <text id="svg-sis-center-txt" x="110" y="60" fill="#96a1ae" font-size="12" font-weight="bold" text-anchor="middle">SIL-3</text>
           <text x="110" y="78" fill="#78909c" font-size="8" text-anchor="middle">INTERLOCKS</text>
         </svg>
       </div>
@@ -424,25 +351,25 @@ class VizRequestHandler(BaseHTTPRequestHandler):
   </div>
 
   <!-- 9. BLUE TEAM / SOC & SDN OPERATIONS PANEL -->
-  <div id="blue-team-panel" style="background: #0f1522; border: 1px solid #1a233a; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #192236; padding-bottom: 6px;">
-      <span style="font-size: 0.9rem; font-weight: 600; color: #64b5f6;">🛡️ Blue Team — Alertas SOC Correlacionadas (SIEM) & Mitigaciones SDN</span>
+  <div id="blue-team-panel" style="background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px;">
+      <span style="font-size: 0.9rem; font-weight: 600; color: var(--fg);">Blue Team: alertas SOC correlacionadas (SIEM) y mitigaciones SDN</span>
       <span id="badge-soc-summary" class="badge badge-ok">0 AMENAZAS DETECTADAS</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
       <div>
-        <div style="font-size: 0.75rem; color: #78909c; margin-bottom: 6px; font-weight: bold;">🚨 ALERTAS CORRELACIONADAS SOC (SIEM):</div>
-        <div id="soc-alerts-list" style="font-size: 0.72rem; color: #90a4ae; min-height: 40px; background: #080c14; padding: 8px; border-radius: 4px; border: 1px solid #151d30;">Sin incidentes de seguridad correlacionados.</div>
+        <div style="font-size: 0.75rem; color: var(--fg-dim); margin-bottom: 6px; font-weight: bold;">Alertas correlacionadas SOC (SIEM):</div>
+        <div id="soc-alerts-list" style="font-size: 0.72rem; color: var(--fg-dim); min-height: 40px; background: var(--canvas); padding: 8px; border-radius: 4px; border: 1px solid var(--line);">Sin incidentes de seguridad correlacionados.</div>
       </div>
       <div>
-        <div style="font-size: 0.75rem; color: #78909c; margin-bottom: 6px; font-weight: bold;">⚡ MITIGACIONES ACTIVAS SDN (CIRCUIT BREAKER):</div>
-        <div id="sdn-mitigations-list" style="font-size: 0.72rem; color: #90a4ae; min-height: 40px; background: #080c14; padding: 8px; border-radius: 4px; border: 1px solid #151d30;">Sin aislamientos activos (Tráfico normal OpenFlow).</div>
+        <div style="font-size: 0.75rem; color: var(--fg-dim); margin-bottom: 6px; font-weight: bold;">Mitigaciones activas SDN (circuit breaker):</div>
+        <div id="sdn-mitigations-list" style="font-size: 0.72rem; color: var(--fg-dim); min-height: 40px; background: var(--canvas); padding: 8px; border-radius: 4px; border: 1px solid var(--line);">Sin aislamientos activos (Tráfico normal OpenFlow).</div>
       </div>
     </div>
   </div>
 
   <div id="raw-container">
-    <h3 style="font-size: 0.85rem; color: #78909c; margin-bottom: 6px;">Payload JSON de Telemetría (/api/viz/frame)</h3>
+    <h3 style="font-size: 0.85rem; color: var(--fg-dim); margin-bottom: 6px;">Payload JSON de Telemetría (/api/viz/frame)</h3>
     <pre id="viewport"></pre>
   </div>
 
@@ -504,7 +431,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           critical = true;
         } else {
           b.className = 'badge badge-ok'; b.innerText = 'OK';
-          arm.setAttribute('x2', '115'); arm.setAttribute('y2', '55'); arm.setAttribute('stroke', '#00e676');
+          arm.setAttribute('x2', '115'); arm.setAttribute('y2', '55'); arm.setAttribute('stroke', '#96a1ae');
         }
       }
 
@@ -534,10 +461,10 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           srcTxt.innerText = 'UPS'; srcTxt.setAttribute('fill', '#ffab00');
         } else if (h.standalone_decoupled) {
           b.className = 'badge badge-ok'; b.innerText = 'OK (STANDALONE)';
-          srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#00e676');
+          srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#96a1ae');
         } else {
           b.className = 'badge badge-ok'; b.innerText = 'OK';
-          srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#00e676');
+          srcTxt.innerText = 'RED'; srcTxt.setAttribute('fill', '#96a1ae');
         }
       }
 
@@ -597,14 +524,14 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           document.getElementById('val-sis-trip').innerText = 'ARMED (STANDALONE)';
           b.className = 'badge badge-ok'; b.innerText = 'ARMED (STANDALONE)';
           bTop.className = 'badge badge-ok'; bTop.innerText = 'SIS SIL-3: OK';
-          border.setAttribute('stroke', '#00e676');
-          centerTxt.setAttribute('fill', '#00e676');
+          border.setAttribute('stroke', '#96a1ae');
+          centerTxt.setAttribute('fill', '#96a1ae');
         } else {
           document.getElementById('val-sis-trip').innerText = 'NO ACTIVO';
           b.className = 'badge badge-ok'; b.innerText = 'ARMED';
           bTop.className = 'badge badge-ok'; bTop.innerText = 'SIS SIL-3: OK';
-          border.setAttribute('stroke', '#00e676');
-          centerTxt.setAttribute('fill', '#00e676');
+          border.setAttribute('stroke', '#96a1ae');
+          centerTxt.setAttribute('fill', '#96a1ae');
         }
       }
 
@@ -643,8 +570,8 @@ class VizRequestHandler(BaseHTTPRequestHandler):
 
       if (sdnMitigations.length > 0) {
         sdnList.innerHTML = sdnMitigations.slice(0, 3).map(m =>
-          `<div style="margin-bottom: 6px; border-left: 3px solid #00e5ff; padding-left: 8px;">` +
-          `<strong style="color: #00e5ff;">${m.mechanism || 'SDN Circuit Breaker'}</strong>: ` +
+          `<div style="margin-bottom: 6px; border-left: 3px solid var(--accent); padding-left: 8px;">` +
+          `<strong style="color: var(--accent);">${m.mechanism || 'SDN Circuit Breaker'}</strong>: ` +
           `Host <span style="color: #ff1744; font-weight: bold;">${m.offending_ip}</span> aislado (${m.rule || 'Flood/DoS'})` +
           `</div>`
         ).join('');

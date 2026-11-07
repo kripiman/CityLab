@@ -31,6 +31,7 @@ from socketserver import ThreadingMixIn
 from typing import Any, Dict, List, Optional, Sequence
 
 from network.historian import HistorianTSDB
+from network import ui_theme
 
 LOGGER = logging.getLogger('hmi_server')
 
@@ -228,96 +229,14 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>CityLab Industrial HMI — OpenSCADA / Ignition Edge</title>
+  <title>CityLab Industrial HMI (OpenSCADA / Ignition Edge)</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #090d14;
-      color: #cfd8dc;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      padding: 16px;
-      line-height: 1.4;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #1c2538;
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    h1 {
-      font-size: 1.3rem;
-      color: #00e5ff;
-      letter-spacing: 0.5px;
-    }
-    .sub {
-      color: #78909c;
-      font-size: 0.78rem;
-    }
-    .badge-bar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-ok { background: #003314; color: #00e676; border: 1px solid #00e676; }
-    .badge-warn { background: #332600; color: #ffab00; border: 1px solid #ffab00; }
-    .badge-crit { background: #330009; color: #ff1744; border: 1px solid #ff1744; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0.4; } }
-    .btn {
-      background: #141b29;
-      color: #00e5ff;
-      border: 1px solid #00e5ff;
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.75rem;
-      transition: all 0.2s;
-    }
-    .btn:hover { background: #00e5ff; color: #080a10; }
-    .btn-danger { color: #ff5252; border-color: #ff5252; }
-    .btn-danger:hover { background: #ff5252; color: #080a10; }
-    .btn-success { color: #00e676; border-color: #00e676; }
-    .btn-success:hover { background: #00e676; color: #080a10; }
+""" + ui_theme.SHARED_CSS + """
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 14px;
       margin-bottom: 16px;
-    }
-    .card {
-      background: #0f1522;
-      border: 1px solid #1a233a;
-      border-radius: 6px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card:hover { border-color: #00e5ff; }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #192236;
-      padding-bottom: 6px;
-    }
-    .card-title {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #90caf9;
     }
     .pid-wrap {
       display: flex;
@@ -325,39 +244,39 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
       align-items: center;
       min-height: 125px;
       margin: 6px 0;
-      background: #080c14;
-      border: 1px solid #151d30;
+      background: var(--canvas);
+      border: 1px solid var(--line);
       border-radius: 4px;
     }
     .telemetry-table {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 5px;
-      background: #0b101c;
+      background: var(--canvas);
       padding: 8px;
       border-radius: 4px;
       font-size: 0.75rem;
       margin-bottom: 8px;
     }
-    .lbl { color: #78909c; }
-    .val { color: #eceff1; font-weight: bold; text-align: right; }
+    .lbl { color: var(--fg-dim); }
+    .val { color: var(--fg); font-weight: bold; text-align: right; }
     .ctl-bar {
       display: flex;
       gap: 8px;
       justify-content: flex-end;
       padding-top: 6px;
-      border-top: 1px dashed #1c273e;
+      border-top: 1px dashed var(--line);
     }
     .alarm-panel {
-      background: #0f1522;
-      border: 1px solid #1a233a;
+      background: var(--surface);
+      border: 1px solid var(--line);
       border-radius: 6px;
       padding: 12px;
       margin-bottom: 16px;
     }
     .alarm-panel h3 {
       font-size: 0.88rem;
-      color: #ffab00;
+      color: var(--alarm-warn);
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
@@ -371,18 +290,18 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     table.alarm-tbl th, table.alarm-tbl td {
       padding: 6px 8px;
       text-align: left;
-      border-bottom: 1px solid #192236;
+      border-bottom: 1px solid var(--line);
     }
-    table.alarm-tbl th { color: #78909c; background: #0b101c; }
-    .sev-critical { color: #ff1744; font-weight: bold; }
-    .sev-warning { color: #ffab00; font-weight: bold; }
+    table.alarm-tbl th { color: var(--fg-dim); background: var(--canvas); }
+    .sev-critical { color: var(--alarm-crit); font-weight: bold; }
+    .sev-warning { color: var(--alarm-warn); font-weight: bold; }
     #toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #192236;
-      border: 1px solid #00e5ff;
-      color: #00e5ff;
+      background: var(--surface-2);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       padding: 10px 16px;
       border-radius: 4px;
       font-size: 0.8rem;
@@ -392,11 +311,11 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     }
     #raw-data {
       display: none;
-      background: #06090f;
-      border: 1px solid #1a233a;
+      background: var(--canvas);
+      border: 1px solid var(--line);
       border-radius: 4px;
       padding: 10px;
-      color: #00e676;
+      color: var(--fg-dim);
       font-size: 0.72rem;
       max-height: 220px;
       overflow-y: auto;
@@ -404,9 +323,9 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     }
     .notice-box {
       font-size: 0.72rem;
-      color: #90a4ae;
-      background: #0d1320;
-      border-left: 3px solid #00e5ff;
+      color: var(--fg-dim);
+      background: var(--accent-bg);
+      border-left: 3px solid var(--accent);
       padding: 6px 10px;
       margin-bottom: 14px;
       border-radius: 0 4px 4px 0;
@@ -416,7 +335,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
 <body>
   <header>
     <div>
-      <h1>🏭 CityLab Industrial HMI — OpenSCADA / Ignition Edge</h1>
+      <h1>CityLab Industrial HMI (OpenSCADA / Ignition Edge)</h1>
       <div class="sub">Diagrama de Proceso P&ID y Mando Operacional OT (IEC 62443 DMZ :8085)</div>
     </div>
     <div class="badge-bar">
@@ -427,14 +346,14 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
   </header>
 
   <div class="notice-box">
-    ℹ️ <strong>Alcance de Supervisión Primaria (ERS RF-06.2 / CTF F-06):</strong> Este HMI supervisa directamente los 4 sectores industriales primarios de la red OT (Water, Gas, Elec, Transport). Los activos secundarios de campo (Hospital, Desal, Lighting, Safety) operan de forma desacoplada y son visualizados de forma complementaria por el Visualizador 2D.
+    <strong>Alcance de Supervisión Primaria (ERS RF-06.2 / CTF F-06):</strong> Este HMI supervisa directamente los 4 sectores industriales primarios de la red OT (Water, Gas, Elec, Transport). Los activos secundarios de campo (Hospital, Desal, Lighting, Safety) operan de forma desacoplada y son visualizados de forma complementaria por el Visualizador 2D.
   </div>
 
   <div class="grid">
     <!-- SECTOR 1: AGUA P&ID -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">💧 P&ID Proceso de Agua (SWaT)</span>
+        <span class="card-title">P&ID Proceso de Agua (SWaT)</span>
         <span id="badge-water" class="badge badge-ok">OK</span>
       </div>
       <div class="pid-wrap">
@@ -444,19 +363,19 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           <path d="M210 65 L260 65" fill="none" stroke="#2a3b5c" stroke-width="4"/>
           <!-- Tanque T1 -->
           <rect x="15" y="25" width="55" height="65" rx="3" fill="#101826" stroke="#455a64" stroke-width="2"/>
-          <rect id="pid-water-t1-fill" x="17" y="55" width="51" height="33" rx="1" fill="#00b0ff" opacity="0.8"/>
+          <rect id="pid-water-t1-fill" x="17" y="55" width="51" height="33" rx="1" fill="#527a93" opacity="0.8"/>
           <text x="42" y="20" fill="#90a4ae" font-size="9" text-anchor="middle">TK-101</text>
           <!-- Bomba P101 -->
-          <circle id="pid-pump-body" cx="135" cy="65" r="14" fill="#132035" stroke="#00e676" stroke-width="2"/>
-          <path id="pid-pump-rotor" d="M135 55 L135 75 M125 65 L145 65" stroke="#00e676" stroke-width="2"/>
+          <circle id="pid-pump-body" cx="135" cy="65" r="14" fill="#132035" stroke="#96a1ae" stroke-width="2"/>
+          <path id="pid-pump-rotor" d="M135 55 L135 75 M125 65 L145 65" stroke="#96a1ae" stroke-width="2"/>
           <text x="135" y="90" fill="#90a4ae" font-size="8" text-anchor="middle">P-101</text>
           <!-- Tanque T2 -->
           <rect x="155" y="25" width="55" height="65" rx="3" fill="#101826" stroke="#455a64" stroke-width="2"/>
-          <rect id="pid-water-t2-fill" x="157" y="50" width="51" height="38" rx="1" fill="#00e5ff" opacity="0.8"/>
+          <rect id="pid-water-t2-fill" x="157" y="50" width="51" height="38" rx="1" fill="#527a93" opacity="0.8"/>
           <text x="182" y="20" fill="#90a4ae" font-size="9" text-anchor="middle">TK-102</text>
           <!-- Transmisor Nivel LIT-101 -->
-          <circle cx="250" cy="40" r="11" fill="#101826" stroke="#00e5ff" stroke-width="1.5"/>
-          <text x="250" y="43" fill="#00e5ff" font-size="7" text-anchor="middle">LT</text>
+          <circle cx="250" cy="40" r="11" fill="#101826" stroke="#96a1ae" stroke-width="1.5"/>
+          <text x="250" y="43" fill="#96a1ae" font-size="7" text-anchor="middle">LT</text>
         </svg>
       </div>
       <div class="telemetry-table">
@@ -474,7 +393,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     <!-- SECTOR 2: GAS P&ID -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🔥 P&ID Distribución de Gas</span>
+        <span class="card-title">P&ID Distribución de Gas</span>
         <span id="badge-gas" class="badge badge-ok">OK</span>
       </div>
       <div class="pid-wrap">
@@ -486,15 +405,15 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           <circle cx="85" cy="50" r="28" fill="#101826" stroke="#455a64" stroke-width="2"/>
           <circle cx="85" cy="50" r="23" fill="#080c14"/>
           <path d="M68 62 A18 18 0 1 1 102 62" fill="none" stroke="#263238" stroke-width="4"/>
-          <line id="pid-gas-needle" x1="85" y1="50" x2="85" y2="33" stroke="#ff5252" stroke-width="2" stroke-linecap="round"/>
+          <line id="pid-gas-needle" x1="85" y1="50" x2="85" y2="33" stroke="#96a1ae" stroke-width="2" stroke-linecap="round"/>
           <circle cx="85" cy="50" r="3" fill="#fff"/>
           <text x="85" y="90" fill="#90a4ae" font-size="8" text-anchor="middle">PT-201 (PSI)</text>
           <!-- Válvula de control solenoide XV-201 -->
           <g transform="translate(195, 45)">
-            <polygon id="pid-valve-l" points="0,5 20,15 0,25" fill="#00e676"/>
-            <polygon id="pid-valve-r" points="40,5 20,15 40,25" fill="#00e676"/>
+            <polygon id="pid-valve-l" points="0,5 20,15 0,25" fill="#96a1ae"/>
+            <polygon id="pid-valve-r" points="40,5 20,15 40,25" fill="#96a1ae"/>
             <rect x="17" y="0" width="6" height="15" fill="#78909c"/>
-            <circle cx="20" cy="0" r="4" fill="#00e676"/>
+            <circle cx="20" cy="0" r="4" fill="#96a1ae"/>
           </g>
           <text x="215" y="90" fill="#90a4ae" font-size="8" text-anchor="middle">XV-201</text>
         </svg>
@@ -514,7 +433,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     <!-- SECTOR 3: ELEC P&ID -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">⚡ P&ID Subestación Eléctrica</span>
+        <span class="card-title">P&ID Subestación Eléctrica</span>
         <span id="badge-elec" class="badge badge-ok">OK</span>
       </div>
       <div class="pid-wrap">
@@ -523,16 +442,16 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           <line x1="30" y1="35" x2="270" y2="35" stroke="#ffeb3b" stroke-width="4"/>
           <text x="150" y="25" fill="#ffeb3b" font-size="8" text-anchor="middle">BUSBAR 13.8 kV</text>
           <!-- Transformador T1 -->
-          <circle cx="80" cy="65" r="14" fill="none" stroke="#00e5ff" stroke-width="2"/>
-          <circle cx="80" cy="80" r="14" fill="none" stroke="#00e5ff" stroke-width="2"/>
+          <circle cx="80" cy="65" r="14" fill="none" stroke="#96a1ae" stroke-width="2"/>
+          <circle cx="80" cy="80" r="14" fill="none" stroke="#96a1ae" stroke-width="2"/>
           <line x1="80" y1="35" x2="80" y2="51" stroke="#ffeb3b" stroke-width="2"/>
           <text x="80" y="105" fill="#90a4ae" font-size="8" text-anchor="middle">XFMR-1</text>
           <!-- Interruptor de Potencia CB-52 -->
           <g id="pid-elec-cb-grp" transform="translate(190, 48)">
             <rect x="0" y="0" width="36" height="32" rx="3" fill="#101826" stroke="#455a64" stroke-width="2"/>
-            <line id="pid-elec-cb-line" x1="18" y1="5" x2="18" y2="27" stroke="#00e676" stroke-width="3"/>
-            <circle cx="18" cy="5" r="3" fill="#00e676"/>
-            <circle cx="18" cy="27" r="3" fill="#00e676"/>
+            <line id="pid-elec-cb-line" x1="18" y1="5" x2="18" y2="27" stroke="#96a1ae" stroke-width="3"/>
+            <circle cx="18" cy="5" r="3" fill="#96a1ae"/>
+            <circle cx="18" cy="27" r="3" fill="#96a1ae"/>
           </g>
           <text x="208" y="95" fill="#90a4ae" font-size="8" text-anchor="middle">CB-52 (FEEDER)</text>
         </svg>
@@ -552,7 +471,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     <!-- SECTOR 4: TRANSPORTE P&ID -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🚦 P&ID Control de Tráfico Urbano</span>
+        <span class="card-title">P&ID Control de Tráfico Urbano</span>
         <span id="badge-trans" class="badge badge-ok">OK</span>
       </div>
       <div class="pid-wrap">
@@ -593,7 +512,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
   <!-- CONSOLA DE ALARMAS INDUSTRIALES -->
   <div class="alarm-panel">
     <h3>
-      <span>🚨 Consola de Alarmas de Proceso e Incidentes SCADA</span>
+      <span>Consola de Alarmas de Proceso e Incidentes SCADA</span>
       <span id="alarm-count-badge" class="badge badge-ok">0 ACTIVAS</span>
     </h3>
     <table class="alarm-tbl">
@@ -607,7 +526,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
         </tr>
       </thead>
       <tbody id="alarm-tbody">
-        <tr><td colspan="5" style="color: #78909c; text-align: center;">Sin alarmas activas en el proceso.</td></tr>
+        <tr><td colspan="5" style="color: var(--fg-dim); text-align: center;">Sin alarmas activas en el proceso.</td></tr>
       </tbody>
     </table>
   </div>
@@ -624,8 +543,8 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     function showToast(msg, isError) {
       const toast = document.getElementById('toast');
       toast.innerText = msg;
-      toast.style.borderColor = isError ? '#ff1744' : '#00e5ff';
-      toast.style.color = isError ? '#ff1744' : '#00e5ff';
+      toast.style.borderColor = isError ? '#ff7a72' : '#6aa2c8';
+      toast.style.color = isError ? '#ff7a72' : '#6aa2c8';
       toast.style.display = 'block';
       setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
@@ -640,14 +559,14 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
       .then(r => r.json())
       .then(res => {
         if (res.success) {
-          showToast(`✅ Mando ${action} ejecutado con éxito`, false);
+          showToast(`Mando ${action} ejecutado con éxito`, false);
           updateHmi();
         } else {
-          showToast(`❌ Fallo: ${res.error || 'No autorizado'}`, true);
+          showToast(`Fallo: ${res.error || 'No autorizado'}`, true);
         }
       })
       .catch(err => {
-        showToast(`❌ Error de conexión: ${err}`, true);
+        showToast(`Error de conexión: ${err}`, true);
       });
     }
 
@@ -698,7 +617,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           bWater.className = wLov ? 'badge badge-crit' : (pRunning ? 'badge badge-ok' : 'badge badge-warn');
           bWater.innerText = wLov ? 'LOSS OF VIEW' : (pRunning ? 'OK' : 'STOP');
           const rotor = document.getElementById('pid-pump-rotor');
-          if (rotor) rotor.setAttribute('stroke', pRunning ? '#00e676' : '#ff5252');
+          if (rotor) rotor.setAttribute('stroke', pRunning ? '#96a1ae' : '#f0a000');
 
           // 2. Gas
           const g = proc.gas_sector || {};
@@ -719,7 +638,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           const vl = document.getElementById('pid-valve-l');
           const vr = document.getElementById('pid-valve-r');
           if (vl && vr) {
-            const vCol = vOpen ? '#00e676' : '#ff5252';
+            const vCol = vOpen ? '#96a1ae' : '#f0a000';
             vl.setAttribute('fill', vCol);
             vr.setAttribute('fill', vCol);
           }
@@ -736,7 +655,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           bElec.className = eLov ? 'badge badge-crit' : (cbClosed ? 'badge badge-ok' : 'badge badge-crit');
           bElec.innerText = eLov ? 'LOSS OF VIEW' : (cbClosed ? 'OK' : 'TRIPPED');
           const cbLine = document.getElementById('pid-elec-cb-line');
-          if (cbLine) cbLine.setAttribute('stroke', cbClosed ? '#00e676' : '#ff5252');
+          if (cbLine) cbLine.setAttribute('stroke', cbClosed ? '#96a1ae' : '#ff7a72');
 
           // 4. Transport
           const t = proc.transport_sector || {};
@@ -776,7 +695,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
 
           const tbody = document.getElementById('alarm-tbody');
           if (alarms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color: #78909c; text-align: center;">Sin alarmas activas en el proceso.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="color: var(--fg-dim); text-align: center;">Sin alarmas activas en el proceso.</td></tr>';
           } else {
             tbody.innerHTML = alarms.map(a => `
               <tr>
