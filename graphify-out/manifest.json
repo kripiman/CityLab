@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "network/hmi_server.py": {
-    "mtime": 1789445238.7407737,
-    "ast_hash": "53ac9a93abe3f2997380a6f96439ac64",
+    "mtime": 1794087553.743664,
+    "ast_hash": "79d22e0381b9ae2dd22c10afe59f1971",
     "semantic_hash": ""
   },
   "network/rbac.py": {
@@ -560,8 +560,8 @@
     "semantic_hash": "1fe4f1baabea29ec36b236782079cc7b"
   },
   "network/viz_server.py": {
-    "mtime": 1789420187.4565856,
-    "ast_hash": "65821c953172ab423948b25b0cb9dabb",
+    "mtime": 1794087497.333889,
+    "ast_hash": "f872fcba74e7e7f49f15adb7e2dd735e",
     "semantic_hash": ""
   },
   "physical/elec/grid_elec.py": {
@@ -1300,8 +1300,8 @@
     "semantic_hash": ""
   },
   "network/citylab_gui.py": {
-    "mtime": 1794071047.7518444,
-    "ast_hash": "97846f497e7d9213a122d705ec9f2652",
+    "mtime": 1794086876.2892573,
+    "ast_hash": "bcc4a48f699579227d0c9dbeedda9440",
     "semantic_hash": ""
   },
   "network/tests/test_citylab_gui.py": {
@@ -1332,6 +1332,11 @@
   "network/gui_view_state.py": {
     "mtime": 1794071047.7518444,
     "ast_hash": "93a0c47a2be4ad846019c38f36f46788",
+    "semantic_hash": ""
+  },
+  "network/ui_theme.py": {
+    "mtime": 1794086863.129249,
+    "ast_hash": "63b52f8bec5afc76c1a4b91cba947f42",
     "semantic_hash": ""
   }
 }
