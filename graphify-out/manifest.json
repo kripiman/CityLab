@@ -675,13 +675,13 @@
     "semantic_hash": "cceced69f98870064e4bded7dcffdb62"
   },
   "CLAUDE.md": {
-    "mtime": 1794071047.7518444,
-    "ast_hash": "63a0cd504d7de19af607a57970c62737",
+    "mtime": 1794095698.6659856,
+    "ast_hash": "22f6e0e5244a471851c076bbae1260a0",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794093552.4577262,
-    "ast_hash": "13ea44623b3c5198cae5e6d610133393",
+    "mtime": 1794095703.9519937,
+    "ast_hash": "1ebdae2e4c74f65bc39baa3206dade5a",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -1340,18 +1340,28 @@
     "semantic_hash": ""
   },
   "docs/img/hmi.png": {
-    "mtime": 1794093527.2276344,
-    "ast_hash": "a60d8fa72bc98fb6cea4b9f89be4aa62",
+    "mtime": 1794095647.7607949,
+    "ast_hash": "b14720076d7b992e6f447d01aab0097f",
     "semantic_hash": ""
   },
   "docs/img/viz-alarm.png": {
-    "mtime": 1794093527.2274995,
-    "ast_hash": "8c102d6b4d8998c034060afa00c73aaf",
+    "mtime": 1794095646.3627937,
+    "ast_hash": "d00223c35879bcdd874661e0d4dc48e0",
     "semantic_hash": ""
   },
   "docs/img/viz-normal.png": {
-    "mtime": 1794093527.2272112,
-    "ast_hash": "1d63430f401ce6568eaed955637ebb16",
+    "mtime": 1794095645.2496445,
+    "ast_hash": "9d9f9d072bc3d19fabda965de4af77ae",
+    "semantic_hash": ""
+  },
+  "scripts/ui_e2e_test.py": {
+    "mtime": 1794095640.4468908,
+    "ast_hash": "acef42620577a062255e1fc7f613921f",
+    "semantic_hash": ""
+  },
+  "docs/UI_TESTING.md": {
+    "mtime": 1794095683.5179615,
+    "ast_hash": "cdfd1702b1e64be6c0189970693de0cd",
     "semantic_hash": ""
   }
 }
