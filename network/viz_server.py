@@ -146,6 +146,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
   </style>
 </head>
 <body>
+  <script>window.__VIZ_SEED__ = """ + json.dumps(self.engine.get_render_frame()) + """;</script>
   <header>
     <div>
       <h1>CityLab 2D/3D Presentational Visualizer</h1>
@@ -583,12 +584,16 @@ class VizRequestHandler(BaseHTTPRequestHandler):
       document.getElementById('viewport').innerText = JSON.stringify(data, null, 2);
     }
 
-    setInterval(() => {
+    function pollFrame() {
       fetch('/api/viz/frame')
         .then(r => r.json())
         .then(render)
         .catch(err => console.debug('Polling viz frame:', err));
-    }, 1000);
+    }
+    // Render inmediato desde la semilla inyectada por el server (primer paint sin parpadeo).
+    if (window.__VIZ_SEED__) { try { render(window.__VIZ_SEED__); } catch (e) {} }
+    pollFrame();
+    setInterval(pollFrame, 1000);
   </script>
 </body>
 </html>"""

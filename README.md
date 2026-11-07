@@ -18,6 +18,24 @@
 
 ---
 
+## 🖥️ Interfaz de Operación (ISA-101 High-Performance HMI)
+
+El Visualizador 2D (`:8090`), el HMI Industrial (`:8085`) y el dashboard nativo Tkinter comparten una paleta **ISA-101 High-Performance HMI**: lienzo gris, el estado normal en monocromo de bajo contraste y el color reservado a la condición anómala. Todo se sirve 100% self-contained (fuentes del sistema, SVG embebido, sin dependencias externas), apto para la red airgapped.
+
+**Visualizador 2D, operación normal.** Los 8 sectores en gris de bajo contraste: ningún elemento compite por la atención del operador.
+
+![Visualizador 2D de CityLab en estado normal, con los ocho sectores en gris](docs/img/viz-normal.png)
+
+**Visualizador 2D, ataque en cascada IT→OT.** Una inyección Modbus con escaneo al honeypot dispara TRIP de agua, apagón eléctrico, alta presión de gas y disparo del SIS SIL-3. El panel Blue Team correlaciona la alerta SOC y aplica la mitigación SDN (aislamiento del host atacante). Los sectores no afectados siguen en gris.
+
+![Visualizador 2D de CityLab bajo ataque, con el color reservado a los sectores en alarma](docs/img/viz-alarm.png)
+
+**HMI Industrial, diagrama P&ID y mando OT.** Proceso P&ID de los 4 sectores primarios con telemetría, consola de alarmas y mandos operacionales. Las acciones destructivas (PARAR, CERRAR, DISPARAR) se distinguen en rojo.
+
+![HMI Industrial de CityLab con diagramas P&ID y barra de mando operacional](docs/img/hmi.png)
+
+---
+
 ## ✅ Requisitos Previos
 
 - **Sistema Operativo**: Linux. `install_deps.sh` da soporte nativo a Fedora/Nobara/RHEL (`dnf`), Ubuntu/Debian/Mint (`apt`) y Arch/Manjaro (`pacman`).
