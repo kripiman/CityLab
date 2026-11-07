@@ -35,6 +35,7 @@ The `run_phase*.sh` scripts are now internal implementation invoked by `up`; do 
   PYTHONPATH=. python3 -m pytest attacker/tests/test_scenario_21_loss_of_view.py::TestScenario21LossOfView::test_hmi_detects_loss_of_view_alarm
   ```
 - **The five test suites** are `network/tests`, `plc/tests`, `physical`, `helics_sim`, `attacker/tests` (265 tests passing deterministically).
+- **UI browser test** (optional, not part of `./citylab.sh test`): `scripts/ui_e2e_test.py` drives the web dashboards with Playwright to verify the ISA-101 alarm band and color reservation against the live polling path, and regenerates the README screenshots. It needs no root/Mininet (it spawns the servers and an embedded SCADA stub itself). One-time setup needs network: `uv run --with playwright -- playwright install chromium`. Run with `uv run --with playwright -- python scripts/ui_e2e_test.py` (add `--screenshots docs/img` to refresh images). See `docs/UI_TESTING.md`.
 - **Bring up the full lab** (requires root — Mininet + Open vSwitch): `sudo ./citylab.sh up`. Lower-level entry points, when you need them directly:
   ```bash
   sudo python3 network/topology.py          # interactive Mininet CLI

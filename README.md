@@ -36,6 +36,8 @@ Una banda de alarmas L1 encabeza ambas superficies web y resume la situación po
 
 ![HMI Industrial de CityLab con diagramas P&ID y barra de mando operacional](docs/img/hmi.png)
 
+> Estas capturas y el comportamiento en vivo de la banda de alarmas se verifican y regeneran con `scripts/ui_e2e_test.py` (Playwright). Ver [`docs/UI_TESTING.md`](docs/UI_TESTING.md).
+
 ---
 
 ## ✅ Requisitos Previos
