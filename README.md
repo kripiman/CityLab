@@ -22,11 +22,13 @@
 
 El Visualizador 2D (`:8090`), el HMI Industrial (`:8085`) y el dashboard nativo Tkinter comparten una paleta **ISA-101 High-Performance HMI**: lienzo gris, el estado normal en monocromo de bajo contraste y el color reservado a la condición anómala. Todo se sirve 100% self-contained (fuentes del sistema, SVG embebido, sin dependencias externas), apto para la red airgapped.
 
-**Visualizador 2D, operación normal.** Los 8 sectores en gris de bajo contraste: ningún elemento compite por la atención del operador.
+Una banda de alarmas L1 encabeza ambas superficies web y resume la situación por severidad: queda gris cuando no hay nada activo y pasa a rojo o ámbar en cuanto un sector dispara, nombrando las áreas afectadas. Los mímicos analógicos (manómetro de gas, busbar eléctrico) también descansan en gris, de modo que el ámbar y el rojo solo aparecen sobre una alarma real.
+
+**Visualizador 2D, operación normal.** Los 8 sectores en gris de bajo contraste y la banda L1 en «SIN ALARMAS ACTIVAS»: ningún elemento compite por la atención del operador.
 
 ![Visualizador 2D de CityLab en estado normal, con los ocho sectores en gris](docs/img/viz-normal.png)
 
-**Visualizador 2D, ataque en cascada IT→OT.** Una inyección Modbus con escaneo al honeypot dispara TRIP de agua, apagón eléctrico, alta presión de gas y disparo del SIS SIL-3. El panel Blue Team correlaciona la alerta SOC y aplica la mitigación SDN (aislamiento del host atacante). Los sectores no afectados siguen en gris.
+**Visualizador 2D, ataque en cascada IT→OT.** Una inyección Modbus con escaneo al honeypot dispara TRIP de agua, apagón eléctrico, alta presión de gas y disparo del SIS SIL-3. La banda L1 cuenta «6 CRÍTICAS · 1 ADVERTENCIA» y lista los sectores; el panel Blue Team correlaciona la alerta SOC y aplica la mitigación SDN (aislamiento del host atacante). Los sectores no afectados siguen en gris.
 
 ![Visualizador 2D de CityLab bajo ataque, con el color reservado a los sectores en alarma](docs/img/viz-alarm.png)
 

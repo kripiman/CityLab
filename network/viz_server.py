@@ -159,6 +159,11 @@ class VizRequestHandler(BaseHTTPRequestHandler):
     </div>
   </header>
 
+  <div id="alarm-band" class="alarm-band alarm-band-ok" role="status" aria-live="polite">
+    <span class="count" id="alarm-band-count">SIN ALARMAS ACTIVAS</span>
+    <span class="areas" id="alarm-band-areas"></span>
+  </div>
+
   <div class="grid">
     <!-- 1. AGUA -->
     <div class="card">
@@ -195,12 +200,9 @@ class VizRequestHandler(BaseHTTPRequestHandler):
         <svg width="220" height="110" viewBox="0 0 220 110">
           <circle cx="90" cy="55" r="40" fill="#121a29" stroke="#37474f" stroke-width="2"/>
           <circle cx="90" cy="55" r="34" fill="#090d14"/>
-          <path d="M60 70 A30 30 0 1 1 120 70" fill="none" stroke="#263238" stroke-width="6"/>
-          <path d="M60 70 A30 30 0 0 1 85 27" fill="none" stroke="#00e676" stroke-width="6"/>
-          <path d="M85 27 A30 30 0 0 1 105 32" fill="none" stroke="#ffab00" stroke-width="6"/>
-          <path d="M105 32 A30 30 0 0 1 120 70" fill="none" stroke="#ff1744" stroke-width="6"/>
-          <line id="svg-gas-needle" x1="90" y1="55" x2="90" y2="28" stroke="#ff5252" stroke-width="2.5" stroke-linecap="round" transform="rotate(20, 90, 55)"/>
-          <circle cx="90" cy="55" r="4" fill="#fff"/>
+          <path d="M60 70 A30 30 0 1 1 120 70" fill="none" stroke="#3a4149" stroke-width="6"/>
+          <line id="svg-gas-needle" x1="90" y1="55" x2="90" y2="28" stroke="#d7dce1" stroke-width="2.5" stroke-linecap="round" transform="rotate(20, 90, 55)"/>
+          <circle cx="90" cy="55" r="4" fill="#aab2bd"/>
           <text x="90" y="80" fill="#78909c" font-size="8" text-anchor="middle">PSI x10</text>
           <g id="svg-gas-valve-grp" transform="translate(165, 40)">
             <polygon points="0,5 15,20 0,35" fill="#96a1ae"/>
@@ -232,7 +234,7 @@ class VizRequestHandler(BaseHTTPRequestHandler):
           <circle cx="115" cy="55" r="4" fill="#96a1ae"/>
           <line x1="115" y1="55" x2="160" y2="55" stroke="#96a1ae" stroke-width="3"/>
           <text x="90" y="30" fill="#78909c" font-size="9" text-anchor="middle">XCBR1</text>
-          <path d="M175 40 L195 55 L175 70 Z" fill="#ffab00" opacity="0.8"/>
+          <path d="M175 40 L195 55 L175 70 Z" fill="#96a1ae" opacity="0.8"/>
           <text x="185" y="90" fill="#78909c" font-size="8" text-anchor="middle">Carga</text>
         </svg>
       </div>
@@ -580,8 +582,38 @@ class VizRequestHandler(BaseHTTPRequestHandler):
         sdnList.innerText = 'Sin aislamientos activos (Tráfico normal OpenFlow).';
       }
 
+      // Banda L1: refleja los badges que cada sector acaba de fijar, sin reevaluar umbrales.
+      updateAlarmBand();
+
       // Actualizar viewport crudo
       document.getElementById('viewport').innerText = JSON.stringify(data, null, 2);
+    }
+
+    function updateAlarmBand() {
+      const band = document.getElementById('alarm-band');
+      if (!band) return;
+      const crit = [], warn = [];
+      document.querySelectorAll('.grid .card').forEach(card => {
+        const badge = card.querySelector('.badge');
+        const title = card.querySelector('.card-title');
+        if (!badge || !title) return;
+        if (badge.classList.contains('badge-crit')) crit.push(title.innerText);
+        else if (badge.classList.contains('badge-warn')) warn.push(title.innerText);
+      });
+      const count = document.getElementById('alarm-band-count');
+      const areas = document.getElementById('alarm-band-areas');
+      if (!crit.length && !warn.length) {
+        band.className = 'alarm-band alarm-band-ok';
+        count.innerText = 'SIN ALARMAS ACTIVAS';
+        areas.innerText = '';
+        return;
+      }
+      band.className = 'alarm-band ' + (crit.length ? 'alarm-band-crit' : 'alarm-band-warn');
+      const parts = [];
+      if (crit.length) parts.push(crit.length + (crit.length > 1 ? ' CRÍTICAS' : ' CRÍTICA'));
+      if (warn.length) parts.push(warn.length + (warn.length > 1 ? ' ADVERTENCIAS' : ' ADVERTENCIA'));
+      count.innerText = parts.join('  ·  ');
+      areas.innerText = crit.concat(warn).join('  ·  ');
     }
 
     function pollFrame() {

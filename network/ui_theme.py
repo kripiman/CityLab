@@ -115,6 +115,17 @@ h1{font-size:1.25rem;font-weight:600;color:var(--fg);letter-spacing:0;}
   margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px;}
 .card-title{font-size:0.9rem;font-weight:600;color:var(--fg);}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.alarm-band{display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:4px;
+  margin-bottom:16px;border:1px solid var(--line);background:var(--surface);}
+.alarm-band-ok{color:var(--fg-dim);}
+.alarm-band-warn{background:var(--alarm-warn-bg);color:var(--alarm-warn);
+  border-color:var(--alarm-warn);}
+.alarm-band-crit{background:var(--alarm-crit-bg);color:var(--alarm-crit);
+  border-color:var(--alarm-crit);}
+.alarm-band .count{font-weight:700;letter-spacing:0.02em;white-space:nowrap;}
+.alarm-band .areas{font-size:0.75rem;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;color:var(--fg-dim);}
+.alarm-band-warn .areas,.alarm-band-crit .areas{color:inherit;opacity:0.9;}
 """
 
 SHARED_CSS = _ROOT + _COMPONENTS

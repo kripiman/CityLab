@@ -276,7 +276,7 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     }
     .alarm-panel h3 {
       font-size: 0.88rem;
-      color: var(--alarm-warn);
+      color: var(--fg);
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
@@ -345,6 +345,11 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
     </div>
   </header>
 
+  <div id="alarm-band" class="alarm-band alarm-band-ok" role="status" aria-live="polite">
+    <span class="count" id="alarm-band-count">SIN ALARMAS ACTIVAS</span>
+    <span class="areas" id="alarm-band-areas"></span>
+  </div>
+
   <div class="notice-box">
     <strong>Alcance de Supervisión Primaria (ERS RF-06.2 / CTF F-06):</strong> Este HMI supervisa directamente los 4 sectores industriales primarios de la red OT (Water, Gas, Elec, Transport). Los activos secundarios de campo (Hospital, Desal, Lighting, Safety) operan de forma desacoplada y son visualizados de forma complementaria por el Visualizador 2D.
   </div>
@@ -400,13 +405,13 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
         <svg width="300" height="115" viewBox="0 0 300 115">
           <!-- Tubería principal -->
           <line x1="20" y1="60" x2="280" y2="60" stroke="#37474f" stroke-width="6"/>
-          <line x1="20" y1="60" x2="280" y2="60" stroke="#ffab00" stroke-width="2" stroke-dasharray="6,4"/>
+          <line x1="20" y1="60" x2="280" y2="60" stroke="#7f8a97" stroke-width="2" stroke-dasharray="6,4"/>
           <!-- Manómetro de presión PT-201 -->
           <circle cx="85" cy="50" r="28" fill="#101826" stroke="#455a64" stroke-width="2"/>
           <circle cx="85" cy="50" r="23" fill="#080c14"/>
           <path d="M68 62 A18 18 0 1 1 102 62" fill="none" stroke="#263238" stroke-width="4"/>
-          <line id="pid-gas-needle" x1="85" y1="50" x2="85" y2="33" stroke="#96a1ae" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="85" cy="50" r="3" fill="#fff"/>
+          <line id="pid-gas-needle" x1="85" y1="50" x2="85" y2="33" stroke="#d7dce1" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="85" cy="50" r="3" fill="#aab2bd"/>
           <text x="85" y="90" fill="#90a4ae" font-size="8" text-anchor="middle">PT-201 (PSI)</text>
           <!-- Válvula de control solenoide XV-201 -->
           <g transform="translate(195, 45)">
@@ -439,12 +444,12 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
       <div class="pid-wrap">
         <svg width="300" height="115" viewBox="0 0 300 115">
           <!-- Barra de Distribución Busbar 13.8kV -->
-          <line x1="30" y1="35" x2="270" y2="35" stroke="#ffeb3b" stroke-width="4"/>
-          <text x="150" y="25" fill="#ffeb3b" font-size="8" text-anchor="middle">BUSBAR 13.8 kV</text>
+          <line x1="30" y1="35" x2="270" y2="35" stroke="#96a1ae" stroke-width="4"/>
+          <text x="150" y="25" fill="#90a4ae" font-size="8" text-anchor="middle">BUSBAR 13.8 kV</text>
           <!-- Transformador T1 -->
           <circle cx="80" cy="65" r="14" fill="none" stroke="#96a1ae" stroke-width="2"/>
           <circle cx="80" cy="80" r="14" fill="none" stroke="#96a1ae" stroke-width="2"/>
-          <line x1="80" y1="35" x2="80" y2="51" stroke="#ffeb3b" stroke-width="2"/>
+          <line x1="80" y1="35" x2="80" y2="51" stroke="#96a1ae" stroke-width="2"/>
           <text x="80" y="105" fill="#90a4ae" font-size="8" text-anchor="middle">XFMR-1</text>
           <!-- Interruptor de Potencia CB-52 -->
           <g id="pid-elec-cb-grp" transform="translate(190, 48)">
@@ -693,6 +698,9 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           countBadge.innerText = alarms.length + ' ACTIVAS';
           countBadge.className = alarms.length > 0 ? 'badge badge-crit' : 'badge badge-ok';
 
+          // Banda L1: rollup por severidad de esas mismas alarmas (misma fuente que la tabla).
+          updateAlarmBand(alarms);
+
           const tbody = document.getElementById('alarm-tbody');
           if (alarms.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="color: var(--fg-dim); text-align: center;">Sin alarmas activas en el proceso.</td></tr>';
@@ -713,6 +721,31 @@ class HmiRequestHandler(BaseHTTPRequestHandler):
           document.getElementById('badge-health').className = 'badge badge-crit';
           document.getElementById('badge-health').innerText = 'ERROR CONEXIÓN';
         });
+    }
+
+    function updateAlarmBand(alarms) {
+      const band = document.getElementById('alarm-band');
+      if (!band) return;
+      const crit = [], warn = [];
+      alarms.forEach(a => {
+        const area = a.sector ? a.sector.toUpperCase() : 'SISTEMA';
+        if (a.severity === 'CRITICAL') crit.push(area);
+        else warn.push(area);
+      });
+      const count = document.getElementById('alarm-band-count');
+      const areas = document.getElementById('alarm-band-areas');
+      if (!crit.length && !warn.length) {
+        band.className = 'alarm-band alarm-band-ok';
+        count.innerText = 'SIN ALARMAS ACTIVAS';
+        areas.innerText = '';
+        return;
+      }
+      band.className = 'alarm-band ' + (crit.length ? 'alarm-band-crit' : 'alarm-band-warn');
+      const parts = [];
+      if (crit.length) parts.push(crit.length + (crit.length > 1 ? ' CRÍTICAS' : ' CRÍTICA'));
+      if (warn.length) parts.push(warn.length + (warn.length > 1 ? ' ADVERTENCIAS' : ' ADVERTENCIA'));
+      count.innerText = parts.join('  ·  ');
+      areas.innerText = Array.from(new Set(crit.concat(warn))).join('  ·  ');
     }
 
     setInterval(updateHmi, 2000);
