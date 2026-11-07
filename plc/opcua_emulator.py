@@ -40,9 +40,7 @@ from typing import Any, Dict, Optional
 
 LOGGER = logging.getLogger('opcua_emulator')
 
-# ------------------------------------------------------------------ #
 #  Constantes OPC UA Binary Protocol (UA/TCP)                         #
-# ------------------------------------------------------------------ #
 
 # Tipos de mensajes UA/TCP Header (4-byte magic code)
 MSG_HELLO    = b'HEL'
@@ -62,9 +60,7 @@ SVC_WRITE_REQ          = 0x05
 # Puerto OPC UA estándar
 OPCUA_DEFAULT_PORT = 4840
 
-# ------------------------------------------------------------------ #
 #  Espacio de nodos (NodeSpace) — telemetría de proceso OT            #
-# ------------------------------------------------------------------ #
 
 # Cada nodo: NodeId -> (dataType, valor_inicial, descripción)
 _DEFAULT_NODES: Dict[int, Dict[str, Any]] = {
@@ -133,9 +129,7 @@ class OpcUaNodeSpace:
         return result
 
 
-# ------------------------------------------------------------------ #
 #  Servidor OPC UA binario (UA/TCP stub)                              #
-# ------------------------------------------------------------------ #
 
 class OpcUaServer:
     """Servidor TCP que emula el protocolo UA/TCP de OPC UA.
@@ -184,9 +178,7 @@ class OpcUaServer:
             except OSError:
                 pass
 
-    # ---------------------------------------------------------------- #
     #  Manejo de cliente                                                 #
-    # ---------------------------------------------------------------- #
 
     def _handle_client(self, conn: socket.socket, addr: tuple) -> None:
         """Maneja una conexión de cliente OPC UA."""
@@ -343,9 +335,7 @@ class OpcUaServer:
         self._send_msg(conn, MSG_MSG, response)
 
 
-# ------------------------------------------------------------------ #
 #  Cliente OPC UA mínimo (para tests)                                 #
-# ------------------------------------------------------------------ #
 
 class OpcUaClient:
     """Cliente OPC UA TCP mínimo para pruebas de integración.

@@ -50,9 +50,7 @@ class HistorianTSDB:
         self._local = threading.local()
         self._init_db()
 
-    # ------------------------------------------------------------------ #
     #  Conexión por hilo                                                   #
-    # ------------------------------------------------------------------ #
 
     def _conn(self) -> sqlite3.Connection:
         """Retorna conexión SQLite local al hilo actual (lazy init)."""
@@ -64,9 +62,7 @@ class HistorianTSDB:
             self._local.conn = conn
         return self._local.conn
 
-    # ------------------------------------------------------------------ #
     #  Inicialización de esquema                                           #
-    # ------------------------------------------------------------------ #
 
     def _init_db(self) -> None:
         """Crea las tablas si no existen. Idempotente."""
@@ -101,9 +97,7 @@ class HistorianTSDB:
             conn.commit()
         LOGGER.info('[Historian] Base de datos inicializada en %s (SQLite WAL)', self._db_path)
 
-    # ------------------------------------------------------------------ #
     #  Escritura                                                           #
-    # ------------------------------------------------------------------ #
 
     def write(
         self,
@@ -162,9 +156,7 @@ class HistorianTSDB:
             elif isinstance(val, (int, float, str)):
                 self.write(sector, key, val, ts)
 
-    # ------------------------------------------------------------------ #
     #  Lectura                                                             #
-    # ------------------------------------------------------------------ #
 
     def query(
         self,
@@ -254,9 +246,7 @@ class HistorianTSDB:
         rows = conn.execute('SELECT DISTINCT sector FROM telemetry_raw ORDER BY sector').fetchall()
         return [r['sector'] for r in rows]
 
-    # ------------------------------------------------------------------ #
     #  Mantenimiento (retención)                                           #
-    # ------------------------------------------------------------------ #
 
     def prune(self, keep_records: Optional[int] = None) -> int:
         """Elimina puntos excedentes para mantener retención máxima por sector.

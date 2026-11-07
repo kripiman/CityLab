@@ -45,9 +45,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCENARIOS_DIR = REPO_ROOT / "config" / "scenarios"
 
 
-# ---------------------------------------------------------------------- #
-#  HMAC Dynamic Flag Generation & Verification                          #
-# ---------------------------------------------------------------------- #
+# HMAC Dynamic Flag Generation & Verification
 
 def generate_flag_hmac(session_seed: str, flag_id: str, scenario_id: str = "") -> str:
     """Genera una flag dinámica e inmemorizable: FLAG_<id>{HMAC_SHA256(seed, flag_id)[:12]}."""
@@ -69,9 +67,7 @@ def verify_flag_hmac(session_seed: str, flag_id: str, submitted_flag: str, scena
     return hmac.compare_digest(expected, submitted) or hmac.compare_digest(expected_alt, submitted)
 
 
-# ---------------------------------------------------------------------- #
-#  Oracles / Checkers Engine                                             #
-# ---------------------------------------------------------------------- #
+# Oracles / Checkers Engine
 
 class ConditionChecker:
     """Evalúa oráculos de verificación de estado físico, SCADA, SIEM y red."""
@@ -336,9 +332,7 @@ class ConditionChecker:
             return False, f"Fallo al consultar Visualizador en {url}: {exc}"
 
 
-# ---------------------------------------------------------------------- #
-#  Manifest Loader                                                       #
-# ---------------------------------------------------------------------- #
+# Manifest Loader
 
 def load_scenario_manifest(scenario_id: str) -> Optional[Dict[str, Any]]:
     """Carga y parsea el archivo YAML del manifiesto de escenario."""
@@ -357,9 +351,7 @@ def load_scenario_manifest(scenario_id: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-# ---------------------------------------------------------------------- #
-#  Rate Limiter                                                          #
-# ---------------------------------------------------------------------- #
+# Rate Limiter
 
 class RateLimiter:
     """Limitador de tasa de peticiones deslizante por clave."""
@@ -384,9 +376,7 @@ class RateLimiter:
             return True
 
 
-# ---------------------------------------------------------------------- #
-#  HTTP Request Handler                                                  #
-# ---------------------------------------------------------------------- #
+# HTTP Request Handler
 
 class FlagServiceHandler(BaseHTTPRequestHandler):
     """Manejador HTTP REST para el servicio de flags y scoring."""
@@ -569,9 +559,7 @@ class FlagServiceHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "Endpoint no encontrado", "path": path})
 
 
-# ---------------------------------------------------------------------- #
-#  Server Infrastructure                                                 #
-# ---------------------------------------------------------------------- #
+# Server Infrastructure
 
 class ThreadedFlagServer(ThreadingMixIn, HTTPServer):
     """Servidor HTTP multihilo para el servicio de flags y scoring."""

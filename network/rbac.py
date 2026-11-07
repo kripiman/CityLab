@@ -35,9 +35,7 @@ from typing import Dict, Optional, Tuple
 
 LOGGER = logging.getLogger('scada_rbac')
 
-# ------------------------------------------------------------------ #
 #  Roles y permisos                                                    #
-# ------------------------------------------------------------------ #
 
 ROLE_PERMISSIONS: Dict[str, set] = {
     'auditor':  {'/health', '/', '/api/telemetry', '/api/history', '/api/history/snapshot',
@@ -126,9 +124,7 @@ def _try_ad_auth(username: str, password: str) -> Optional[str]:
         return None
 
 
-# ------------------------------------------------------------------ #
 #  Resolución de roles                                                 #
-# ------------------------------------------------------------------ #
 
 class RBACResolver:
     """Resuelve el rol de una petición HTTP a partir de su cabecera Authorization.

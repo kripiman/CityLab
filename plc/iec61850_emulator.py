@@ -27,9 +27,7 @@ from typing import Any, Dict, List, Optional
 
 LOGGER = logging.getLogger('iec61850_emulator')
 
-# ------------------------------------------------------------------ #
 #  Constantes IEC 61850                                               #
-# ------------------------------------------------------------------ #
 ETHERTYPE_GOOSE = 0x88B8
 ETHERTYPE_SV    = 0x88BA
 

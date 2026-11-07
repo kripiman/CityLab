@@ -45,7 +45,7 @@ The `run_phase*.sh` scripts are now internal implementation invoked by `up`; do 
   ```bash
   sudo ./scripts/validate_e2e.sh
   ```
-- **Install dependencies:** `./install_deps.sh`. It installs Python packages **system-wide on purpose** — Mininet host processes run under `sudo`, so `pip --user` packages are not visible inside the network namespaces. Mininet, Open vSwitch, and GridLAB-D are system packages, not pip; `pymodbus` is pinned to `2.5.3` (v3.x has an incompatible API — the code has fallback imports for both).
+- **Install dependencies:** `./install_deps.sh`. It installs Python packages **system-wide on purpose** — Mininet host processes run under `sudo`, so `pip --user` packages are not visible inside the network namespaces. Mininet, Open vSwitch, and GridLAB-D are system packages, not pip; `pymodbus` is pinned to `2.5.3` and requires `pyserial` (its sync client imports `serial` at load time; without it ~24 test modules fail at collection). v3.x has an incompatible API — the sync `ModbusTcpServer`/`StartTcpServer` the emulators use become async in 3.x — so the code keeps fallback imports for both, but is tested against 2.5.3.
 - **Resource figures:** every `~N MB` in the docs is a design estimate. The measured number comes from `./citylab.sh profile` (`scripts/profile_resources.py`), which samples RSS/CPU of live CityLab processes into `logs/resource_profile_summary.txt`. Never present an unmeasured figure as measured.
 - **Knowledge graph:** `graphify-out/` holds a prebuilt graph. Prefer `graphify query "<question>"` for codebase questions, and run `graphify update .` after modifying code to keep it current.
 
